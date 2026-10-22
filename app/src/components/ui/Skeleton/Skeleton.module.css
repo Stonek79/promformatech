@@ -1,0 +1,17 @@
+.skeleton {
+	min-height: var(--pf-skeleton-line-height);
+	border-radius: var(--pf-radius-sm);
+	background: var(--pf-color-border);
+	animation: pulse var(--pf-skeleton-duration) var(--pf-motion-easing) infinite
+		alternate;
+}
+@keyframes pulse {
+	to {
+		opacity: var(--pf-skeleton-opacity);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.skeleton {
+		animation: none;
+	}
+}

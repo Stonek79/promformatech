@@ -1,0 +1,25 @@
+.controls {
+	display: flex;
+	align-items: center;
+	gap: var(--pf-space-sm);
+}
+.controls .sizeButton {
+	position: relative;
+	border-radius: var(--pf-radius-control);
+	padding-bottom: var(--pf-space-sm);
+}
+.levels {
+	position: absolute;
+	bottom: var(--pf-space-xs);
+	display: flex;
+	gap: var(--pf-size-indicator-gap);
+}
+.level {
+	width: var(--pf-size-indicator-width);
+	height: var(--pf-size-indicator-height);
+	border-radius: var(--pf-radius-sm);
+	background: var(--pf-color-border);
+}
+.level[data-active="true"] {
+	background: var(--pf-color-text);
+}

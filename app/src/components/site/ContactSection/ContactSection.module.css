@@ -1,0 +1,13 @@
+.section {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	align-items: start;
+	gap: var(--pf-space-xl);
+	padding: var(--pf-space-lg);
+	background: var(--pf-color-surface);
+}
+@media (--tablet) {
+	.section {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	}
+}

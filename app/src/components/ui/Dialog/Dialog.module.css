@@ -1,0 +1,37 @@
+.backdrop {
+	position: fixed;
+	inset: 0;
+	background: var(--pf-color-overlay);
+	z-index: var(--pf-layer-dialog);
+}
+.viewport {
+	position: fixed;
+	inset: 0;
+	z-index: var(--pf-layer-dialog);
+	display: grid;
+	place-items: center;
+	padding: var(--pf-space-page);
+	overflow-y: auto;
+}
+.popup {
+	width: 100%;
+	max-width: var(--pf-dialog-width);
+	max-height: var(--pf-dialog-height);
+	overflow-y: auto;
+	padding: var(--pf-space-lg);
+	color: var(--pf-color-text);
+	background: var(--pf-color-background);
+	box-shadow: var(--pf-shadow-dialog);
+}
+.header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--pf-space-md);
+	margin-bottom: var(--pf-space-lg);
+}
+.title {
+	margin: 0;
+	font-size: var(--pf-font-size-card);
+	line-height: var(--pf-line-height-title);
+}

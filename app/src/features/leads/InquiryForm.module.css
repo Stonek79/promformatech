@@ -1,0 +1,43 @@
+.form {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: var(--pf-space-lg);
+	width: 100%;
+	max-width: var(--pf-form-width);
+}
+.fields {
+	display: grid;
+	grid-template-columns: repeat(
+			auto-fit,
+			minmax(min(100%, var(--pf-form-field-min-width)), 1fr)
+		);
+	gap: var(--pf-space-lg);
+}
+.consent {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--pf-space-sm);
+	min-height: var(--pf-touch-target);
+	padding-block: var(--pf-space-sm);
+	font-size: var(--pf-font-size-small);
+}
+.consent input {
+	width: var(--pf-checkbox-size);
+	height: var(--pf-checkbox-size);
+	flex-shrink: 0;
+	accent-color: var(--pf-color-action);
+}
+.consent a {
+	color: var(--pf-color-action);
+	text-decoration: underline;
+}
+.trap {
+	display: none;
+}
+.error {
+	color: var(--pf-color-danger);
+}
+.success {
+	color: var(--pf-color-success);
+}

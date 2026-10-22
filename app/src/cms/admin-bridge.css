@@ -1,0 +1,46 @@
+html.pf-admin {
+	--pf-font-body: var(--font-body);
+	--pf-color-background: var(--theme-elevation-0);
+	--pf-color-text: var(--theme-text);
+	--pf-color-surface: var(--theme-elevation-50);
+	--pf-color-border: var(--theme-elevation-200);
+	font-size: var(--pf-font-root-admin);
+}
+
+.pf-admin .app-header__step-nav-wrapper {
+	flex: 1;
+	min-width: 0;
+	overflow: auto;
+}
+.pf-admin .app-header__actions-wrapper {
+	flex-shrink: 0;
+	margin-right: var(--pf-space-sm);
+}
+.pf-admin .app-header__actions,
+.pf-admin .app-header__last-action {
+	margin-right: 0;
+}
+
+.pf-admin .app-header__actions {
+	max-width: none;
+}
+
+/* Keep Payload's rem-based grid stable; only text follows the size preference. */
+.pf-admin body,
+.pf-admin input,
+.pf-admin textarea,
+.pf-admin select,
+.pf-admin .field-label {
+	font-size: var(--pf-font-size-admin-body);
+}
+.pf-admin body {
+	line-height: var(--pf-line-height-body);
+}
+.pf-admin input::placeholder,
+.pf-admin textarea::placeholder {
+	font-size: inherit;
+}
+.pf-admin h1 {
+	font-size: var(--pf-font-size-admin-title);
+	line-height: var(--pf-line-height-title);
+}

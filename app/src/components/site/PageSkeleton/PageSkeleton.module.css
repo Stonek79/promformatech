@@ -1,0 +1,42 @@
+.page {
+	display: grid;
+	gap: var(--pf-space-lg);
+	min-height: var(--pf-page-min-height);
+	padding-block: var(--pf-space-lg);
+}
+.label {
+	color: var(--pf-color-muted);
+	font-size: var(--pf-font-size-small);
+}
+.title {
+	width: var(--pf-skeleton-title-width);
+	height: var(--pf-font-size-title);
+}
+.text {
+	width: var(--pf-skeleton-text-width);
+}
+.panel {
+	min-height: var(--pf-skeleton-panel-height);
+}
+.columns {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: var(--pf-space-md);
+}
+.card {
+	min-height: var(--pf-control-height);
+}
+.header {
+	display: flex;
+	justify-content: space-between;
+	gap: var(--pf-space-lg);
+	padding-block: var(--pf-space-md);
+}
+.logo {
+	width: var(--pf-logo-width);
+	height: var(--pf-logo-height);
+}
+.control {
+	width: var(--pf-touch-target);
+	height: var(--pf-touch-target);
+}

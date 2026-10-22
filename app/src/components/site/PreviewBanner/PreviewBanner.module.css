@@ -1,0 +1,20 @@
+.banner {
+	position: sticky;
+	top: 0;
+	z-index: var(--pf-layer-preview);
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: var(--pf-space-md);
+	padding: var(--pf-space-sm) var(--pf-space-page);
+	color: var(--pf-color-inverse);
+	background: var(--pf-color-brand-hover);
+	font-size: var(--pf-font-size-small);
+}
+.banner a {
+	color: inherit;
+}
+.banner form {
+	margin: 0;
+}

@@ -1,0 +1,129 @@
+.header {
+	position: relative;
+	z-index: var(--pf-layer-header);
+	color: var(--pf-color-text);
+	background: var(--pf-color-background);
+}
+.top {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--pf-space-md);
+	padding-block: var(--pf-space-md);
+}
+.logo {
+	display: block;
+	flex-shrink: 0;
+	width: min(100%, var(--pf-logo-width));
+	min-width: 0;
+	text-decoration: none;
+	font-weight: var(--pf-font-weight-strong);
+}
+.logo img {
+	width: 100%;
+	max-height: var(--pf-logo-height);
+	object-fit: contain;
+	object-position: left center;
+}
+.contacts,
+.controls {
+	display: contents;
+}
+.quickControls {
+	display: flex;
+	align-items: center;
+	gap: var(--pf-space-xs);
+	grid-column: 2;
+	grid-row: 1;
+}
+.appearance {
+	grid-column: 1 / -1;
+	justify-self: end;
+}
+.mobileMenu {
+	display: flex;
+}
+.contacts > a {
+	display: none;
+	font-size: var(--pf-font-size-small);
+	font-weight: var(--pf-font-weight-strong);
+	text-decoration: none;
+	white-space: nowrap;
+}
+.controls .searchTrigger {
+	border-radius: var(--pf-radius-control);
+	color: var(--pf-color-action);
+	flex-shrink: 0;
+}
+.logo:has(img) {
+	background: var(--pf-color-logo-surface);
+	border-radius: var(--pf-radius-sm);
+}
+.navigation {
+	display: none;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	align-items: center;
+	gap: var(--pf-space-lg);
+	padding-bottom: var(--pf-space-md);
+}
+.navigation a {
+	display: inline-flex;
+	align-items: center;
+	min-height: var(--pf-touch-target);
+	font-size: var(--pf-font-size-small);
+	text-decoration: none;
+}
+.navigation a:hover {
+	color: var(--pf-color-action);
+}
+.mobileNavigation,
+.search {
+	display: flex;
+	flex-direction: column;
+	gap: var(--pf-space-md);
+}
+.mobileNavigation a {
+	display: flex;
+	align-items: center;
+	min-height: var(--pf-touch-target);
+	text-decoration: none;
+}
+@media (--phone) {
+	.contacts > a {
+		display: inline-flex;
+		grid-column: 1;
+		grid-row: 2;
+	}
+	.appearance {
+		grid-column: 2;
+		grid-row: 2;
+	}
+}
+@media (--tablet) {
+	.top,
+	.contacts,
+	.controls {
+		display: flex;
+		align-items: center;
+		gap: var(--pf-space-md);
+	}
+	.top,
+	.contacts {
+		flex-wrap: wrap;
+	}
+	.contacts {
+		margin-left: auto;
+	}
+	.controls {
+		gap: var(--pf-space-xs);
+	}
+
+	.navigation {
+		display: flex;
+	}
+	.mobileMenu {
+		display: none;
+	}
+}

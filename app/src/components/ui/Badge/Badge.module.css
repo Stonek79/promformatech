@@ -1,0 +1,18 @@
+.badge {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--pf-space-xs);
+	padding: var(--pf-space-xs) var(--pf-space-sm);
+	border: var(--pf-border-width) solid currentColor;
+	border-radius: var(--pf-radius-sm);
+	font-size: var(--pf-font-size-small);
+}
+.neutral {
+	color: var(--pf-color-muted);
+}
+.success {
+	color: var(--pf-color-success);
+}
+.danger {
+	color: var(--pf-color-danger);
+}

@@ -1,0 +1,6 @@
+.icon {
+	width: var(--pf-icon-size);
+	height: var(--pf-icon-size);
+	flex-shrink: 0;
+	stroke-width: var(--pf-icon-stroke-width);
+}

@@ -1,0 +1,128 @@
+.guide {
+	max-width: var(--pf-reading-width);
+	margin-inline: auto;
+	padding-block: var(--pf-space-lg) var(--pf-space-section);
+	font-size: var(--pf-font-size-body);
+	line-height: var(--pf-line-height-body);
+	overflow-wrap: anywhere;
+}
+
+.guide h1 {
+	font-size: var(--pf-font-size-title);
+	line-height: var(--pf-line-height-title);
+}
+
+.guide h2 {
+	font-size: var(--pf-font-size-card);
+	line-height: var(--pf-line-height-title);
+}
+
+.intro,
+.contents,
+.article {
+	margin-block-end: var(--pf-space-xl);
+	scroll-margin-block-start: var(--pf-space-section);
+}
+
+.intro h1,
+.intro p,
+.article h2,
+.contents h2 {
+	margin-block: 0 var(--pf-space-md);
+}
+
+.eyebrow {
+	font-size: var(--pf-font-size-small);
+	font-weight: var(--pf-font-weight-strong);
+}
+
+.startLink,
+.navLink {
+	display: flex;
+	align-items: center;
+	min-height: var(--pf-touch-target);
+	padding: var(--pf-space-sm);
+	background: var(--pf-color-surface);
+	color: var(--pf-color-text);
+	border: var(--pf-border-width) solid var(--pf-color-border);
+	border-radius: var(--pf-radius-sm);
+	font-weight: var(--pf-font-weight-strong);
+	margin-block-end: var(--pf-space-md);
+}
+
+.contents {
+	padding: var(--pf-space-md);
+	border: var(--pf-border-width) solid var(--pf-color-border);
+	border-radius: var(--pf-radius-sm);
+}
+
+.contents ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.contents a {
+	display: flex;
+	align-items: center;
+	min-height: var(--pf-touch-target);
+	padding-block: var(--pf-space-xs);
+}
+
+.article {
+	border-block-start: var(--pf-border-width) solid var(--pf-color-border);
+	padding-block-start: var(--pf-space-lg);
+}
+
+.article ol {
+	padding-inline-start: var(--pf-space-lg);
+}
+
+.article li,
+.article dl > div {
+	margin-block: var(--pf-space-md);
+}
+
+.article dt {
+	font-weight: var(--pf-font-weight-strong);
+}
+
+.article dd {
+	margin: 0;
+}
+
+.note,
+.context {
+	padding: var(--pf-space-md);
+	background: var(--pf-color-surface);
+	border-inline-start: var(--pf-border-accent) solid var(--pf-color-border);
+}
+
+.context {
+	margin-block: var(--pf-space-md);
+	line-height: var(--pf-line-height-body);
+}
+
+.context p {
+	margin-block: 0 var(--pf-space-xs);
+}
+
+.context a,
+.links a {
+	display: inline-flex;
+	align-items: center;
+	min-height: var(--pf-touch-target);
+}
+
+.links {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--pf-space-sm) var(--pf-space-lg);
+}
+
+.guide a:focus-visible,
+.context a:focus-visible,
+.navLink:focus-visible {
+	outline: var(--pf-border-accent) solid currentColor;
+	outline-offset: var(--pf-border-width);
+}

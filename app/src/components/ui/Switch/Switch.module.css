@@ -1,0 +1,61 @@
+.switch {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--pf-switch-width);
+	min-height: var(--pf-touch-target);
+	padding: 0;
+	border: 0;
+	border-radius: var(--pf-radius-control);
+	background: transparent;
+	cursor: pointer;
+}
+.switch:focus-visible {
+	outline: var(--pf-border-accent) solid var(--pf-color-focus);
+	outline-offset: var(--pf-border-width);
+}
+.track {
+	position: relative;
+	display: block;
+	width: 100%;
+	height: var(--pf-switch-height);
+	border: var(--pf-border-width) solid var(--pf-color-border);
+	border-radius: var(--pf-switch-height);
+	background: var(--pf-color-surface);
+}
+.switch:hover .track,
+.switch[aria-checked="true"] .track {
+	border-color: var(--pf-color-action);
+}
+.thumb {
+	position: absolute;
+	top: calc(var(--pf-switch-inset) - var(--pf-border-width));
+	left: calc(var(--pf-switch-inset) - var(--pf-border-width));
+	display: grid;
+	place-items: center;
+	width: var(--pf-switch-thumb);
+	height: var(--pf-switch-thumb);
+	border-radius: var(--pf-radius-circle);
+	background: var(--pf-color-button);
+	color: var(--pf-color-button-text);
+	transition: transform var(--pf-motion-duration) var(--pf-motion-easing);
+}
+.thumb svg {
+	width: var(--pf-switch-icon);
+	height: var(--pf-switch-icon);
+}
+.switch[aria-checked="true"] .thumb {
+	transform: translateX(
+		calc(
+			var(--pf-switch-width) -
+			var(--pf-switch-thumb) -
+			var(--pf-switch-inset) *
+			2
+		)
+	);
+}
+@media (prefers-reduced-motion: reduce) {
+	.thumb {
+		transition: none;
+	}
+}
