@@ -1,5 +1,5 @@
 import type { CollectionAfterChangeHook } from "payload";
-import { JOBS } from "@/config/media";
+import { JOBS } from "@/config/jobs";
 
 export const queueLeadNotification: CollectionAfterChangeHook = async ({
 	doc,

@@ -29,6 +29,7 @@ export const CONTEXT = {
 	mediaFile: "mediaFile",
 	leadSubmission: "leadSubmission",
 	bootstrap: "bootstrap",
+	pendingOriginal: "pendingOriginal",
 } as const;
 
 export const SHOWCASE_COLLECTIONS = [

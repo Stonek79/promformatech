@@ -14,12 +14,7 @@ import {
 	titleField,
 } from "../fields/common";
 import { helpDescription } from "../help/config";
-import {
-	assignSlug,
-	invalidatePublishedContent,
-	protectCollectionDrafts,
-	validateCollectionPublication,
-} from "../hooks/content";
+import { contentCollectionHooks } from "../hooks/content";
 import { previewURL } from "../preview";
 
 export const Pages: CollectionConfig = {
@@ -46,22 +41,7 @@ export const Pages: CollectionConfig = {
 		readVersions: staffOnly,
 	},
 	versions: { drafts: true, maxPerDoc: CONTENT_LIMITS.versions },
-	hooks: {
-		beforeOperation: [protectCollectionDrafts],
-		beforeValidate: [assignSlug],
-		beforeChange: [validateCollectionPublication],
-		afterChange: [
-			({ doc }) => {
-				invalidatePublishedContent();
-				return doc;
-			},
-		],
-		afterDelete: [
-			() => {
-				invalidatePublishedContent();
-			},
-		],
-	},
+	hooks: contentCollectionHooks(),
 	fields: [
 		titleField(),
 		{

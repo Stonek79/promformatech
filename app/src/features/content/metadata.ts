@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { MEDIA_DELIVERY, mediaURL } from "@/config/media";
+import { mediaURL } from "@/config/media";
+import { MEDIA_DELIVERY } from "@/config/media-assets";
 import { serverURL } from "@/lib/urls";
 import type {
 	Page,

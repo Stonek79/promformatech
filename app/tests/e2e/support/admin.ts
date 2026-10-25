@@ -1,4 +1,9 @@
-import { test as base, expect, type Page } from "@playwright/test";
+import {
+	test as base,
+	expect,
+	type Locator,
+	type Page,
+} from "@playwright/test";
 import { login } from "./auth";
 import {
 	attachBrowserErrors,
@@ -6,38 +11,45 @@ import {
 	observeBrowserErrors,
 } from "./browser-errors";
 
-export const ADMIN = {
-	root: "/admin",
+const ADMIN = {
 	saveDraft: "Сохранить черновик",
 	preview: "Предпросмотр",
 } as const;
 
-export async function saveDraft(page: Page, endpoint: string) {
+const MUTATION_METHODS = new Set(["POST", "PATCH"]);
+
+async function submitAndWaitForMutation(
+	page: Page,
+	endpoint: string,
+	button: Locator,
+) {
 	const response = page.waitForResponse(
 		(result) =>
 			new URL(result.url()).pathname === endpoint &&
-			["POST", "PATCH"].includes(result.request().method()),
+			MUTATION_METHODS.has(result.request().method()),
 	);
-	await page
-		.getByRole("button", { name: ADMIN.saveDraft, exact: true })
-		.click();
+	await button.click();
 	const result = await response;
 	await result.finished();
 	expect(result.ok()).toBe(true);
 }
 
-export async function publish(page: Page, endpoint: string) {
-	const response = page.waitForResponse(
-		(result) =>
-			new URL(result.url()).pathname === endpoint &&
-			["POST", "PATCH"].includes(result.request().method()),
+export async function saveDraft(page: Page, endpoint: string) {
+	await submitAndWaitForMutation(
+		page,
+		endpoint,
+		page.getByRole("button", { name: ADMIN.saveDraft, exact: true }),
 	);
-	await page
-		.getByRole("button", { name: /^(Публиковать|Опубликовать изменения)$/ })
-		.click();
-	const result = await response;
-	await result.finished();
-	expect(result.ok()).toBe(true);
+}
+
+export async function publish(page: Page, endpoint: string) {
+	await submitAndWaitForMutation(
+		page,
+		endpoint,
+		page.getByRole("button", {
+			name: /^(Публиковать|Опубликовать изменения)$/,
+		}),
+	);
 }
 
 export async function openPreview(page: Page) {

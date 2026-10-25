@@ -2,6 +2,8 @@ import { randomUUID } from "node:crypto";
 import { revalidateTag } from "next/cache";
 import {
 	APIError,
+	type CollectionAfterChangeHook,
+	type CollectionAfterDeleteHook,
 	type CollectionBeforeChangeHook,
 	type CollectionBeforeOperationHook,
 	type CollectionBeforeValidateHook,
@@ -13,17 +15,11 @@ import { COLLECTIONS, CONTENT_CACHE, PUBLICATION } from "@/config/content";
 import { HTTP } from "@/config/forms";
 import { MEDIA_STATUS } from "@/config/media";
 import { mediaPublicationSnapshot } from "@/features/media/publication";
-import {
-	collectMediaIDs,
-	collectTypedMedia,
-} from "@/features/media/references";
+import { collectMediaReferences } from "@/features/media/references";
 import { slugify } from "@/lib/slug";
 import { isStaff } from "../access";
 
-export const assignSlug: CollectionBeforeValidateHook = ({
-	data,
-	originalDoc,
-}) => {
+const assignSlug: CollectionBeforeValidateHook = ({ data, originalDoc }) => {
 	if (data && !data.slug) {
 		data.slug =
 			originalDoc?.slug || slugify(data.title || "") || `item-${randomUUID()}`;
@@ -36,12 +32,7 @@ export const protectCollectionDrafts: CollectionBeforeOperationHook = ({
 	operation,
 	req,
 }) => {
-	if (
-		operation === "read" &&
-		args?.draft &&
-		!args.overrideAccess &&
-		!isStaff(req.user)
-	) {
+	if (isDraftReadDenied(operation, args, req.user)) {
 		throw new Forbidden();
 	}
 	return args;
@@ -52,23 +43,31 @@ export const protectGlobalDrafts: GlobalBeforeOperationHook = ({
 	operation,
 	req,
 }) => {
-	if (
-		operation === "read" &&
-		args?.draft &&
-		!args.overrideAccess &&
-		!isStaff(req.user)
-	) {
+	if (isDraftReadDenied(operation, args, req.user)) {
 		throw new Forbidden();
 	}
 	return args;
 };
 
+function isDraftReadDenied(
+	operation: string,
+	args: unknown,
+	user: Parameters<typeof isStaff>[0],
+): boolean {
+	if (operation !== "read" || typeof args !== "object" || args === null) {
+		return false;
+	}
+	const isDraft = "draft" in args && args.draft === true;
+	const overrideAccess =
+		"overrideAccess" in args && args.overrideAccess === true;
+	return isDraft && !overrideAccess && !isStaff(user);
+}
+
 async function validatePublication(
 	data: Record<string, unknown>,
 	req: Parameters<CollectionBeforeChangeHook>[0]["req"],
 ) {
-	const ids = collectMediaIDs(data);
-	const expectedKinds = collectTypedMedia(data);
+	const { ids, expectedKinds } = collectMediaReferences(data);
 	if (data._status === PUBLICATION.published) {
 		for (const id of ids) {
 			const media = await req.payload.findByID({
@@ -110,22 +109,26 @@ async function validatePublication(
 	return ids;
 }
 
-export const validateCollectionPublication: CollectionBeforeChangeHook =
-	async ({ data, originalDoc, req, collection }) => {
-		const merged = { ...originalDoc, ...data };
-		if (
-			merged._status === PUBLICATION.published &&
-			collection.slug !== COLLECTIONS.pages
-		) {
-			if (!merged.summary?.trim() || !merged.featuredImage) {
-				throw new APIError(
-					"Для публикации добавьте краткое описание и главное изображение. Незавершённый материал можно сохранить черновиком.",
-					HTTP.badRequest,
-				);
-			}
+const validateCollectionPublication: CollectionBeforeChangeHook = async ({
+	data,
+	originalDoc,
+	req,
+	collection,
+}) => {
+	const merged = { ...originalDoc, ...data };
+	if (
+		merged._status === PUBLICATION.published &&
+		collection.slug !== COLLECTIONS.pages
+	) {
+		if (!merged.summary?.trim() || !merged.featuredImage) {
+			throw new APIError(
+				"Для публикации добавьте краткое описание и главное изображение. Незавершённый материал можно сохранить черновиком.",
+				HTTP.badRequest,
+			);
 		}
-		return { ...data, referencedMedia: await validatePublication(merged, req) };
-	};
+	}
+	return { ...data, referencedMedia: await validatePublication(merged, req) };
+};
 
 export const validateGlobalPublication: GlobalBeforeChangeHook = async ({
 	data,
@@ -141,4 +144,23 @@ export function invalidatePublishedContent() {
 	if (process.env.NEXT_RUNTIME === "nodejs") {
 		revalidateTag(CONTENT_CACHE.tag, { expire: 0 });
 	}
+}
+
+const invalidateAfterChange: CollectionAfterChangeHook = ({ doc }) => {
+	invalidatePublishedContent();
+	return doc;
+};
+
+const invalidateAfterDelete: CollectionAfterDeleteHook = () => {
+	invalidatePublishedContent();
+};
+
+export function contentCollectionHooks() {
+	return {
+		beforeOperation: [protectCollectionDrafts],
+		beforeValidate: [assignSlug],
+		beforeChange: [validateCollectionPublication],
+		afterChange: [invalidateAfterChange],
+		afterDelete: [invalidateAfterDelete],
+	};
 }

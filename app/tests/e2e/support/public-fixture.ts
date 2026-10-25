@@ -1,6 +1,7 @@
 import type { APIRequestContext } from "@playwright/test";
 import { COLLECTIONS, PUBLICATION, ROUTES } from "../../../src/config/content";
-import { MEDIA_KIND, MEDIA_STATUS } from "../../../src/config/media";
+import { MEDIA_STATUS } from "../../../src/config/media";
+import { MEDIA_KIND } from "../../../src/config/media-assets";
 import { expect } from "./admin";
 import { login } from "./auth";
 

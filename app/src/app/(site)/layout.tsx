@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { ShellSkeleton } from "@/components/site/PageSkeleton/PageSkeleton";
 import { SiteShell } from "@/components/site/SiteShell";
@@ -20,10 +21,13 @@ const brandFont = localFont({
 	display: "swap",
 });
 
-export const metadata: Metadata = {
-	metadataBase: new URL(serverURL()),
-	title: getMessages().common.brand,
-};
+export async function generateMetadata(): Promise<Metadata> {
+	await connection();
+	return {
+		metadataBase: new URL(serverURL()),
+		title: getMessages().common.brand,
+	};
+}
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
 	const { common: messages } = getMessages();

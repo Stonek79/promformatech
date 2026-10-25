@@ -1,5 +1,6 @@
 import { IMAGE_SIZES } from "@/config/image";
-import { MEDIA_DELIVERY, mediaURL } from "@/config/media";
+import { mediaURL } from "@/config/media";
+import { MEDIA_DELIVERY } from "@/config/media-assets";
 import { LOCALES } from "@/i18n/config";
 import { getMessages } from "@/i18n/messages";
 import { classes } from "@/lib/classes";

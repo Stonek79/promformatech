@@ -1,0 +1,21 @@
+.list > div {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: var(--pf-space-sm);
+	padding-block: var(--pf-space-md);
+	border-bottom: var(--pf-border-width) solid var(--pf-color-border);
+}
+
+.list dt {
+	font-weight: var(--pf-font-weight-strong);
+}
+
+.list dd {
+	margin: 0;
+}
+
+@media (--phone) {
+	.list > div {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+	}
+}

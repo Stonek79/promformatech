@@ -12,6 +12,7 @@
 			"!pnpm-lock.yaml",
 			"!.next-e2e",
 			"!src/design-system/generated",
+			"!src/migrations/*.json",
 			"!src/app/(payload)/admin/importMap.js"
 		]
 	},

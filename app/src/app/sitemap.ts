@@ -1,10 +1,13 @@
 import type { MetadataRoute } from "next";
+import { connection } from "next/server";
 import { getCMS } from "@/cms/client";
 import { COLLECTIONS, SHOWCASE_COLLECTIONS } from "@/config/content";
 import { cachePublished } from "@/features/content/cache";
 import { materialPath, pagePath, serverURL } from "@/lib/urls";
 
-const sitemap = cachePublished(
+export const dynamic = "force-dynamic";
+
+const publishedSitemap = cachePublished(
 	"sitemap",
 	async (): Promise<MetadataRoute.Sitemap> => {
 		const cms = await getCMS();
@@ -26,7 +29,7 @@ const sitemap = cachePublished(
 						? pagePath(doc.slug)
 						: materialPath(collection, doc.slug);
 				entries.push({
-					url: new URL(pathname, serverURL()).toString(),
+					url: pathname,
 					lastModified: doc.updatedAt,
 				});
 			}
@@ -35,4 +38,11 @@ const sitemap = cachePublished(
 	},
 );
 
-export default sitemap;
+export default async function sitemap() {
+	await connection();
+	const entries = await publishedSitemap();
+	return entries.map((entry) => ({
+		...entry,
+		url: new URL(entry.url, serverURL()).toString(),
+	}));
+}

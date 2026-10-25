@@ -5,13 +5,8 @@ import {
 	CONTEXT,
 	PUBLICATION,
 } from "@/config/content";
-import {
-	MEDIA_DELIVERY,
-	MEDIA_KIND,
-	MEDIA_MIME_TYPES,
-	MEDIA_STATUS,
-	mediaURL,
-} from "@/config/media";
+import { MEDIA_MIME_TYPES, MEDIA_STATUS, mediaURL } from "@/config/media";
+import { MEDIA_DELIVERY, MEDIA_KIND } from "@/config/media-assets";
 import { deny, isStaff, mediaReader, staffOnly } from "../access";
 import { retryMedia } from "../endpoints/retry-media";
 import { helpDescription } from "../help/config";
@@ -23,6 +18,7 @@ import {
 	publishReadyMedia,
 	queueMedia,
 } from "../hooks/media";
+import { cleanupFailedUpload } from "../hooks/media-upload";
 
 const internal = (field: Field): Field =>
 	({
@@ -71,6 +67,7 @@ export const Media: CollectionConfig = {
 			}),
 		],
 		afterChange: [queueMedia],
+		afterError: [cleanupFailedUpload],
 		afterRead: [
 			({ doc }) => ({
 				...doc,

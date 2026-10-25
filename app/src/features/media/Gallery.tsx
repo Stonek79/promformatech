@@ -4,12 +4,8 @@ import Image from "next/image";
 import { useState } from "react";
 import { Dialog } from "@/components/ui/Dialog/Dialog";
 import { IMAGE_SIZES } from "@/config/image";
-import {
-	MEDIA_DELIVERY,
-	MEDIA_KIND,
-	MEDIA_STATUS,
-	mediaURL,
-} from "@/config/media";
+import { MEDIA_STATUS, mediaURL } from "@/config/media";
+import { MEDIA_DELIVERY, MEDIA_KIND } from "@/config/media-assets";
 import { useMessages } from "@/i18n/MessagesProvider";
 import { MediaImage, MediaVideo } from "./MediaView";
 import styles from "./media.module.css";

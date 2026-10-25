@@ -1,5 +1,6 @@
 import { cookies, draftMode, headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { cache } from "react";
 import { isStaff } from "@/cms/access";
 import { getCMS } from "@/cms/client";
@@ -13,7 +14,7 @@ import {
 
 export const PREVIEW_TARGET_COOKIE = "pf-preview-target";
 
-export function editURL(target: unknown) {
+function editURL(target: unknown) {
 	if (!target || typeof target !== "object") {
 		return ROUTES.admin;
 	}
@@ -33,6 +34,7 @@ export function editURL(target: unknown) {
 }
 
 export const getViewer = cache(async () => {
+	await connection();
 	const mode = await draftMode();
 	if (!mode.isEnabled) {
 		return { preview: false as const, user: null, editURL: ROUTES.admin };

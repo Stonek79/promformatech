@@ -1,7 +1,7 @@
 import type { TaskConfig } from "payload";
 import { COLLECTIONS, GLOBALS } from "@/config/content";
 import { NOTIFICATION_STATUS } from "@/config/forms";
-import { JOBS } from "@/config/media";
+import { JOBS } from "@/config/jobs";
 import { serverURL } from "@/lib/urls";
 import { smtpConfigured } from "../email";
 

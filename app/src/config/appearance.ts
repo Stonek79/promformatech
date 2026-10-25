@@ -23,11 +23,7 @@ export const APPEARANCE = {
 	darkMedia: "(prefers-color-scheme: dark)",
 } as const;
 
-export const THEME_OPTIONS = [
-	THEMES.light,
-	THEMES.dark,
-	THEMES.system,
-] as const;
+const THEME_OPTIONS = [THEMES.light, THEMES.dark, THEMES.system] as const;
 export const TEXT_SIZE_OPTIONS = [
 	TEXT_SIZES.standard,
 	TEXT_SIZES.large,

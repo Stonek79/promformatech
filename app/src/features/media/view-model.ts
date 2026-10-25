@@ -1,4 +1,5 @@
-import { MEDIA_KIND, MEDIA_STATUS } from "@/config/media";
+import { MEDIA_STATUS } from "@/config/media";
+import { MEDIA_KIND } from "@/config/media-assets";
 import type { Media } from "@/payload-types";
 
 export type MediaView = Readonly<

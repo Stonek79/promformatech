@@ -135,7 +135,7 @@ const ContactForm: Block = {
 	fields: fields(),
 };
 
-export const contentBlocks: Block[] = [
+const contentBlocks: Block[] = [
 	ContactForm,
 	Hero,
 	Text,

@@ -4,22 +4,18 @@ import {
 	type CollectionBeforeChangeHook,
 	type CollectionBeforeOperationHook,
 } from "payload";
-import { COLLECTIONS, PUBLICATION } from "@/config/content";
+import { COLLECTIONS, CONTEXT, PUBLICATION } from "@/config/content";
 import { HTTP } from "@/config/forms";
-import {
-	JOBS,
-	MEDIA_DELIVERY,
-	MEDIA_KIND,
-	MEDIA_MIME_TYPES,
-	MEDIA_STATUS,
-	mediaURL,
-} from "@/config/media";
+import { JOBS } from "@/config/jobs";
+import { MEDIA_MIME_TYPES, MEDIA_STATUS, mediaURL } from "@/config/media";
+import { MEDIA_DELIVERY, MEDIA_KIND } from "@/config/media-assets";
 import {
 	mediaPublicationSnapshot,
 	processingSnapshot,
 } from "@/features/media/publication";
 import { isMediaPublished } from "@/features/media/reference-access";
 import { saveOriginal } from "@/features/media/storage";
+import { uploadSource } from "@/features/media/upload-source";
 import { invalidatePublishedContent } from "./content";
 
 export const protectUsedMedia: CollectionBeforeOperationHook = async ({
@@ -110,7 +106,8 @@ export const preserveOriginal: CollectionBeforeChangeHook = async ({
 			HTTP.badRequest,
 		);
 	}
-	const storageKey = await saveOriginal(req.file.data);
+	const storageKey = await saveOriginal(uploadSource(req.file));
+	req.context[CONTEXT.pendingOriginal] = storageKey;
 	return {
 		...data,
 		storageKey,

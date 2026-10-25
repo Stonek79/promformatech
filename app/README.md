@@ -7,6 +7,12 @@
 
 ## Запуск
 
+Для домашнего тестового сервера с доступом из локальной сети:
+[установка, запуск, обновление и резервные копии](../docs/deployment/home-server.md).
+Адрес стенда задаётся через `SERVER_URL` в `.env`: Next.js автоматически получает
+из него разрешённые origin для dev-ресурсов и Server Actions. После смены адреса
+перезапустите приложение; править `next.config.ts` на сервере не нужно.
+
 Требуются Node.js 22.22.0, pnpm 10.12.4, Docker Engine. Для видео — `ffmpeg` и
 `ffprobe` в PATH (либо переменные `FFMPEG_PATH` и `FFPROBE_PATH`).
 
@@ -93,12 +99,16 @@ Worker обрабатывает по одному тяжёлому файлу, �
 pnpm check
 pnpm test:e2e
 pnpm test:media
+pnpm test:integration
 pnpm build
-pnpm start
 ```
 
 `check`: Biome, Next route types, TypeScript, Stylelint, токены и Vitest.
 `test:media` отдельно проверяет Sharp и настоящий FFmpeg/ffprobe.
+`test:integration` создаёт отдельные временные базы и медиакаталоги для initial
+migration, переноса данных, проверки владельца, версий, очереди и ID. Рабочая
+база не используется для испытаний. Расширенная production-проверка описана
+в [runtime-контракте](../docs/deployment/runtime.md).
 `test:e2e`: Chromium (`pnpm exec playwright install chromium`), отдельная БД
 `promformatech_e2e`, порт 3100 и каталог `.next-e2e`. Команда пересоздаёт **только
 эту тестовую базу** и `private/e2e-media`; рабочую базу не использует. Сервер и
@@ -117,9 +127,13 @@ PostgreSQL слушает только `127.0.0.1:5433`. Параметры — 
 `docker compose down --volumes` удаляет данные; для обычной остановки не нужен.
 Именованный Docker-том **не заменяет резервную копию**.
 
-В разработке Payload синхронизирует схему. В production автоматическая смена
-схемы выключена: необходимы миграции и проверка восстановления до переключения
-домена. Сохранять нужно PostgreSQL, весь `private/media`, конфигурацию и секреты
+В разработке схему синхронизирует web-процесс Payload; worker использует уже
+созданные таблицы. В production schema push выключен. Подготовлены initial
+migration и защищённая команда `pnpm db:migrate`; существующее наполнение
+переносится data-only в новую мигрированную базу. Порядок и ограничения:
+[миграции и перенос данных](../docs/deployment/data-migration.md).
+До переключения домена требуется проверка восстановления.
+Сохранять нужно PostgreSQL, весь `private/media`, конфигурацию и секреты
 отдельно от сервера. Внешний backup и реальное восстановление пока не подключены.
 
 Необязательная почта: `SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM`, `SMTP_FROM_NAME`,
@@ -155,6 +169,13 @@ PostgreSQL и worker. Для полной проверки нужен работ
 Разработка и production-сборка используют встроенный Turbopack из Next.js.
 Отдельный сборщик приложения не нужен. Медиа хранятся в runtime-томе и не
 включаются в файловую трассировку сборки.
+
+Кодовая подготовка к экономному VPS: [runtime-контракт U1–U4](../docs/deployment/runtime.md).
+`pnpm build` использует недоступную БД и публичные build-placeholders; данные
+CMS и настоящий домен читаются в runtime. Production-запуск требует реальных
+секретов и HTTPS `SERVER_URL`; для домашнего HTTP-стенда используется `next dev`.
+Маршруты `/api/health/live` и `/api/health/ready` доступны без входа, readiness
+проверяет production migration ledger. Docker-образы и CI/CD поставляются в U5–U6.
 
 Правила кода проверяются автоматически: блоки условий, запрет явного `any`,
 константы для числовых лимитов и максимум 300 строк в файле кода. Типы CMS

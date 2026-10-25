@@ -1,17 +1,12 @@
-import { APIError, type PayloadHandler } from "payload";
+import type { PayloadHandler } from "payload";
 import { COLLECTIONS } from "@/config/content";
-import { HTTP, NOTIFICATION_STATUS } from "@/config/forms";
-import { JOBS } from "@/config/media";
-import { isStaff } from "../access";
+import { NOTIFICATION_STATUS } from "@/config/forms";
+import { JOBS } from "@/config/jobs";
+import { parsePositiveRouteID, requireStaffRequest } from "./request-guards";
 
 export const retryNotification: PayloadHandler = async (req) => {
-	if (!isStaff(req.user)) {
-		throw new APIError("Требуется вход.", HTTP.unauthorized);
-	}
-	const id = Number(req.routeParams?.id);
-	if (!Number.isSafeInteger(id) || id <= 0) {
-		throw new APIError("Заявка не найдена.", HTTP.notFound);
-	}
+	requireStaffRequest(req);
+	const id = parsePositiveRouteID(req.routeParams?.id, "Заявка не найдена.");
 	const lead = await req.payload.findByID({
 		collection: COLLECTIONS.leads,
 		id,

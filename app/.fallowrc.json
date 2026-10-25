@@ -1,0 +1,6 @@
+{
+	"entry": ["tests/setup-e2e.ts", "tests/integration/setup.ts"],
+	"duplicates": {
+		"ignore": ["src/design-system/generated/tokens.css"]
+	}
+}

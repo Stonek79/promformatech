@@ -3,10 +3,12 @@ import { COLLECTIONS, type ShowcaseCollection } from "@/config/content";
 import { Gallery } from "@/features/media/Gallery";
 import { MediaImage } from "@/features/media/MediaView";
 import { mediaView } from "@/features/media/view-model";
+import { classes } from "@/lib/classes";
 import type { SiteSetting } from "@/payload-types";
 import { ContentBlocks } from "./Blocks";
 import type { ShowcaseMaterial } from "./MaterialCards";
 import styles from "./pages.module.css";
+import specificationStyles from "./specifications.module.css";
 
 type Props = {
 	readonly material: ShowcaseMaterial;
@@ -57,7 +59,12 @@ export function MaterialView({
 				!!material.specifications?.length && (
 					<Section>
 						<Heading>{settings.labels?.specifications}</Heading>
-						<dl className={styles.specifications}>
+						<dl
+							className={classes(
+								styles.specifications,
+								specificationStyles.list,
+							)}
+						>
 							{material.specifications.map((item) => (
 								<div key={item.id}>
 									<dt>{item.label}</dt>

@@ -13,6 +13,7 @@ import type { Page, SiteSetting } from "@/payload-types";
 import styles from "./content.module.css";
 import { MaterialCards } from "./MaterialCards";
 import { RichText } from "./RichText";
+import specificationStyles from "./specifications.module.css";
 
 type Blocks = NonNullable<Page["blocks"]>;
 type Props = {
@@ -100,7 +101,12 @@ export function ContentBlocks({ blocks, preview, home, form }: Props) {
 						</ol>
 					)}
 					{block.blockType === BLOCK_TYPES.specifications && (
-						<dl className={styles.specifications}>
+						<dl
+							className={classes(
+								styles.specifications,
+								specificationStyles.list,
+							)}
+						>
 							{block.items?.map((item) => (
 								<div key={item.id}>
 									<dt>{item.label}</dt>

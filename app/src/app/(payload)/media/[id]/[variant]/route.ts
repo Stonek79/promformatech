@@ -3,12 +3,12 @@ import { isStaff } from "@/cms/access";
 import { getCMS } from "@/cms/client";
 import { COLLECTIONS, CONTEXT } from "@/config/content";
 import { HTTP } from "@/config/forms";
+import { MEDIA_STATUS } from "@/config/media";
 import {
 	MEDIA_DELIVERY,
-	MEDIA_STATUS,
 	MEDIA_VARIANTS,
 	type MediaVariant,
-} from "@/config/media";
+} from "@/config/media-assets";
 import { publishedMediaIDs } from "@/features/media/published";
 import { serveFile } from "@/features/media/serve-file";
 import { storagePaths, variantPath } from "@/features/media/storage";

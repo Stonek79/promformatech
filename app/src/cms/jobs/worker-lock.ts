@@ -1,39 +1,61 @@
 import type { Payload } from "payload";
-import { SYSTEM_COLLECTIONS } from "@/config/content";
-import { JOBS } from "@/config/media";
+import { JOB_POLICY } from "@/config/jobs";
+import { recoverInterruptedJobs } from "./recover-jobs";
 
-const WORKER_LOCK_KEY = 0x504654;
-
-export async function acquireWorker(cms: Payload) {
+export async function acquireWorker(cms: Payload, onLost?: () => void) {
 	const connection = await cms.db.pool.connect();
-	const { rows } = await connection.query<{ locked: boolean }>(
-		"SELECT pg_try_advisory_lock($1) AS locked",
-		[WORKER_LOCK_KEY],
-	);
-	if (!rows[0]?.locked) {
-		connection.release();
-		throw new Error("Для этой базы worker уже запущен.");
+	let locked = false,
+		released = false;
+	if (onLost) {
+		connection.on("error", onLost);
+	}
+	function releaseConnection(error?: Error) {
+		if (released) {
+			return;
+		}
+		released = true;
+		if (onLost) {
+			connection.removeListener("error", onLost);
+		}
+		connection.release(error);
+	}
+	async function unlock() {
+		if (released) {
+			return;
+		}
+		try {
+			if (locked) {
+				await connection.query("SELECT pg_advisory_unlock($1)", [
+					JOB_POLICY.workerLockKey,
+				]);
+			}
+			releaseConnection();
+		} catch (error) {
+			releaseConnection(
+				error instanceof Error
+					? error
+					: new Error("Worker lock release failed"),
+			);
+			throw error;
+		}
 	}
 	try {
-		// The lock proves there is no other live worker before interrupted jobs are resumed.
-		await cms.update({
-			collection: SYSTEM_COLLECTIONS.jobs,
-			where: {
-				and: [
-					{ processing: { equals: true } },
-					{ queue: { in: [JOBS.mediaQueue, JOBS.emailQueue] } },
-				],
-			},
-			data: { processing: false },
-			overrideAccess: true,
-		});
+		const { rows } = await connection.query<{ locked: boolean }>(
+			"SELECT pg_try_advisory_lock($1) AS locked",
+			[JOB_POLICY.workerLockKey],
+		);
+		locked = Boolean(rows[0]?.locked);
+		if (!locked) {
+			throw new Error("Для этой базы worker уже запущен.");
+		}
+		await recoverInterruptedJobs(cms);
+		return unlock;
 	} catch (error) {
-		await connection.query("SELECT pg_advisory_unlock($1)", [WORKER_LOCK_KEY]);
-		connection.release();
+		try {
+			await unlock();
+		} catch {
+			/* The unusable connection was already destroyed. */
+		}
 		throw error;
 	}
-	return async () => {
-		await connection.query("SELECT pg_advisory_unlock($1)", [WORKER_LOCK_KEY]);
-		connection.release();
-	};
 }

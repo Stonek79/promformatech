@@ -1,7 +1,8 @@
 import path from "node:path";
 import type { Payload } from "payload";
 import { COLLECTIONS, GLOBALS, PUBLICATION } from "@/config/content";
-import { JOBS, MEDIA_STATUS } from "@/config/media";
+import { JOBS } from "@/config/jobs";
+import { MEDIA_STATUS } from "@/config/media";
 import { type AssetKey, type AssetLookup, SOURCE_ASSETS } from "./assets";
 import { initialProducts, initialServices } from "./materials";
 import { initialPages } from "./pages";

@@ -1,6 +1,7 @@
 import type { ImageLoaderProps } from "next/image";
 import { IMAGE_QUERY } from "@/config/image";
-import { IMAGE_WIDTHS, MEDIA_DELIVERY, mediaURL } from "@/config/media";
+import { mediaURL } from "@/config/media";
+import { IMAGE_WIDTHS, MEDIA_DELIVERY } from "@/config/media-assets";
 
 export function derivativeURL(id: number, width: ImageLoaderProps["width"]) {
 	const variant =

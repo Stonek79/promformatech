@@ -22,19 +22,15 @@ import { ServiceSettings } from "./cms/globals/ServiceSettings";
 import { SiteSettings } from "./cms/globals/SiteSettings";
 import { notifyLeadTask } from "./cms/tasks/notify-lead";
 import { processMediaTask } from "./cms/tasks/process-media";
-import { MEDIA_POLICY } from "./config/media";
+import { MEDIA_POLICY, MEDIA_UPLOAD } from "./config/media";
+import { getRuntimeConfig } from "./config/runtime";
+import { ensureMediaStorage } from "./features/media/storage";
+import { uploadDirectory } from "./features/media/upload-source";
 import { DEFAULT_LOCALE, LOCALES } from "./i18n/config";
 import { allowedOrigins, serverURL } from "./lib/urls";
 
 const directory = path.dirname(fileURLToPath(import.meta.url));
-const databaseURL = process.env.DATABASE_URL;
-const secret = process.env.PAYLOAD_SECRET;
-
-if (!databaseURL || !secret) {
-	throw new Error(
-		"Не заданы DATABASE_URL или PAYLOAD_SECRET. Выполните pnpm env:init.",
-	);
-}
+const runtime = getRuntimeConfig();
 
 export default buildConfig({
 	admin: {
@@ -89,8 +85,25 @@ export default buildConfig({
 	}),
 	email: await emailAdapter(),
 	upload: {
-		limits: { fileSize: MEDIA_POLICY.maxFileBytes },
+		useTempFiles: true,
+		tempFileDir: uploadDirectory(),
+		uploadTimeout: MEDIA_UPLOAD.idleTimeoutMilliseconds,
+		requestSizeLimit:
+			MEDIA_POLICY.maxFileBytes +
+			MEDIA_UPLOAD.fields * MEDIA_UPLOAD.fieldBytes +
+			MEDIA_UPLOAD.boundaryBytes,
+		limits: {
+			fileSize: MEDIA_POLICY.maxFileBytes,
+			files: MEDIA_UPLOAD.files,
+			fields: MEDIA_UPLOAD.fields,
+			fieldSize: MEDIA_UPLOAD.fieldBytes,
+			fieldNameSize: MEDIA_UPLOAD.fieldNameBytes,
+			parts: MEDIA_UPLOAD.files + MEDIA_UPLOAD.fields,
+		},
 		abortOnLimit: true,
+	},
+	onInit: async () => {
+		await ensureMediaStorage();
 	},
 	jobs: {
 		tasks: [processMediaTask, notifyLeadTask],
@@ -110,11 +123,12 @@ export default buildConfig({
 		}),
 	},
 	db: postgresAdapter({
-		pool: { connectionString: databaseURL },
-		push: process.env.NODE_ENV !== "production",
+		pool: { ...runtime.pool, connectionString: runtime.databaseURL },
+		push: runtime.schemaPush,
+		migrationDir: path.resolve(directory, "migrations"),
 	}),
 	graphQL: { disable: true },
-	secret,
+	secret: runtime.secret,
 	serverURL: serverURL(),
 	csrf: allowedOrigins(),
 	typescript: {

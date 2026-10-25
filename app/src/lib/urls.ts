@@ -4,6 +4,7 @@ import {
 	SHOWCASE_PATHS,
 	type ShowcaseCollection,
 } from "@/config/content";
+import { getServerURL } from "@/config/runtime";
 
 const LAST_ASCII_WHITESPACE = 0x20;
 const ASCII_DELETE = 0x7f;
@@ -58,7 +59,7 @@ export function phoneHref(phone: string) {
 }
 
 export function serverURL() {
-	return process.env.SERVER_URL || "http://localhost:3000";
+	return getServerURL();
 }
 
 export function allowedOrigins() {

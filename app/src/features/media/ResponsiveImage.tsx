@@ -1,7 +1,8 @@
 "use client";
 
 import Image, { type ImageLoaderProps } from "next/image";
-import { MEDIA_DELIVERY, mediaURL } from "@/config/media";
+import { mediaURL } from "@/config/media";
+import { MEDIA_DELIVERY } from "@/config/media-assets";
 import { derivativeURL } from "./image-loader";
 
 type Props = {

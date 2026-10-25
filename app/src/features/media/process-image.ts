@@ -1,7 +1,8 @@
 import { copyFile, stat } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
-import { MEDIA_KIND, MEDIA_POLICY, MEDIA_VARIANTS } from "@/config/media";
+import { MEDIA_POLICY } from "@/config/media";
+import { MEDIA_KIND, MEDIA_VARIANTS } from "@/config/media-assets";
 
 export async function processImage(original: string, directory: string) {
 	sharp.concurrency(MEDIA_POLICY.workerConcurrency);
@@ -44,6 +45,9 @@ export async function processImage(original: string, directory: string) {
 		await copyFile(original, primary);
 	}
 	const result = await sharp(primary).metadata();
+	if (!result.width || !result.height) {
+		throw new Error("Missing processed image dimensions");
+	}
 	return {
 		kind: MEDIA_KIND.image,
 		width: result.width,

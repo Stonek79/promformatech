@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { getCMS } from "@/cms/client";
 import { seedSite } from "@/cms/seed/run";
 import { COLLECTIONS, CONTEXT, ROLES } from "@/config/content";
-import { JOBS } from "@/config/media";
+import { JOBS } from "@/config/jobs";
 
 if (
 	new URL(process.env.DATABASE_URL || "").pathname !== "/promformatech_e2e" ||

@@ -178,18 +178,7 @@
 .specifications {
 	margin: 0;
 }
-.specifications > div {
-	display: grid;
-	grid-template-columns: minmax(0, 1fr);
-	gap: var(--pf-space-sm);
-	padding-block: var(--pf-space-md);
-	border-bottom: var(--pf-border-width) solid var(--pf-color-border);
-}
-.specifications dt {
-	font-weight: var(--pf-font-weight-strong);
-}
 .specifications dd {
-	margin: 0;
 	overflow-wrap: anywhere;
 }
 .figure {
@@ -208,9 +197,6 @@
 	}
 	.steps {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
-	}
-	.specifications > div {
-		grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
 	}
 }
 @media (--tablet) {

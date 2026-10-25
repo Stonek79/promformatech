@@ -1,17 +1,13 @@
 import { APIError, type PayloadHandler } from "payload";
 import { COLLECTIONS } from "@/config/content";
 import { HTTP } from "@/config/forms";
-import { JOBS, MEDIA_STATUS } from "@/config/media";
-import { isStaff } from "../access";
+import { JOBS } from "@/config/jobs";
+import { MEDIA_STATUS } from "@/config/media";
+import { parsePositiveRouteID, requireStaffRequest } from "./request-guards";
 
 export const retryMedia: PayloadHandler = async (req) => {
-	if (!isStaff(req.user)) {
-		throw new APIError("Требуется вход.", HTTP.unauthorized);
-	}
-	const id = Number(req.routeParams?.id);
-	if (!Number.isSafeInteger(id) || id <= 0) {
-		throw new APIError("Файл не найден.", HTTP.notFound);
-	}
+	requireStaffRequest(req);
+	const id = parsePositiveRouteID(req.routeParams?.id, "Файл не найден.");
 	const media = await req.payload.findByID({
 		collection: COLLECTIONS.media,
 		id,

@@ -1,7 +1,9 @@
 import { ROUTES } from "./content";
-
-export const MEDIA_KIND = { image: "image", video: "video" } as const;
-export type MediaKind = (typeof MEDIA_KIND)[keyof typeof MEDIA_KIND];
+import {
+	IMAGE_WIDTHS,
+	type MEDIA_DELIVERY,
+	type MediaVariant,
+} from "./media-assets";
 export const MEDIA_FIELDS = {
 	image: "image",
 	featuredImage: "featuredImage",
@@ -17,22 +19,21 @@ export const MEDIA_REFERENCE_FIELDS = {
 	referencedMedia: "referencedMedia",
 	body: "body",
 } as const;
-export const MEDIA_DELIVERY = {
-	image: "image",
-	small: "small",
-	medium: "medium",
-	poster: "poster",
-	video: "video",
-	original: "original",
-	captions: "captions",
-} as const;
 
-export const MEDIA_STORAGE = {
-	defaultRoot: "private/media",
-	originals: "originals",
-	derived: "derived",
-	staging: "staging",
-	fileMode: 0o600,
+export const MEDIA_SOURCE = {
+	buffer: "buffer",
+	temporary: "temporary",
+} as const;
+export const MEDIA_UPLOAD = {
+	files: 1,
+	fields: 4,
+	fieldBytes: 262_144,
+	fieldNameBytes: 100,
+	boundaryBytes: 65_536,
+	idleTimeoutMilliseconds: 60_000,
+	orphanGraceMilliseconds: 3_600_000,
+	reconcileIntervalMilliseconds: 60_000,
+	reconcileLimit: 100,
 } as const;
 
 export const MEDIA_STATUS = {
@@ -41,8 +42,6 @@ export const MEDIA_STATUS = {
 	ready: "ready",
 	error: "error",
 } as const;
-
-export const IMAGE_WIDTHS = { small: 480, medium: 960, large: 1600 } as const;
 
 export const MEDIA_POLICY = {
 	maxFileBytes: 524_288_000,
@@ -70,23 +69,6 @@ export const MEDIA_MIME_TYPES = [
 	"video/quicktime",
 	"video/webm",
 ] as const;
-
-export const MEDIA_VARIANTS = {
-	image: { file: "image.webp", mime: "image/webp" },
-	small: {
-		file: `image-${MEDIA_POLICY.imageWidths[0]}.webp`,
-		mime: "image/webp",
-	},
-	medium: {
-		file: `image-${MEDIA_POLICY.imageWidths[1]}.webp`,
-		mime: "image/webp",
-	},
-	poster: { file: "poster.jpg", mime: "image/jpeg" },
-	video: { file: "video.mp4", mime: "video/mp4" },
-} as const;
-export type MediaVariant = keyof typeof MEDIA_VARIANTS;
-
-export { JOBS } from "./jobs";
 
 export function mediaURL(
 	id: number | string,

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { MEDIA_KIND, MEDIA_STATUS } from "../../src/config/media";
+import { MEDIA_STATUS } from "../../src/config/media";
+import { MEDIA_KIND } from "../../src/config/media-assets";
 import {
 	isReadyImage,
 	isReadyVideo,
