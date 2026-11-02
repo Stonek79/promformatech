@@ -1,17 +1,21 @@
 import { Icon } from "@/components/ui/Icon/Icon";
 import { Container, Heading } from "@/components/ui/Layout/Layout";
+import { ANCHORS } from "@/config/content";
 import { IMAGE_SIZES } from "@/config/image";
 import { MediaImage } from "@/features/media/MediaView";
 import { mediaView } from "@/features/media/view-model";
 import { getMessages } from "@/i18n/messages";
-import { isSafeHref, phoneHref } from "@/lib/urls";
+import { isPublicHref, phoneHref } from "@/lib/urls";
 import type { SiteSetting } from "@/payload-types";
 import styles from "./Footer.module.css";
 
 export function Footer({ settings }: { readonly settings: SiteSetting }) {
 	const { common: messages } = getMessages();
+	const links = (settings.footerLinks || []).flatMap((link) =>
+		isPublicHref(link.url) ? [{ ...link, url: link.url }] : [],
+	);
 	return (
-		<footer className={styles.footer}>
+		<footer id={ANCHORS.contact} className={styles.footer}>
 			<Container>
 				<Heading>{settings.labels?.contactTitle || messages.contacts}</Heading>
 				<div className={styles.main}>
@@ -50,16 +54,15 @@ export function Footer({ settings }: { readonly settings: SiteSetting }) {
 				</div>
 				<div className={styles.bottom}>
 					<p>{settings.copyright}</p>
-					<nav aria-label={messages.legalNavigation}>
-						{settings.footerLinks?.map(
-							(link) =>
-								isSafeHref(link.url) && (
-									<a key={link.id} href={link.url}>
-										{link.label}
-									</a>
-								),
-						)}
-					</nav>
+					{links.length > 0 && (
+						<nav aria-label={messages.footerNavigation}>
+							{links.map((link) => (
+								<a key={link.id} href={link.url}>
+									{link.label}
+								</a>
+							))}
+						</nav>
+					)}
 				</div>
 			</Container>
 		</footer>

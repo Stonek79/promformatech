@@ -46,29 +46,9 @@ export interface SiteSettingsSelect<T extends boolean = true> {
 				id?: T;
 		  };
 	copyright?: T;
-	form?:
-		| T
-		| {
-				title?: T;
-				description?: T;
-				nameLabel?: T;
-				namePlaceholder?: T;
-				contactLabel?: T;
-				contactPlaceholder?: T;
-				messageLabel?: T;
-				messagePlaceholder?: T;
-				consentLabel?: T;
-				consentLinkLabel?: T;
-				privacyURL?: T;
-				submitLabel?: T;
-				pendingLabel?: T;
-				successMessage?: T;
-				errorMessage?: T;
-		  };
 	labels?:
 		| T
 		| {
-				request?: T;
 				searchTitle?: T;
 				searchPlaceholder?: T;
 				searchButton?: T;

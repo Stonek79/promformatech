@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { revalidateTag } from "next/cache";
+import { revalidateTag } from "next/cache.js";
 import {
 	APIError,
 	type CollectionAfterChangeHook,
@@ -12,7 +12,7 @@ import {
 	type GlobalBeforeOperationHook,
 } from "payload";
 import { COLLECTIONS, CONTENT_CACHE, PUBLICATION } from "@/config/content";
-import { HTTP } from "@/config/forms";
+import { HTTP } from "@/config/http";
 import { MEDIA_STATUS } from "@/config/media";
 import { mediaPublicationSnapshot } from "@/features/media/publication";
 import { collectMediaReferences } from "@/features/media/references";

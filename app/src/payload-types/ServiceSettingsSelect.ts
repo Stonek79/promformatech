@@ -5,13 +5,6 @@
  * via the `definition` "service-settings_select".
  */
 export interface ServiceSettingsSelect<T extends boolean = true> {
-	recipients?:
-		| T
-		| {
-				email?: T;
-				id?: T;
-		  };
-	retentionDays?: T;
 	updatedAt?: T;
 	createdAt?: T;
 	globalType?: T;

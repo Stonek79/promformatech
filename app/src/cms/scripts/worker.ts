@@ -58,11 +58,6 @@ try {
 			}
 			lastReconciliation = Date.now();
 		}
-		await cms.jobs.run({
-			queue: JOBS.emailQueue,
-			limit: MEDIA_POLICY.workerConcurrency,
-			sequential: true,
-		});
 		if (!stopping) {
 			await cms.jobs.run({
 				queue: JOBS.mediaQueue,

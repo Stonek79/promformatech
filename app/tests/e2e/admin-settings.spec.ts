@@ -16,7 +16,6 @@ const SETTINGS = {
 	phone: "+7 900 111-22-33",
 	company: "Компания менеджера",
 	copyright: "Проверено редактором сайта",
-	formTitle: "Напишите менеджеру",
 } as const;
 
 test("manager edits every settings tab, previews a private draft and publishes explicitly", async ({
@@ -45,12 +44,9 @@ test("manager edits every settings tab, previews a private draft and publishes e
 		await page
 			.getByRole("textbox", { name: "Подпись авторских прав", exact: true })
 			.fill(SETTINGS.copyright);
-		await page
-			.getByRole("button", { name: "Форма связи", exact: true })
-			.click();
-		await page
-			.getByRole("textbox", { name: "Заголовок", exact: true })
-			.fill(SETTINGS.formTitle);
+		await expect(
+			page.getByRole("button", { name: "Форма связи", exact: true }),
+		).toHaveCount(0);
 		await page
 			.getByRole("button", { name: "Подписи и SEO", exact: true })
 			.click();
@@ -81,15 +77,7 @@ test("manager edits every settings tab, previews a private draft and publishes e
 		await expect(
 			preview.getByText(SETTINGS.copyright, { exact: true }),
 		).toBeVisible();
-		await expect(
-			preview.getByRole("heading", { name: SETTINGS.formTitle, exact: true }),
-		).toBeVisible();
-		await expect(
-			preview.getByRole("button", {
-				name: original.form.submitLabel,
-				exact: true,
-			}),
-		).toBeDisabled();
+		await expect(preview.locator("main form")).toHaveCount(0);
 		await closePreview(preview);
 		await page.request.get(SETTINGS.exitPreview);
 		await publish(page, SETTINGS.api);
@@ -102,9 +90,7 @@ test("manager edits every settings tab, previews a private draft and publishes e
 		await expect(
 			visitor.getByText(SETTINGS.copyright, { exact: true }),
 		).toBeVisible();
-		await expect(
-			visitor.getByRole("heading", { name: SETTINGS.formTitle, exact: true }),
-		).toBeVisible();
+		await expect(visitor.locator("main form")).toHaveCount(0);
 	} finally {
 		const restored = await page.request.post(SETTINGS.api, {
 			headers: E2E_HEADERS,
@@ -112,7 +98,6 @@ test("manager edits every settings tab, previews a private draft and publishes e
 				companyName: original.companyName,
 				phone: original.phone,
 				copyright: original.copyright,
-				form: original.form,
 				seo: original.seo,
 				_status: "published",
 			},

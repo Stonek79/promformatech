@@ -14,7 +14,6 @@ export const HELP_TOPICS = {
 	projects: COLLECTIONS.projects,
 	media: COLLECTIONS.media,
 	site: GLOBALS.site,
-	leads: COLLECTIONS.leads,
 	users: COLLECTIONS.users,
 	service: GLOBALS.service,
 	troubleshooting: "troubleshooting",

@@ -2,7 +2,7 @@ import { draftMode } from "next/headers";
 import { isStaff } from "@/cms/access";
 import { getCMS } from "@/cms/client";
 import { COLLECTIONS, CONTEXT } from "@/config/content";
-import { HTTP } from "@/config/forms";
+import { HTTP } from "@/config/http";
 import { MEDIA_STATUS } from "@/config/media";
 import {
 	MEDIA_DELIVERY,

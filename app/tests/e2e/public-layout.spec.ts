@@ -88,7 +88,9 @@ for (const width of WIDTHS) {
 for (const viewport of INTERACTIVE_VIEWPORTS) {
 	const { width } = viewport;
 	for (const theme of [THEMES.light, THEMES.dark]) {
-		test(`dialogs and form ${width} ${theme}`, async ({ page }, testInfo) => {
+		test(`dialogs and contacts ${width} ${theme}`, async ({
+			page,
+		}, testInfo) => {
 			await page.setViewportSize(viewport);
 			await page.goto(LAYOUT_PROJECT.path);
 			await setTheme(page, theme);
@@ -137,23 +139,14 @@ for (const viewport of INTERACTIVE_VIEWPORTS) {
 				await expect(dialog).toHaveCount(0);
 			}
 			await page.goto(ROUTES.contact);
-			const form = page.locator("main form");
-			const hints = form.locator('[id$="-hint"]');
-			await expect(hints).toHaveCount(3);
-			for (const hint of await hints.all()) {
-				await expect(hint).toBeVisible();
-				const hintID = await hint.getAttribute("id");
-				await expect(
-					form.locator(`[aria-describedby="${hintID}"]`),
-				).toHaveCount(1);
-			}
-			await form.locator('button[type="submit"]').click();
-			await expect(form.getByRole("alert")).toHaveText(
-				messages.form.validation.name,
-			);
+			await expect(page.locator("main form")).toHaveCount(0);
+			await expect(
+				page.getByRole("link", { name: /Политика обработки/ }),
+			).toHaveCount(0);
 			await checkPublicLayout(page);
-			await form.screenshot({
-				path: testInfo.outputPath(`form-error-${theme}-${width}.png`),
+			await page.screenshot({
+				path: testInfo.outputPath(`contacts-${theme}-${width}.png`),
+				fullPage: true,
 			});
 		});
 	}

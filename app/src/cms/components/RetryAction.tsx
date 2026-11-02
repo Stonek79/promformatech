@@ -7,8 +7,8 @@ import { collectionAPIURL } from "@/config/cms";
 import styles from "./admin.module.css";
 
 type Props = {
-	readonly resource: "media" | "leads";
-	readonly action: "retry" | "notify";
+	readonly resource: "media";
+	readonly action: "retry";
 	readonly label: string;
 	readonly visible: boolean;
 	readonly onSuccess: () => void;

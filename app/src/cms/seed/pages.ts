@@ -1,5 +1,5 @@
 import { BLOCK_TYPES } from "@/config/blocks";
-import { PAGE_KINDS, PAGE_SLUGS, PUBLICATION } from "@/config/content";
+import { PAGE_KINDS, PAGE_SLUGS, PUBLICATION, ROUTES } from "@/config/content";
 import type { Page } from "@/payload-types";
 import type { AssetLookup } from "./assets";
 import { richText } from "./rich-text";
@@ -8,7 +8,6 @@ export function initialPages(
 	asset: AssetLookup,
 	services: readonly number[],
 ): Omit<Page, "id" | "createdAt" | "updatedAt">[] {
-	const contact = { blockType: BLOCK_TYPES.contactForm, visible: true };
 	return [
 		{
 			title: "Главная",
@@ -23,8 +22,8 @@ export function initialPages(
 					heading: "Прямые поставки из Китая",
 					text: "Пресс-формы различных типов, автоматизация и роботизация производств, робототехника и промышленные комплектующие",
 					image: asset("hero"),
-					buttonLabel: "Заказать услугу",
-					buttonURL: "/#contact",
+					buttonLabel: "Связаться с нами",
+					buttonURL: ROUTES.contact,
 				},
 				{
 					blockType: BLOCK_TYPES.textImage,
@@ -83,7 +82,6 @@ export function initialPages(
 						},
 					],
 				},
-				contact,
 			],
 		},
 		{
@@ -112,7 +110,6 @@ export function initialPages(
 						"Проводим обучение, чтобы клиенты могли уверенно эксплуатировать оборудование и самостоятельно решать текущие производственные задачи.",
 					),
 				},
-				contact,
 			],
 		},
 		{
@@ -120,43 +117,28 @@ export function initialPages(
 			slug: PAGE_SLUGS.products,
 			kind: PAGE_KINDS.products,
 			_status: PUBLICATION.published,
-			blocks: [contact],
+			blocks: [],
 		},
 		{
 			title: "Услуги",
 			slug: PAGE_SLUGS.services,
 			kind: PAGE_KINDS.services,
 			_status: PUBLICATION.published,
-			blocks: [contact],
+			blocks: [],
 		},
 		{
 			title: "Реализованные проекты",
 			slug: PAGE_SLUGS.projects,
 			kind: PAGE_KINDS.projects,
 			_status: PUBLICATION.published,
-			blocks: [contact],
+			blocks: [],
 		},
 		{
 			title: "Контакты",
 			slug: PAGE_SLUGS.contacts,
 			kind: PAGE_KINDS.contacts,
 			_status: PUBLICATION.published,
-			blocks: [contact],
-		},
-		{
-			title: "Политика обработки персональных данных",
-			slug: PAGE_SLUGS.privacy,
-			kind: PAGE_KINDS.content,
-			_status: PUBLICATION.draft,
-			blocks: [
-				{
-					blockType: BLOCK_TYPES.text,
-					visible: true,
-					body: richText(
-						"Владелец сайта должен добавить и согласовать политику обработки персональных данных перед публичным запуском. Укажите оператора, цели и основания обработки, сроки хранения и порядок обращения.",
-					),
-				},
-			],
+			blocks: [],
 		},
 	];
 }

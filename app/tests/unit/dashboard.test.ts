@@ -19,7 +19,7 @@ describe("admin dashboard server props", () => {
 
 			expect(html).toContain("Управление сайтом");
 			expect(html).toContain("/admin/collections/pages/42");
-			expect(html).toContain("Новых заявок: 3");
+			expect(html).toContain("Файлов в обработке или с ошибкой: 3");
 			expect(payload.find).toHaveBeenCalledWith(
 				expect.objectContaining({
 					collection: COLLECTIONS.pages,
@@ -28,7 +28,7 @@ describe("admin dashboard server props", () => {
 					user,
 				}),
 			);
-			expect(payload.count).toHaveBeenCalledTimes(2);
+			expect(payload.count).toHaveBeenCalledTimes(1);
 			for (const [options] of payload.count.mock.calls) {
 				expect(options).toEqual(
 					expect.objectContaining({ overrideAccess: false, user }),

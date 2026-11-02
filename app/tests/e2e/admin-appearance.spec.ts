@@ -119,8 +119,4 @@ test("array actions use Russian labels for managers and owners", async ({
 	).toBeVisible();
 	await login(page.request, ROLES.owner);
 	await page.goto(adminGlobalURL(GLOBALS.service));
-	await expect(
-		page.getByRole("button", { name: "Добавить получателя", exact: true }),
-	).toBeVisible();
-	await expect(page.getByRole("button", { name: /Recipient/ })).toHaveCount(0);
 });

@@ -1,61 +1,30 @@
 import type { Payload } from "payload";
+import lockfile from "proper-lockfile";
+import { DATABASE } from "@/config/database";
 import { JOB_POLICY } from "@/config/jobs";
+import { databasePath } from "@/features/database/path";
 import { recoverInterruptedJobs } from "./recover-jobs";
 
 export async function acquireWorker(cms: Payload, onLost?: () => void) {
-	const connection = await cms.db.pool.connect();
-	let locked = false,
-		released = false;
-	if (onLost) {
-		connection.on("error", onLost);
-	}
-	function releaseConnection(error?: Error) {
-		if (released) {
-			return;
-		}
-		released = true;
-		if (onLost) {
-			connection.removeListener("error", onLost);
-		}
-		connection.release(error);
-	}
-	async function unlock() {
-		if (released) {
-			return;
-		}
-		try {
-			if (locked) {
-				await connection.query("SELECT pg_advisory_unlock($1)", [
-					JOB_POLICY.workerLockKey,
-				]);
+	const file = databasePath();
+	const release = await lockfile.lock(file, {
+		lockfilePath: `${file}${DATABASE.lockSuffix}`,
+		stale: JOB_POLICY.lockStaleMilliseconds,
+		update: JOB_POLICY.lockUpdateMilliseconds,
+		retries: 0,
+		onCompromised: (error) => {
+			if (onLost) {
+				onLost();
+				return;
 			}
-			releaseConnection();
-		} catch (error) {
-			releaseConnection(
-				error instanceof Error
-					? error
-					: new Error("Worker lock release failed"),
-			);
 			throw error;
-		}
-	}
+		},
+	});
 	try {
-		const { rows } = await connection.query<{ locked: boolean }>(
-			"SELECT pg_try_advisory_lock($1) AS locked",
-			[JOB_POLICY.workerLockKey],
-		);
-		locked = Boolean(rows[0]?.locked);
-		if (!locked) {
-			throw new Error("Для этой базы worker уже запущен.");
-		}
 		await recoverInterruptedJobs(cms);
-		return unlock;
+		return release;
 	} catch (error) {
-		try {
-			await unlock();
-		} catch {
-			/* The unusable connection was already destroyed. */
-		}
+		await release();
 		throw error;
 	}
 }

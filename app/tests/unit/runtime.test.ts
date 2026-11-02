@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-	DATABASE_POOLS,
 	getRuntimeConfig,
 	getServerURL,
 	PROCESS_ROLE,
@@ -10,7 +9,7 @@ import {
 
 const ENVIRONMENT = {
 	NODE_ENV: RUNTIME.production,
-	DATABASE_URL: "postgresql://fixture:fixture@localhost:5432/isolated",
+	DATABASE_URL: "file:/tmp/isolated.sqlite",
 	PAYLOAD_SECRET: "isolated-runtime-test-secret-of-at-least-32-characters",
 	SERVER_URL: "https://site.example.test",
 } as const;
@@ -74,14 +73,14 @@ describe("runtime configuration", () => {
 		).toBe("http://192.168.1.130:3001");
 	});
 
-	it.each(Object.values(PROCESS_ROLE))(
-		"limits database connections for %s",
-		(role) => {
-			const runtime = getRuntimeConfig({
-				...ENVIRONMENT,
-				APP_PROCESS_ROLE: role,
-			});
-			expect(runtime.pool.max).toBe(DATABASE_POOLS[role]);
-		},
-	);
+	it.each([
+		"postgresql://localhost/old",
+		"libsql://remote/db",
+		"file:/tmp/site.sqlite?mode=memory",
+		"file:./relative.sqlite",
+	])("rejects unsupported production database: %s", (url) => {
+		expect(() =>
+			getRuntimeConfig({ ...ENVIRONMENT, DATABASE_URL: url }),
+		).toThrow(RUNTIME_ERRORS.databaseURL);
+	});
 });

@@ -1,5 +1,4 @@
 import { spawnSync } from "node:child_process";
-import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
 import { login } from "./support/auth";
@@ -74,12 +73,6 @@ test("upload processing, originals, published file access and revocation", async
 			await request.get(`/api/media/${media.id}?draft=true`)
 		).json();
 		expect(ready.processingStatus).toBe("ready");
-		const recovered = await (
-			await request.get(
-				"/api/leads?where[contact][equals]=worker-recovery@example.test",
-			)
-		).json();
-		expect(recovered.docs[0].notificationStatus).toBe("unconfigured");
 		const original = await request.get(`/media/${media.id}/original`);
 		expect(await original.body()).toEqual(bytes);
 		expect((await guest.get(`/media/${media.id}/original`)).status()).toBe(404);
@@ -124,41 +117,10 @@ test("upload processing, originals, published file access and revocation", async
 	}
 });
 
-test("inquiry is durable, idempotent and private", async ({
-	request,
-	playwright,
-}) => {
-	const guest = await playwright.request.newContext({ baseURL: origin });
-	try {
-		const inquiry = {
-			requestID: randomUUID(),
-			name: "Тестовый клиент",
-			contact: "client@example.test",
-			message: "Тест сохранения",
-			sourcePath: "/",
-			consent: true,
-		};
-		const options = { data: inquiry, headers: { Origin: origin } };
-		expect((await guest.post("/api/inquiries", options)).status()).toBe(201);
-		expect((await guest.post("/api/inquiries", options)).status()).toBe(200);
+test("removed intake endpoints are unavailable", async ({ request }) => {
+	for (const route of ["/api/inquiries", "/api/leads"]) {
 		expect(
-			(
-				await guest.post("/api/inquiries", {
-					...options,
-					headers: { Origin: "https://evil.test" },
-				})
-			).status(),
-		).toBe(403);
-		expect((await guest.get("/api/leads")).status()).toBe(403);
-		await login(request);
-		const saved = await (
-			await request.get(
-				`/api/leads?where[requestID][equals]=${inquiry.requestID}`,
-			)
-		).json();
-		expect(saved.totalDocs).toBe(1);
-		expect(saved.docs[0].message).toBe(inquiry.message);
-	} finally {
-		await guest.dispose();
+			(await request.post(route, { data: { name: "Unused" } })).status(),
+		).toBe(404);
 	}
 });

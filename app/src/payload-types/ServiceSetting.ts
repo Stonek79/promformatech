@@ -6,16 +6,6 @@
  */
 export interface ServiceSetting {
 	id: number;
-	recipients?:
-		| {
-				email: string;
-				id?: string | null;
-		  }[]
-		| null;
-	/**
-	 * Очистка закрытых заявок выполняется отдельной служебной командой. Настройку согласует владелец.
-	 */
-	retentionDays?: number | null;
 	updatedAt?: string | null;
 	createdAt?: string | null;
 }

@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import { writeFile } from "node:fs/promises";
 import sharp from "sharp";
 import { getCMS } from "@/cms/client";
@@ -19,13 +18,8 @@ import {
 	storagePaths,
 } from "@/features/media/storage";
 
-const DATABASE_PREFIX = "/promformatech_verification_source_";
-if (
-	!new URL(process.env.DATABASE_URL || "").pathname.startsWith(DATABASE_PREFIX)
-) {
-	throw new Error(
-		"Integration setup requires an isolated verification database",
-	);
+if (!process.env.DATABASE_URL?.endsWith("/verification.sqlite")) {
+	throw new Error("Integration setup requires an isolated SQLite database");
 }
 const cms = await getCMS();
 try {
@@ -67,16 +61,6 @@ try {
 			name: "fixture.png",
 			mimetype: "image/png",
 			size: image.length,
-		},
-		overrideAccess: true,
-	});
-	const lead = await cms.create({
-		collection: COLLECTIONS.leads,
-		data: {
-			name: "Migration rehearsal",
-			contact: "fixture@example.test",
-			consent: true,
-			requestID: randomUUID(),
 		},
 		overrideAccess: true,
 	});
@@ -129,7 +113,6 @@ try {
 		JSON.stringify({
 			homeID: home.id,
 			mediaID: media.id,
-			leadID: lead.id,
 			interruptedID: interrupted.id,
 			derivative,
 		}),

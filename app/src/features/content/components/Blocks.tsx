@@ -1,4 +1,3 @@
-import { ContactSection } from "@/components/site/ContactSection/ContactSection";
 import { ButtonLink } from "@/components/ui/Button/Button";
 import { Heading, Section } from "@/components/ui/Layout/Layout";
 import { BLOCK_TYPES } from "@/config/blocks";
@@ -8,8 +7,8 @@ import { Gallery } from "@/features/media/Gallery";
 import { MediaImage, MediaVideo } from "@/features/media/MediaView";
 import { mediaView } from "@/features/media/view-model";
 import { classes } from "@/lib/classes";
-import { isSafeHref } from "@/lib/urls";
-import type { Page, SiteSetting } from "@/payload-types";
+import { isPublicHref } from "@/lib/urls";
+import type { Page } from "@/payload-types";
 import styles from "./content.module.css";
 import { MaterialCards } from "./MaterialCards";
 import { RichText } from "./RichText";
@@ -20,16 +19,12 @@ type Props = {
 	readonly blocks: Blocks | null | undefined;
 	readonly preview: boolean;
 	readonly home?: boolean;
-	readonly form: SiteSetting["form"];
 };
 
-export function ContentBlocks({ blocks, preview, home, form }: Props) {
+export function ContentBlocks({ blocks, preview, home }: Props) {
 	return blocks
 		?.filter((block) => block.visible !== false)
 		.map((block, index) => {
-			if (block.blockType === BLOCK_TYPES.contactForm) {
-				return <ContactSection key={block.id} copy={form} preview={preview} />;
-			}
 			if (block.blockType === BLOCK_TYPES.hero) {
 				return (
 					<section key={block.id} className={styles.hero}>
@@ -49,7 +44,7 @@ export function ContentBlocks({ blocks, preview, home, form }: Props) {
 								</Heading>
 							)}
 							{block.text && <p>{block.text}</p>}
-							{block.buttonLabel && isSafeHref(block.buttonURL) && (
+							{block.buttonLabel && isPublicHref(block.buttonURL) && (
 								<ButtonLink href={block.buttonURL}>
 									{block.buttonLabel}
 								</ButtonLink>
@@ -135,7 +130,7 @@ export function ContentBlocks({ blocks, preview, home, form }: Props) {
 					{block.blockType === BLOCK_TYPES.callToAction && (
 						<div className={styles.callToAction}>
 							<p>{block.text}</p>
-							{block.buttonLabel && isSafeHref(block.buttonURL) && (
+							{block.buttonLabel && isPublicHref(block.buttonURL) && (
 								<ButtonLink href={block.buttonURL}>
 									{block.buttonLabel}
 								</ButtonLink>

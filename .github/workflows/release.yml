@@ -1,0 +1,48 @@
+name: Native Linux release
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['app/**', 'deploy/**', '.github/workflows/release.yml']
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: app/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.0'
+          cache: pnpm
+          cache-dependency-path: app/pnpm-lock.yaml
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: pnpm test:integration
+      - run: pnpm release:build
+      - run: node scripts/release/verify.mjs
+      - name: Archive verified release
+        run: |
+          cp -R ../deploy artifacts/release/deploy
+          tar -czf artifacts/promformatech-linux-x64.tar.gz -C artifacts/release .
+          cd artifacts
+          sha256sum promformatech-linux-x64.tar.gz > promformatech-linux-x64.tar.gz.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: promformatech-${{ github.sha }}
+          path: |
+            app/artifacts/promformatech-linux-x64.tar.gz
+            app/artifacts/promformatech-linux-x64.tar.gz.sha256
+          retention-days: 7
+          if-no-files-found: error

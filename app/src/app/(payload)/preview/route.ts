@@ -9,7 +9,7 @@ import {
 	ROUTES,
 	SHOWCASE_COLLECTIONS,
 } from "@/config/content";
-import { HTTP } from "@/config/forms";
+import { HTTP } from "@/config/http";
 import { PREVIEW_TARGET_COOKIE } from "@/features/content/viewer";
 import { materialPath, pagePath } from "@/lib/urls";
 

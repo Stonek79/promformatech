@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 import { MIGRATION_POLICY } from "@/config/migrations";
-import { migrationsMatch } from "@/features/health/readiness";
+import { migrationsMatch } from "@/features/database/migration-state";
 
 it("requires the exact release migration set in a committed production batch", () => {
 	const applied = MIGRATION_POLICY.required.map((name) => ({ name, batch: 1 }));

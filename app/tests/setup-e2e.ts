@@ -1,11 +1,15 @@
-import { randomUUID } from "node:crypto";
 import { getCMS } from "@/cms/client";
 import { seedSite } from "@/cms/seed/run";
-import { COLLECTIONS, CONTEXT, ROLES } from "@/config/content";
-import { JOBS } from "@/config/jobs";
+import {
+	COLLECTIONS,
+	CONTEXT,
+	PAGE_SLUGS,
+	PUBLICATION,
+	ROLES,
+} from "@/config/content";
 
 if (
-	new URL(process.env.DATABASE_URL || "").pathname !== "/promformatech_e2e" ||
+	!process.env.DATABASE_URL?.endsWith("/promformatech_e2e.sqlite") ||
 	!process.env.TEST_PASSWORD
 ) {
 	throw new Error("E2E setup requires an isolated test database and password");
@@ -13,35 +17,22 @@ if (
 const cms = await getCMS();
 try {
 	await seedSite(cms);
-	const lead = await cms.create({
-		collection: COLLECTIONS.leads,
+	const retiredPage = await cms.create({
+		collection: COLLECTIONS.pages,
 		data: {
-			name: "Worker recovery",
-			contact: "worker-recovery@example.test",
-			consent: true,
-			requestID: randomUUID(),
+			title: "Политика обработки данных",
+			slug: "retired-policy-fixture",
+			kind: "content",
+			_status: PUBLICATION.published,
+			blocks: [],
 		},
 		overrideAccess: true,
 	});
-	const pending = await cms.find({
-		collection: "payload-jobs",
-		where: {
-			and: [
-				{ taskSlug: { equals: JOBS.notifyLead } },
-				{ "input.leadID": { equals: lead.id } },
-			],
-		},
-		depth: 0,
-		overrideAccess: true,
-	});
-	if (!pending.docs[0]) {
-		throw new Error("Recovery fixture job was not queued");
-	}
-	await cms.update({
-		collection: "payload-jobs",
-		id: pending.docs[0].id,
-		data: { processing: true },
-		overrideAccess: true,
+	// Simulate a policy that was already published before the feature was removed.
+	await cms.db.updateOne({
+		collection: COLLECTIONS.pages,
+		id: retiredPage.id,
+		data: { slug: PAGE_SLUGS.privacy },
 	});
 	for (const role of [ROLES.owner, ROLES.manager]) {
 		await cms.create({

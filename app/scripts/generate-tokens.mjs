@@ -1,4 +1,5 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { spawnSync } from "node:child_process";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import {
 	breakpoints,
 	darkTokens,
@@ -28,3 +29,18 @@ await writeFile(
 		.map(([name, width]) => `@custom-media --${name} (min-width: ${width});`)
 		.join("\n")}\n`,
 );
+
+for (const name of ["tokens.css", "media.css"]) {
+	const file = new URL(name, directory);
+	const formatted = spawnSync(
+		"pnpm",
+		["exec", "biome", "format", `--stdin-file-path=${name}`],
+		{ input: await readFile(file, "utf8"), encoding: "utf8" },
+	);
+	if (formatted.error || formatted.status !== 0) {
+		throw new Error("Design token formatting failed", {
+			cause: formatted.error,
+		});
+	}
+	await writeFile(file, formatted.stdout);
+}

@@ -1,0 +1,26 @@
+[Unit]
+Description=PromFormaTech media worker (one job)
+After=promformatech-web.service
+ConditionPathExists=/srv/promformatech/current/ops/worker.mjs
+
+[Service]
+Type=oneshot
+User=promformatech
+Group=promformatech
+WorkingDirectory=/srv/promformatech/current
+EnvironmentFile=/srv/promformatech/shared/app.env
+Environment=NODE_ENV=production APP_PROCESS_ROLE=worker
+ExecStart=/usr/bin/node ops/worker.mjs once
+TimeoutStartSec=25min
+TimeoutStopSec=45
+KillMode=mixed
+Nice=10
+CPUQuota=100%
+MemoryHigh=768M
+MemoryMax=1200M
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/srv/promformatech/shared

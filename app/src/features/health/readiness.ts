@@ -1,57 +1,25 @@
-import { Pool } from "pg";
+import { access } from "node:fs/promises";
+import { getCMS } from "@/cms/client";
 import { HEALTH } from "@/config/health";
-import { MIGRATION_POLICY } from "@/config/migrations";
 import { getRuntimeConfig } from "@/config/runtime";
-
-let pool: Pool | undefined;
-type MigrationRow = {
-	readonly name: string | null;
-	readonly batch: string | number | null;
-};
-
-function validMigration(row: MigrationRow) {
-	const batch = Number(row.batch);
-	return Number.isSafeInteger(batch) && batch >= MIGRATION_POLICY.minimumBatch;
-}
-
-function databasePool() {
-	if (!pool) {
-		const runtime = getRuntimeConfig();
-		pool = new Pool({
-			...runtime.pool,
-			connectionString: runtime.databaseURL,
-			max: HEALTH.poolConnections,
-			query_timeout: HEALTH.queryTimeoutMilliseconds,
-			statement_timeout: HEALTH.queryTimeoutMilliseconds,
-			allowExitOnIdle: true,
-		});
-		pool.on("error", () => {
-			// A lost idle connection is replaced on the next readiness attempt.
-		});
-	}
-	return pool;
-}
-
-export function migrationsMatch(rows: readonly MigrationRow[]) {
-	if (!rows.every(validMigration)) {
-		return false;
-	}
-	if (rows.length !== MIGRATION_POLICY.required.length) {
-		return false;
-	}
-	return MIGRATION_POLICY.required.every((name) =>
-		rows.some((row) => row.name === name),
-	);
-}
+import { migrationsMatch } from "@/features/database/migration-state";
+import { databasePath } from "@/features/database/path";
 
 async function checkDatabase() {
-	const connection = databasePool();
-	await connection.query(HEALTH.select);
+	await access(databasePath());
+	const cms = await getCMS();
+	const connection = cms.db.drizzle.$client;
+	await connection.execute(HEALTH.select);
 	if (!getRuntimeConfig().production) {
 		return true;
 	}
-	const result = await connection.query<MigrationRow>(HEALTH.migrations);
-	return migrationsMatch(result.rows);
+	const result = await connection.execute(HEALTH.migrations);
+	return migrationsMatch(
+		result.rows.map((row) => ({
+			name: String(row.name),
+			batch: Number(row.batch),
+		})),
+	);
 }
 
 export async function isReady() {

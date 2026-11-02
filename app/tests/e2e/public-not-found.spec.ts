@@ -13,6 +13,22 @@ const HEIGHT = 900;
 const MISSING_PATHS = [MISSING_PAGE, ROUTES.privacy];
 const messages = getMessages().notFound;
 
+test("a previously published policy stays out of public API, search and sitemap", async ({
+	page,
+	request,
+}) => {
+	const result = await request.get(
+		`/api/pages?where[slug][equals]=${ROUTES.privacy.slice(1)}`,
+	);
+	expect(result.ok()).toBe(true);
+	expect((await result.json()).totalDocs).toBe(0);
+	expect(await (await request.get(ROUTES.sitemap)).text()).not.toContain(
+		ROUTES.privacy,
+	);
+	await page.goto(`${ROUTES.search}?q=${encodeURIComponent("Политика")}`);
+	await expect(page.locator(`main a[href="${ROUTES.privacy}"]`)).toHaveCount(0);
+});
+
 for (const width of [320, 1440]) {
 	for (const theme of [THEMES.light, THEMES.dark]) {
 		test(`missing page ${width} ${theme}`, async ({ page }, testInfo) => {

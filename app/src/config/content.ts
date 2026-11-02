@@ -5,8 +5,6 @@ export const COLLECTIONS = {
 	services: "services",
 	projects: "projects",
 	media: "media",
-	leads: "leads",
-	rateLimits: "rate-limits",
 } as const;
 
 export const SYSTEM_COLLECTIONS = {
@@ -27,7 +25,6 @@ export const PUBLICATION = { draft: "draft", published: "published" } as const;
 export const CONTEXT = {
 	publicContent: "publicContent",
 	mediaFile: "mediaFile",
-	leadSubmission: "leadSubmission",
 	bootstrap: "bootstrap",
 	pendingOriginal: "pendingOriginal",
 } as const;
@@ -74,8 +71,9 @@ export const ROUTES = {
 	search: "/search",
 	contact: `/${PAGE_SLUGS.contacts}`,
 	privacy: `/${PAGE_SLUGS.privacy}`,
-	leads: "/api/inquiries",
 } as const;
+
+export const ANCHORS = { contact: "contact" } as const;
 
 export const SHOWCASE_PATHS: Record<ShowcaseCollection, string> = {
 	products: ROUTES.products,

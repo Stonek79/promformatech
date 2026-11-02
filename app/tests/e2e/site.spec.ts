@@ -13,6 +13,8 @@ test("public facade, responsive navigation and protected admin", async ({
 	await expect(
 		page.getByRole("link", { name: "Контакты проекты", exact: true }),
 	).toHaveCount(0);
+	await expect(page.locator("main form")).toHaveCount(0);
+	await expect(page.locator('a[href="/privacy"]')).toHaveCount(0);
 	for (const width of [320, 390, 768, 820, 1024, 1440, 1920]) {
 		await page.setViewportSize({ width, height: 900 });
 		expect(
@@ -48,12 +50,14 @@ test("public facade, responsive navigation and protected admin", async ({
 		await expect(page.getByRole("heading", { level: 1 })).not.toHaveText(
 			"Страница не найдена",
 		);
+		await expect(page.locator("main form")).toHaveCount(0);
+		await expect(page.locator('a[href="/privacy"]')).toHaveCount(0);
 	}
 	const removed = await request.get("/kontaktyi.html", { maxRedirects: 0 });
 	expect(removed.headers().location).toBeUndefined();
 	expect(await removed.text()).toContain("Страница не найдена");
 	expect((await request.get("/api/users")).status()).toBe(403);
-	expect((await request.get("/api/leads")).status()).toBe(403);
+	expect((await request.get("/api/leads")).status()).toBe(404);
 	expect((await request.get("/api/pages?draft=true")).status()).toBe(403);
 	expect(
 		(await request.get("/api/globals/site-settings?draft=true")).status(),
@@ -77,7 +81,7 @@ test("manager saves drafts, previews and explicitly publishes; cannot escalate r
 		page.getByRole("link", { name: "Добавить продукцию", exact: true }),
 	).toHaveAttribute("href", "/admin/collections/products/create");
 	await expect(
-		page.getByRole("link", { name: /^Новых заявок:/ }),
+		page.getByRole("link", { name: /^Файлов в обработке или с ошибкой:/ }),
 	).toBeVisible();
 	const guest = await playwright.request.newContext({ baseURL: origin });
 	try {

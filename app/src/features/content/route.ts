@@ -1,6 +1,13 @@
-import { SHOWCASE_COLLECTIONS, SHOWCASE_PATHS } from "@/config/content";
+import {
+	PAGE_SLUGS,
+	SHOWCASE_COLLECTIONS,
+	SHOWCASE_PATHS,
+} from "@/config/content";
 
 export function resolveContentRoute(segments: readonly string[]) {
+	if (segments[0] === PAGE_SLUGS.privacy) {
+		return null;
+	}
 	if (segments.length === 1) {
 		return { kind: "page" as const, slug: segments[0] };
 	}

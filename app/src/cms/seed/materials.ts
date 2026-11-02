@@ -25,7 +25,6 @@ export function initialServices(
 						"Обсуждаем задачу, подбираем технологическое решение и сопровождаем изготовление пресс-формы. Работаем по чертежам клиента или помогаем с разработкой изделия и 3D-модели.",
 					),
 				},
-				{ blockType: BLOCK_TYPES.contactForm, visible: true },
 			],
 		},
 		{
@@ -45,7 +44,6 @@ export function initialServices(
 						"Подбираем оборудование под проект, согласовываем стоимость и сроки, организуем поставку. Московская команда сопровождает монтаж, наладку и обслуживание.",
 					),
 				},
-				{ blockType: BLOCK_TYPES.contactForm, visible: true },
 			],
 		},
 		{
@@ -65,7 +63,6 @@ export function initialServices(
 						"Обсуждаем производственные процессы и требования предприятия, подбираем оборудование и средства автоматизации. Сопровождаем внедрение решения и обучение работе с ним.",
 					),
 				},
-				{ blockType: BLOCK_TYPES.contactForm, visible: true },
 			],
 		},
 	];
@@ -88,7 +85,7 @@ export function initialProducts(
 				{ label: "Материал", value: "Подшипниковая сталь SUJ2" },
 				{ label: "Твёрдость после закалки", value: "HRC 58–62" },
 			],
-			blocks: [{ blockType: BLOCK_TYPES.contactForm, visible: true }],
+			blocks: [],
 		},
 		{
 			title: "Пористые фильтрующие трубки",
@@ -102,7 +99,7 @@ export function initialProducts(
 			specifications: [
 				{ label: "Материал", value: "Нержавеющая сталь 304 / 316L" },
 			],
-			blocks: [{ blockType: BLOCK_TYPES.contactForm, visible: true }],
+			blocks: [],
 		},
 	];
 }

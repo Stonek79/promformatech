@@ -1,7 +1,7 @@
 import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
 import { Readable } from "node:stream";
-import { HTTP } from "@/config/forms";
+import { HTTP } from "@/config/http";
 import { parseByteRange } from "./range";
 
 export async function serveFile(

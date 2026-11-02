@@ -129,14 +129,7 @@ const CallToAction: Block = {
 	),
 };
 
-const ContactForm: Block = {
-	slug: BLOCK_TYPES.contactForm,
-	labels: { singular: "Форма связи", plural: "Формы связи" },
-	fields: fields(),
-};
-
 const contentBlocks: Block[] = [
-	ContactForm,
 	Hero,
 	Text,
 	TextImage,
@@ -153,7 +146,7 @@ export const blocksField = (): Field => ({
 	labels: { singular: "блок", plural: "блоки" },
 	label: "Содержимое страницы",
 	blocks: contentBlocks,
-	defaultValue: [{ blockType: BLOCK_TYPES.contactForm, visible: true }],
+	defaultValue: [],
 	admin: {
 		description:
 			"Добавляйте готовые блоки, меняйте их порядок и отключайте ненужные. Сохраните черновик перед предпросмотром.",

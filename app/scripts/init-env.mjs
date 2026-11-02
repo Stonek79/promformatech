@@ -1,19 +1,16 @@
 import { randomBytes } from "node:crypto";
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 
 const template = await readFile(
 	new URL("../.env.example", import.meta.url),
 	"utf8",
 );
-const environment = template
-	.replaceAll(
-		"replace-with-generated-database-password",
-		randomBytes(24).toString("hex"),
-	)
-	.replaceAll(
-		"replace-with-generated-payload-secret",
-		randomBytes(32).toString("hex"),
-	);
+const environment = template.replaceAll(
+	"replace-with-generated-payload-secret",
+	randomBytes(32).toString("hex"),
+);
+
+await mkdir("private/database", { recursive: true });
 
 try {
 	await writeFile(new URL("../.env", import.meta.url), environment, {

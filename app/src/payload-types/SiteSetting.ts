@@ -54,25 +54,7 @@ export interface SiteSetting {
 		  }[]
 		| null;
 	copyright?: string | null;
-	form?: {
-		title?: string | null;
-		description?: string | null;
-		nameLabel?: string | null;
-		namePlaceholder?: string | null;
-		contactLabel?: string | null;
-		contactPlaceholder?: string | null;
-		messageLabel?: string | null;
-		messagePlaceholder?: string | null;
-		consentLabel?: string | null;
-		consentLinkLabel?: string | null;
-		privacyURL?: string | null;
-		submitLabel?: string | null;
-		pendingLabel?: string | null;
-		successMessage?: string | null;
-		errorMessage?: string | null;
-	};
 	labels?: {
-		request?: string | null;
 		searchTitle?: string | null;
 		searchPlaceholder?: string | null;
 		searchButton?: string | null;

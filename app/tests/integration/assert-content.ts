@@ -4,12 +4,8 @@ import { getCMS } from "@/cms/client";
 import { COLLECTIONS, PAGE_KINDS, PUBLICATION, ROLES } from "@/config/content";
 import { MEDIA_STATUS } from "@/config/media";
 
-if (
-	!new URL(process.env.DATABASE_URL || "").pathname.startsWith(
-		"/promformatech_verification_target_",
-	)
-) {
-	throw new Error("Verification requires an isolated target database");
+if (!process.env.DATABASE_URL?.endsWith("/verification.sqlite")) {
+	throw new Error("Verification requires an isolated SQLite database");
 }
 const fixture: unknown = JSON.parse(
 	await readFile(process.env.TEST_FIXTURE_FILE || "", "utf8"),
@@ -17,7 +13,6 @@ const fixture: unknown = JSON.parse(
 assert(fixture && typeof fixture === "object");
 assert("homeID" in fixture && typeof fixture.homeID === "number");
 assert("mediaID" in fixture && typeof fixture.mediaID === "number");
-assert("leadID" in fixture && typeof fixture.leadID === "number");
 assert("interruptedID" in fixture && typeof fixture.interruptedID === "number");
 assert("derivative" in fixture && typeof fixture.derivative === "string");
 const cms = await getCMS();
@@ -67,12 +62,6 @@ try {
 	});
 	assert.equal(interrupted.processingStatus, MEDIA_STATUS.ready);
 	assert.equal(interrupted.derivativeKey, fixture.derivative);
-	const lead = await cms.findByID({
-		collection: COLLECTIONS.leads,
-		id: fixture.leadID,
-		overrideAccess: true,
-	});
-	assert.equal(lead.contact, "fixture@example.test");
 	const maximum = (
 		await cms.find({
 			collection: COLLECTIONS.pages,
@@ -94,7 +83,7 @@ try {
 	});
 	assert(next.id > maximum);
 	console.log(
-		"Imported owner login, versions, publication isolation, queue and next IDs verified",
+		"Fresh SQLite owner login, versions, publication isolation, queue and next IDs verified",
 	);
 } finally {
 	await cms.destroy();

@@ -12,6 +12,7 @@ const devOrigins = publicURL ? [publicURL.hostname] : [];
 const actionOrigins = publicURL ? [publicURL.host] : [];
 
 const nextConfig: NextConfig = {
+	output: "standalone",
 	distDir: process.env.NEXT_OUTPUT_DIR || ".next",
 	allowedDevOrigins: devOrigins,
 	experimental: {

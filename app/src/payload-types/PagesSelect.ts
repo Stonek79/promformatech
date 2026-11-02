@@ -11,13 +11,6 @@ export interface PagesSelect<T extends boolean = true> {
 	blocks?:
 		| T
 		| {
-				contactForm?:
-					| T
-					| {
-							visible?: T;
-							id?: T;
-							blockName?: T;
-					  };
 				hero?:
 					| T
 					| {

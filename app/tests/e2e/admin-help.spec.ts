@@ -89,7 +89,7 @@ for (const viewport of ADMIN_BREAKPOINTS) {
 test("all manager sections have contextual help; reading it preserves unsaved input", async ({
 	managerPage: page,
 }) => {
-	for (const collection of [...EDITOR_COLLECTIONS, COLLECTIONS.leads]) {
+	for (const collection of EDITOR_COLLECTIONS) {
 		await page.goto(adminCollectionURL(collection));
 		await assertContextHelp(page, collection);
 	}

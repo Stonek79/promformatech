@@ -1,6 +1,6 @@
 import { APIError, type PayloadHandler } from "payload";
 import { COLLECTIONS } from "@/config/content";
-import { HTTP } from "@/config/forms";
+import { HTTP } from "@/config/http";
 import { JOBS } from "@/config/jobs";
 import { MEDIA_STATUS } from "@/config/media";
 import { parsePositiveRouteID, requireStaffRequest } from "./request-guards";

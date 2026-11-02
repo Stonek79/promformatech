@@ -1,0 +1,24 @@
+[Unit]
+Description=PromFormaTech web
+After=network.target
+
+[Service]
+Type=simple
+User=promformatech
+Group=promformatech
+WorkingDirectory=/srv/promformatech/current
+EnvironmentFile=/srv/promformatech/shared/app.env
+Environment=NODE_ENV=production APP_PROCESS_ROLE=web HOSTNAME=127.0.0.1 PORT=3001
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=45
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/srv/promformatech/shared /srv/promformatech/current/.next/cache
+
+[Install]
+WantedBy=multi-user.target

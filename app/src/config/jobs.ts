@@ -1,12 +1,11 @@
 export const JOBS = {
 	processMedia: "process-media",
-	notifyLead: "notify-lead",
 	mediaQueue: "media",
-	emailQueue: "email",
 } as const;
 
 export const JOB_POLICY = {
-	workerLockKey: 0x504654,
+	lockStaleMilliseconds: 60_000,
+	lockUpdateMilliseconds: 10_000,
 	retryAttempts: 2,
 	retryDelayMilliseconds: 3000,
 	shutdownGraceMilliseconds: 30_000,

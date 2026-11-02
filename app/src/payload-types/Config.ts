@@ -2,8 +2,6 @@
 import { COLLECTIONS, GLOBALS, SYSTEM_COLLECTIONS } from "../config/content";
 import { JOBS } from "../config/jobs";
 import type { CollectionsWidget } from "./CollectionsWidget";
-import type { Lead } from "./Lead";
-import type { LeadsSelect } from "./LeadsSelect";
 import type { Media } from "./Media";
 import type { MediaSelect } from "./MediaSelect";
 import type { Page } from "./Page";
@@ -22,15 +20,12 @@ import type { Product } from "./Product";
 import type { ProductsSelect } from "./ProductsSelect";
 import type { Project } from "./Project";
 import type { ProjectsSelect } from "./ProjectsSelect";
-import type { RateLimit } from "./RateLimit";
-import type { RateLimitsSelect } from "./RateLimitsSelect";
 import type { Service } from "./Service";
 import type { ServiceSetting } from "./ServiceSetting";
 import type { ServiceSettingsSelect } from "./ServiceSettingsSelect";
 import type { ServicesSelect } from "./ServicesSelect";
 import type { SiteSetting } from "./SiteSetting";
 import type { SiteSettingsSelect } from "./SiteSettingsSelect";
-import type { TaskNotifyLead } from "./TaskNotifyLead";
 import type { TaskProcessMedia } from "./TaskProcessMedia";
 import type { User } from "./User";
 import type { UserAuthOperations } from "./UserAuthOperations";
@@ -48,8 +43,6 @@ export interface Config {
 		[COLLECTIONS.services]: Service;
 		[COLLECTIONS.projects]: Project;
 		[COLLECTIONS.media]: Media;
-		[COLLECTIONS.leads]: Lead;
-		[COLLECTIONS.rateLimits]: RateLimit;
 		[SYSTEM_COLLECTIONS.kv]: PayloadKv;
 		[SYSTEM_COLLECTIONS.jobs]: PayloadJob;
 		[SYSTEM_COLLECTIONS.lockedDocuments]: PayloadLockedDocument;
@@ -64,8 +57,6 @@ export interface Config {
 		[COLLECTIONS.services]: ServicesSelect<false> | ServicesSelect<true>;
 		[COLLECTIONS.projects]: ProjectsSelect<false> | ProjectsSelect<true>;
 		[COLLECTIONS.media]: MediaSelect<false> | MediaSelect<true>;
-		[COLLECTIONS.leads]: LeadsSelect<false> | LeadsSelect<true>;
-		[COLLECTIONS.rateLimits]: RateLimitsSelect<false> | RateLimitsSelect<true>;
 		[SYSTEM_COLLECTIONS.kv]: PayloadKvSelect<false> | PayloadKvSelect<true>;
 		[SYSTEM_COLLECTIONS.jobs]:
 			| PayloadJobsSelect<false>
@@ -102,7 +93,6 @@ export interface Config {
 	jobs: {
 		tasks: {
 			[JOBS.processMedia]: TaskProcessMedia;
-			[JOBS.notifyLead]: TaskNotifyLead;
 			inline: {
 				input: unknown;
 				output: unknown;

@@ -15,6 +15,7 @@ const RESERVED_SLUGS = new Set([
 	"preview",
 	"search",
 	"ui-kit",
+	PAGE_SLUGS.privacy,
 ]);
 
 export function isSafeHref(value: unknown): value is string {
@@ -44,6 +45,18 @@ export function isSafeHref(value: unknown): value is string {
 
 export function pagePath(slug: string) {
 	return slug === PAGE_SLUGS.home ? ROUTES.home : `/${slug}`;
+}
+
+export function isPublicHref(value: unknown): value is string {
+	if (!isSafeHref(value)) {
+		return false;
+	}
+	const origin = serverURL();
+	const target = new URL(value, origin);
+	if (target.origin !== origin) {
+		return true;
+	}
+	return target.pathname.replace(/\/+$/, "") !== ROUTES.privacy;
 }
 
 export function materialPath(collection: ShowcaseCollection, slug: string) {

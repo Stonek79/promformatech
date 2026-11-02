@@ -1,8 +1,9 @@
-import type { Field } from "payload";
+import type { Field, TextField } from "payload";
 import { getArrayLabels } from "@/i18n/messages";
 import { linkField, mediaField, seoField } from "../fields/common";
+import { omitPolicyLinks } from "../hooks/retired-content";
 
-const text = (name: string, label: string): Field => ({
+const text = (name: string, label: string): TextField => ({
 	name,
 	type: "text",
 	label,
@@ -53,6 +54,7 @@ export const contactFields: Field[] = [
 export const navigationFields: Field[] = [
 	{
 		name: "navigation",
+		hooks: { afterRead: [omitPolicyLinks], beforeValidate: [omitPolicyLinks] },
 		type: "array",
 		label: "Главное меню",
 		labels: getArrayLabels("navigation"),
@@ -69,6 +71,7 @@ export const navigationFields: Field[] = [
 	},
 	{
 		name: "footerLinks",
+		hooks: { afterRead: [omitPolicyLinks], beforeValidate: [omitPolicyLinks] },
 		type: "array",
 		label: "Ссылки в подвале",
 		labels: getArrayLabels("footerLinks"),
@@ -77,38 +80,12 @@ export const navigationFields: Field[] = [
 	text("copyright", "Подпись авторских прав"),
 ];
 
-export const formFields: Field[] = [
-	{
-		name: "form",
-		type: "group",
-		label: "Форма связи",
-		fields: [
-			text("title", "Заголовок"),
-			text("description", "Пояснение"),
-			text("nameLabel", "Подпись поля имени"),
-			text("namePlaceholder", "Пример имени"),
-			text("contactLabel", "Подпись поля контакта"),
-			text("contactPlaceholder", "Пример контакта"),
-			text("messageLabel", "Подпись сообщения"),
-			text("messagePlaceholder", "Пример сообщения"),
-			text("consentLabel", "Текст согласия"),
-			text("consentLinkLabel", "Подпись ссылки на политику"),
-			linkField("privacyURL", "Ссылка на политику"),
-			text("submitLabel", "Текст кнопки"),
-			text("pendingLabel", "Текст во время отправки"),
-			text("successMessage", "Сообщение после сохранения заявки"),
-			text("errorMessage", "Сообщение при ошибке"),
-		],
-	},
-];
-
 export const interfaceFields: Field[] = [
 	{
 		name: "labels",
 		type: "group",
 		label: "Подписи на сайте",
 		fields: [
-			text("request", "Кнопка заявки"),
 			text("searchTitle", "Заголовок поиска"),
 			text("searchPlaceholder", "Подсказка поиска"),
 			text("searchButton", "Кнопка поиска"),

@@ -3,13 +3,11 @@ export const RUNTIME = {
 	buildPhase: "phase-production-build",
 	defaultServerURL: "http://localhost:3000",
 	buildServerURL: "https://build.invalid",
-	buildDatabaseURL: "postgresql://build:build@127.0.0.1:1/build",
+	buildDatabaseURL: "file:/build-placeholder/promformatech.sqlite",
 	buildSecret: "compile-time-placeholder-do-not-use-at-runtime",
 	minimumSecretLength: 32,
-	connectionTimeoutMilliseconds: 2000,
-	idleTimeoutMilliseconds: 10_000,
-	queryTimeoutMilliseconds: 30_000,
-	migrationTimeoutMilliseconds: 120_000,
+	databaseExtension: ".sqlite",
+	absoluteFilePrefix: "file:/",
 } as const;
 
 export const PROCESS_ROLE = {
@@ -18,22 +16,17 @@ export const PROCESS_ROLE = {
 	migrator: "migrator",
 } as const;
 type ProcessRole = (typeof PROCESS_ROLE)[keyof typeof PROCESS_ROLE];
-export const DATABASE_POOLS = {
-	[PROCESS_ROLE.web]: 4,
-	[PROCESS_ROLE.worker]: 3,
-	[PROCESS_ROLE.migrator]: 2,
-} as const;
 const URL_PROTOCOL = {
 	http: "http:",
 	https: "https:",
-	postgres: "postgres:",
-	postgresql: "postgresql:",
+	file: "file:",
 } as const;
 export const RUNTIME_ERRORS = {
 	serverURL:
 		"SERVER_URL должен быть полным HTTP(S)-адресом без пути, пароля и wildcard.",
 	https: "В production SERVER_URL должен использовать HTTPS.",
-	databaseURL: "Задайте корректный DATABASE_URL для PostgreSQL.",
+	databaseURL:
+		"DATABASE_URL должен указывать на локальный SQLite-файл: file:./private/database/site.sqlite.",
 	secret:
 		"Задайте PAYLOAD_SECRET длиной минимум 32 символа; build-placeholder запрещён.",
 	role: "APP_PROCESS_ROLE должен быть web, worker или migrator.",
@@ -97,20 +90,37 @@ function getProcessRole(environment: RuntimeEnvironment): ProcessRole {
 	}
 }
 
+function getDatabaseURL(environment: RuntimeEnvironment) {
+	const value = isBuildPhase(environment)
+		? RUNTIME.buildDatabaseURL
+		: environment.DATABASE_URL;
+	if (!value) {
+		throw new Error(RUNTIME_ERRORS.databaseURL);
+	}
+	const url = parseURL(value, RUNTIME_ERRORS.databaseURL);
+	if (url.protocol !== URL_PROTOCOL.file || url.host) {
+		throw new Error(RUNTIME_ERRORS.databaseURL);
+	}
+	if (url.search || url.hash) {
+		throw new Error(RUNTIME_ERRORS.databaseURL);
+	}
+	if (!url.pathname.endsWith(RUNTIME.databaseExtension)) {
+		throw new Error(RUNTIME_ERRORS.databaseURL);
+	}
+	if (
+		environment.NODE_ENV === RUNTIME.production &&
+		!value.startsWith(RUNTIME.absoluteFilePrefix)
+	) {
+		throw new Error(RUNTIME_ERRORS.databaseURL);
+	}
+	return value;
+}
+
 export function getRuntimeConfig(
 	environment: RuntimeEnvironment = process.env,
 ) {
 	const build = isBuildPhase(environment);
-	const databaseURL = build
-		? RUNTIME.buildDatabaseURL
-		: environment.DATABASE_URL;
-	const database = parseURL(databaseURL, RUNTIME_ERRORS.databaseURL);
-	const postgres = [URL_PROTOCOL.postgres, URL_PROTOCOL.postgresql].some(
-		(protocol) => protocol === database.protocol,
-	);
-	if (!postgres) {
-		throw new Error(RUNTIME_ERRORS.databaseURL);
-	}
+	const databaseURL = getDatabaseURL(environment);
 	const secret = build ? RUNTIME.buildSecret : environment.PAYLOAD_SECRET;
 	if (!secret || secret.length < RUNTIME.minimumSecretLength) {
 		throw new Error(RUNTIME_ERRORS.secret);
@@ -128,16 +138,7 @@ export function getRuntimeConfig(
 			environment.NODE_ENV !== RUNTIME.production &&
 			role === PROCESS_ROLE.web,
 		serverURL: getServerURL(environment),
-		databaseURL: database.toString(),
+		databaseURL,
 		secret,
-		pool: {
-			max: DATABASE_POOLS[role],
-			connectionTimeoutMillis: RUNTIME.connectionTimeoutMilliseconds,
-			idleTimeoutMillis: RUNTIME.idleTimeoutMilliseconds,
-			statement_timeout:
-				role === PROCESS_ROLE.migrator
-					? RUNTIME.migrationTimeoutMilliseconds
-					: RUNTIME.queryTimeoutMilliseconds,
-		},
 	};
 }

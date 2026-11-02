@@ -1,7 +1,6 @@
 import type { ServerProps } from "payload";
 import { adminCollectionURL, adminGlobalURL, CMS_ACTIONS } from "@/config/cms";
 import { COLLECTIONS, GLOBALS, PAGE_SLUGS, ROUTES } from "@/config/content";
-import { LEAD_STATUS } from "@/config/forms";
 import { ADMIN_HELP, adminHelpURL } from "@/config/help";
 import { MEDIA_STATUS } from "@/config/media";
 import { isStaff } from "../access";
@@ -13,19 +12,13 @@ export async function Dashboard({ payload, user }: DashboardProps) {
 	if (!isStaff(user)) {
 		return null;
 	}
-	const [home, leads, media] = await Promise.all([
+	const [home, media] = await Promise.all([
 		payload.find({
 			collection: COLLECTIONS.pages,
 			where: { slug: { equals: PAGE_SLUGS.home } },
 			limit: 1,
 			depth: 0,
 			draft: true,
-			overrideAccess: false,
-			user,
-		}),
-		payload.count({
-			collection: COLLECTIONS.leads,
-			where: { status: { equals: LEAD_STATUS.fresh } },
 			overrideAccess: false,
 			user,
 		}),
@@ -77,9 +70,6 @@ export async function Dashboard({ payload, user }: DashboardProps) {
 				</a>
 			</nav>
 			<div className={styles.actions}>
-				<a href={adminCollectionURL(COLLECTIONS.leads)}>
-					Новых заявок: {leads.totalDocs}
-				</a>
 				<a href={adminCollectionURL(COLLECTIONS.media)}>
 					Файлов в обработке или с ошибкой: {media.totalDocs}
 				</a>

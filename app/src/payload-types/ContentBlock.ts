@@ -7,12 +7,6 @@ import type { Service } from "./Service";
 export type ContentBlock =
 	| {
 			visible?: boolean | null;
-			id?: string | null;
-			blockName?: string | null;
-			blockType: "contactForm";
-	  }
-	| {
-			visible?: boolean | null;
 			heading?: string | null;
 			text?: string | null;
 			/**

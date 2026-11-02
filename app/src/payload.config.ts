@@ -1,6 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { postgresAdapter } from "@payloadcms/db-postgres";
+import { sqliteAdapter } from "@payloadcms/db-sqlite";
 import {
 	FixedToolbarFeature,
 	lexicalEditor,
@@ -9,19 +9,17 @@ import { ru } from "@payloadcms/translations/languages/ru";
 import { buildConfig } from "payload";
 import { ADMIN_HELP } from "@/config/help";
 import { isOwner, ownerOnly } from "./cms/access";
-import { Leads } from "./cms/collections/Leads";
 import { Media } from "./cms/collections/Media";
 import { Pages } from "./cms/collections/Pages";
 import { Products } from "./cms/collections/Products";
 import { Projects } from "./cms/collections/Projects";
-import { RateLimits } from "./cms/collections/RateLimits";
 import { Services } from "./cms/collections/Services";
 import { Users } from "./cms/collections/Users";
 import { emailAdapter } from "./cms/email";
 import { ServiceSettings } from "./cms/globals/ServiceSettings";
 import { SiteSettings } from "./cms/globals/SiteSettings";
-import { notifyLeadTask } from "./cms/tasks/notify-lead";
 import { processMediaTask } from "./cms/tasks/process-media";
+import { DATABASE } from "./config/database";
 import { MEDIA_POLICY, MEDIA_UPLOAD } from "./config/media";
 import { getRuntimeConfig } from "./config/runtime";
 import { ensureMediaStorage } from "./features/media/storage";
@@ -59,16 +57,7 @@ export default buildConfig({
 		},
 		meta: { titleSuffix: "— ПромФормаТех" },
 	},
-	collections: [
-		Users,
-		Pages,
-		Products,
-		Services,
-		Projects,
-		Media,
-		Leads,
-		RateLimits,
-	],
+	collections: [Users, Pages, Products, Services, Projects, Media],
 	globals: [SiteSettings, ServiceSettings],
 	i18n: {
 		fallbackLanguage: DEFAULT_LOCALE,
@@ -106,7 +95,7 @@ export default buildConfig({
 		await ensureMediaStorage();
 	},
 	jobs: {
-		tasks: [processMediaTask, notifyLeadTask],
+		tasks: [processMediaTask],
 		enableConcurrencyControl: true,
 		deleteJobOnComplete: true,
 		access: { run: () => false, cancel: ({ req }) => isOwner(req.user) },
@@ -122,8 +111,11 @@ export default buildConfig({
 			},
 		}),
 	},
-	db: postgresAdapter({
-		pool: { ...runtime.pool, connectionString: runtime.databaseURL },
+	db: sqliteAdapter({
+		client: { url: runtime.databaseURL },
+		wal: true,
+		blocksAsJSON: true,
+		busyTimeout: DATABASE.busyTimeoutMilliseconds,
 		push: runtime.schemaPush,
 		migrationDir: path.resolve(directory, "migrations"),
 	}),

@@ -1,5 +1,5 @@
-import { HTTP } from "@/config/forms";
 import { HEALTH } from "@/config/health";
+import { HTTP } from "@/config/http";
 import { isReady } from "@/features/health/readiness";
 
 export async function GET() {

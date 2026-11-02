@@ -5,7 +5,7 @@ import { IMAGE_SIZES } from "@/config/image";
 import { MediaImage } from "@/features/media/MediaView";
 import { mediaView } from "@/features/media/view-model";
 import { getMessages } from "@/i18n/messages";
-import { isSafeHref, phoneHref } from "@/lib/urls";
+import { isPublicHref, phoneHref } from "@/lib/urls";
 import type { SiteSetting } from "@/payload-types";
 import styles from "./Header.module.css";
 import { HeaderControls } from "./HeaderControls";
@@ -13,7 +13,7 @@ import { HeaderControls } from "./HeaderControls";
 export function Header({ settings }: { readonly settings: SiteSetting }) {
 	const { navigation: messages } = getMessages();
 	const navigation = (settings.navigation || [])
-		.filter((item) => item.visible !== false && isSafeHref(item.url))
+		.filter((item) => item.visible !== false && isPublicHref(item.url))
 		.map((item) => ({ label: item.label, url: item.url || ROUTES.home }));
 	return (
 		<header className={styles.header}>

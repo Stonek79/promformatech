@@ -27,7 +27,7 @@ export function initialSettings(asset: AssetLookup) {
 			},
 			{ label: "Контакты", url: ROUTES.contact, visible: true },
 		],
-		footerLinks: [{ label: "Политика обработки данных", url: "/privacy" }],
+		footerLinks: [],
 		copyright: "© 2026. ПромФормаТех. Все права защищены.",
 		locations: [
 			{
@@ -83,27 +83,7 @@ export function initialSettings(asset: AssetLookup) {
 				],
 			},
 		],
-		form: {
-			title: "Связаться с нами",
-			description: "Оставьте свои контакты, и мы с вами свяжемся",
-			nameLabel: "Ваше имя",
-			namePlaceholder: "Как к вам обращаться",
-			contactLabel: "Телефон или email",
-			contactPlaceholder: "+7 … или name@company.ru",
-			messageLabel: "Расскажите о задаче",
-			messagePlaceholder:
-				"Что нужно изготовить, поставить или автоматизировать?",
-			consentLabel: "Согласен с условиями",
-			consentLinkLabel: "обработки персональных данных",
-			privacyURL: "/privacy",
-			submitLabel: "Отправить заявку",
-			pendingLabel: "Сохраняем заявку…",
-			successMessage: "Спасибо! Заявка сохранена. Мы свяжемся с вами.",
-			errorMessage:
-				"Не удалось сохранить заявку. Повторите отправку или свяжитесь с нами по телефону.",
-		},
 		labels: {
-			request: "Оставить заявку",
 			searchTitle: "Поиск по сайту",
 			searchPlaceholder: "Что найти?",
 			searchButton: "Найти",

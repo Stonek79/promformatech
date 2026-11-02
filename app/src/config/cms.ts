@@ -9,7 +9,6 @@ export const CMS_PATHS = {
 export const CMS_ACTIONS = {
 	create: "create",
 	retryMedia: "retry",
-	retryNotification: "notify",
 } as const;
 
 export function adminCollectionURL(collection: string, id?: number | string) {

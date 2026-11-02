@@ -8,5 +8,4 @@ export const BLOCK_TYPES = {
 	specifications: "specifications",
 	cards: "cards",
 	callToAction: "callToAction",
-	contactForm: "contactForm",
 } as const;

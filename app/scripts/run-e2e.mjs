@@ -1,17 +1,18 @@
 import { spawn, spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
-import { rm } from "node:fs/promises";
+import { mkdir, rm } from "node:fs/promises";
 import { setTimeout as delay } from "node:timers/promises";
 
-process.loadEnvFile(".env");
 await rm(".next-e2e", { recursive: true, force: true });
 await rm("private/e2e-media", { recursive: true, force: true });
-const database = "promformatech_e2e";
-const databaseURL = new URL(process.env.DATABASE_URL);
-databaseURL.pathname = `/${database}`;
+await mkdir("private/e2e", { recursive: true });
+for (const suffix of ["", "-wal", "-shm"]) {
+	await rm(`private/e2e/promformatech_e2e.sqlite${suffix}`, { force: true });
+}
 const env = {
 	...process.env,
-	DATABASE_URL: databaseURL.toString(),
+	DATABASE_URL: "file:./private/e2e/promformatech_e2e.sqlite",
+	PAYLOAD_SECRET: randomBytes(32).toString("hex"),
 	MEDIA_ROOT: "private/e2e-media",
 	SERVER_URL: "http://127.0.0.1:3100",
 	TEST_PASSWORD: randomBytes(24).toString("hex"),
@@ -29,15 +30,6 @@ function run(command, args, options = {}) {
 		throw new Error(`${command} failed (${result.status})`);
 	}
 }
-run("docker", [
-	"compose",
-	"exec",
-	"-T",
-	"postgres",
-	"sh",
-	"-c",
-	`dropdb --if-exists -U "$POSTGRES_USER" ${database} && createdb -U "$POSTGRES_USER" ${database}`,
-]);
 run("pnpm", ["payload", "run", "tests/setup-e2e.ts"]);
 const server = spawn(
 	"pnpm",

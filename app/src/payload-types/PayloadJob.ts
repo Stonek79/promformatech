@@ -52,7 +52,7 @@ export interface PayloadJob {
 		| {
 				executedAt: string;
 				completedAt: string;
-				taskSlug: "inline" | "process-media" | "notify-lead";
+				taskSlug: "inline" | "process-media";
 				taskID: string;
 				input?:
 					| {
@@ -85,7 +85,7 @@ export interface PayloadJob {
 				id?: string | null;
 		  }[]
 		| null;
-	taskSlug?: ("inline" | "process-media" | "notify-lead") | null;
+	taskSlug?: ("inline" | "process-media") | null;
 	queue?: string | null;
 	waitUntil?: string | null;
 	processing?: boolean | null;

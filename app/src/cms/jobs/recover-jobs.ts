@@ -6,7 +6,6 @@ import {
 	type Payload,
 } from "payload";
 import { COLLECTIONS, SYSTEM_COLLECTIONS } from "@/config/content";
-import { NOTIFICATION_STATUS } from "@/config/forms";
 import { JOB_POLICY, JOBS } from "@/config/jobs";
 import { MEDIA_STATUS } from "@/config/media";
 import { getMessages } from "@/i18n/messages";
@@ -31,8 +30,7 @@ async function recoverJob(cms: Payload, job: RecoveryJob) {
 	await initTransaction(req);
 	try {
 		const messages = getMessages().cms.mediaProcessing;
-		const mediaID = numericInput(job.input, "mediaID"),
-			leadID = numericInput(job.input, "leadID");
+		const mediaID = numericInput(job.input, "mediaID");
 		const media =
 			job.queue === JOBS.mediaQueue && mediaID
 				? (
@@ -46,22 +44,10 @@ async function recoverJob(cms: Payload, job: RecoveryJob) {
 						})
 					).docs[0]
 				: undefined;
-		const lead =
-			job.queue === JOBS.emailQueue && leadID
-				? (
-						await cms.find({
-							collection: COLLECTIONS.leads,
-							where: { id: { equals: leadID } },
-							limit: 1,
-							overrideAccess: true,
-							req,
-						})
-					).docs[0]
-				: undefined;
 		const completed = media?.processingStatus === MEDIA_STATUS.ready;
 		const attempts =
 			(job.totalTried || 0) + (completed ? 0 : FIRST_RECOVERY_ATTEMPT);
-		const missing = job.queue === JOBS.mediaQueue ? !media : !lead;
+		const missing = !media;
 		const exhausted =
 			missing || (!completed && attempts > JOB_POLICY.retryAttempts);
 		await cms.update({
@@ -93,15 +79,6 @@ async function recoverJob(cms: Payload, job: RecoveryJob) {
 				},
 			});
 		}
-		if (lead && exhausted) {
-			await cms.update({
-				collection: COLLECTIONS.leads,
-				id: lead.id,
-				overrideAccess: true,
-				req,
-				data: { notificationStatus: NOTIFICATION_STATUS.failed },
-			});
-		}
 		await commitTransaction(req);
 	} catch (error) {
 		await killTransaction(req);
@@ -117,7 +94,7 @@ export async function recoverInterruptedJobs(cms: Payload) {
 			where: {
 				and: [
 					{ processing: { equals: true } },
-					{ queue: { in: [JOBS.mediaQueue, JOBS.emailQueue] } },
+					{ queue: { equals: JOBS.mediaQueue } },
 				],
 			},
 			limit: RECOVERY_PAGE_SIZE,

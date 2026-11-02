@@ -17,7 +17,6 @@ import { previewURL } from "../preview";
 import {
 	brandFields,
 	contactFields,
-	formFields,
 	interfaceFields,
 	navigationFields,
 } from "./site-fields";
@@ -68,7 +67,6 @@ export const SiteSettings: GlobalConfig = {
 				{ label: "Компания", fields: brandFields },
 				{ label: "Контакты", fields: contactFields },
 				{ label: "Меню и подвал", fields: navigationFields },
-				{ label: "Форма связи", fields: formFields },
 				{ label: "Подписи и SEO", fields: interfaceFields },
 			],
 		},

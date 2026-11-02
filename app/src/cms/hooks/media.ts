@@ -5,7 +5,7 @@ import {
 	type CollectionBeforeOperationHook,
 } from "payload";
 import { COLLECTIONS, CONTEXT, PUBLICATION } from "@/config/content";
-import { HTTP } from "@/config/forms";
+import { HTTP } from "@/config/http";
 import { JOBS } from "@/config/jobs";
 import { MEDIA_MIME_TYPES, MEDIA_STATUS, mediaURL } from "@/config/media";
 import { MEDIA_DELIVERY, MEDIA_KIND } from "@/config/media-assets";

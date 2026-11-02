@@ -85,11 +85,7 @@ export function MaterialView({
 					/>
 				</Section>
 			)}
-			<ContentBlocks
-				blocks={material.blocks}
-				form={settings.form}
-				preview={preview}
-			/>
+			<ContentBlocks blocks={material.blocks} preview={preview} />
 		</article>
 	);
 }

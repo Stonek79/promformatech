@@ -55,7 +55,6 @@ export async function PageView({ page, viewer, settings }: Props) {
 			)}
 			<ContentBlocks
 				blocks={page.blocks}
-				form={settings.form}
 				preview={viewer.preview}
 				home={home}
 			/>

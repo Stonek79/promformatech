@@ -5,7 +5,7 @@ import {
 	CONTENT_LIMITS,
 	PAGE_KINDS,
 } from "@/config/content";
-import { ownerOnly, publishedOrStaff, staffOnly } from "../access";
+import { ownerOnly, staffOnly } from "../access";
 import { blocksField } from "../blocks/content-blocks";
 import {
 	mediaReferencesField,
@@ -15,12 +15,14 @@ import {
 } from "../fields/common";
 import { helpDescription } from "../help/config";
 import { contentCollectionHooks } from "../hooks/content";
+import { ACTIVE_PAGES, readablePages } from "../hooks/retired-content";
 import { previewURL } from "../preview";
 
 export const Pages: CollectionConfig = {
 	slug: COLLECTIONS.pages,
 	labels: { singular: "Страница", plural: "Страницы" },
 	admin: {
+		baseFilter: () => ACTIVE_PAGES,
 		hideAPIURL: true,
 		components: { Description: helpDescription(COLLECTIONS.pages) },
 		group: "Содержание сайта",
@@ -35,7 +37,7 @@ export const Pages: CollectionConfig = {
 	},
 	access: {
 		create: staffOnly,
-		read: publishedOrStaff,
+		read: readablePages,
 		update: staffOnly,
 		delete: ownerOnly,
 		readVersions: staffOnly,

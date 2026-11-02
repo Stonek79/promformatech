@@ -1,6 +1,6 @@
 import { APIError, type CollectionConfig } from "payload";
 import { AUTH, COLLECTIONS, CONTEXT, ROLES } from "@/config/content";
-import { HTTP } from "@/config/forms";
+import { HTTP } from "@/config/http";
 import { isOwner, isStaff, ownerOnly } from "../access";
 import { helpDescription } from "../help/config";
 

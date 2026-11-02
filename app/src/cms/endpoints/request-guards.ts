@@ -1,5 +1,5 @@
 import { APIError, type PayloadRequest } from "payload";
-import { HTTP } from "@/config/forms";
+import { HTTP } from "@/config/http";
 import { isStaff } from "../access";
 
 export function requireStaffRequest(req: PayloadRequest): void {
