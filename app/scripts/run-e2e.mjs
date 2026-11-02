@@ -15,6 +15,7 @@ const env = {
 	PAYLOAD_SECRET: randomBytes(32).toString("hex"),
 	MEDIA_ROOT: "private/e2e-media",
 	SERVER_URL: "http://127.0.0.1:3100",
+	LOCAL_HTTP_AUTH: "true",
 	TEST_PASSWORD: randomBytes(24).toString("hex"),
 	NEXT_OUTPUT_DIR: ".next-e2e",
 	SMTP_HOST: "",

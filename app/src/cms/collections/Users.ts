@@ -1,7 +1,9 @@
 import { APIError, type CollectionConfig } from "payload";
 import { AUTH, COLLECTIONS, CONTEXT, ROLES } from "@/config/content";
 import { HTTP } from "@/config/http";
+import { localHttpAuthEnabled } from "@/lib/urls";
 import { isOwner, isStaff, ownerOnly } from "../access";
+import { localHttpAuthentication } from "../auth/local-http";
 import { helpDescription } from "../help/config";
 
 export const Users: CollectionConfig = {
@@ -16,6 +18,7 @@ export const Users: CollectionConfig = {
 		hidden: ({ user }) => !isOwner(user),
 	},
 	auth: {
+		strategies: localHttpAuthEnabled() ? [localHttpAuthentication] : [],
 		tokenExpiration: AUTH.sessionSeconds,
 		maxLoginAttempts: AUTH.maxLoginAttempts,
 		lockTime: AUTH.lockMilliseconds,

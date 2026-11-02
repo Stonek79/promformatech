@@ -4,7 +4,13 @@ import {
 	SHOWCASE_PATHS,
 	type ShowcaseCollection,
 } from "@/config/content";
-import { getServerURL } from "@/config/runtime";
+import {
+	getServerURL,
+	isBuildPhase,
+	RUNTIME,
+	type RuntimeEnvironment,
+} from "@/config/runtime";
+import { LOCAL_HTTP_AUTH } from "@/config/security";
 
 const LAST_ASCII_WHITESPACE = 0x20;
 const ASCII_DELETE = 0x7f;
@@ -75,11 +81,11 @@ export function serverURL() {
 	return getServerURL();
 }
 
-export function allowedOrigins() {
-	const canonical = new URL(serverURL());
+export function allowedOrigins(environment: RuntimeEnvironment = process.env) {
+	const canonical = new URL(getServerURL(environment));
 	const origins = [canonical.origin];
 	if (
-		process.env.NODE_ENV !== "production" &&
+		environment.NODE_ENV !== RUNTIME.production &&
 		["localhost", "127.0.0.1"].includes(canonical.hostname)
 	) {
 		for (const hostname of ["localhost", "127.0.0.1"]) {
@@ -89,4 +95,31 @@ export function allowedOrigins() {
 		}
 	}
 	return [...new Set(origins)];
+}
+
+function isLocalHost(hostname: string) {
+	return (
+		LOCAL_HTTP_AUTH.loopbackNames.some((name) => name === hostname) ||
+		LOCAL_HTTP_AUTH.privateIPv4.test(hostname)
+	);
+}
+
+export function localHttpAuthEnabled(
+	environment: RuntimeEnvironment = process.env,
+) {
+	if (
+		environment.LOCAL_HTTP_AUTH !== LOCAL_HTTP_AUTH.enabled ||
+		isBuildPhase(environment)
+	) {
+		return false;
+	}
+	const url = new URL(getServerURL(environment));
+	if (
+		environment.NODE_ENV === RUNTIME.production ||
+		url.protocol !== LOCAL_HTTP_AUTH.protocol ||
+		!isLocalHost(url.hostname)
+	) {
+		throw new Error(LOCAL_HTTP_AUTH.invalidConfiguration);
+	}
+	return true;
 }
