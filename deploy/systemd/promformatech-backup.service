@@ -1,9 +1,8 @@
 [Unit]
-Description=PromFormaTech consistent backup and offsite copy
+Description=PromFormaTech local incremental backup
 
 [Service]
 Type=oneshot
-EnvironmentFile=-/etc/promformatech-backup.env
 ExecStart=/usr/local/lib/promformatech/backup.sh
 UMask=0077
 Nice=10

@@ -8,6 +8,10 @@ WEB=promformatech-web.service
 WORKER=promformatech-worker.service
 TIMER=promformatech-worker.timer
 ENV_FILE="$SHARED/app.env"
+BACKUP_REPOSITORY="$ROOT/backups/restic"
+BACKUP_PASSWORD_FILE=/etc/promformatech-restic-password
+BACKUP_STAGING="$ROOT/backup-staging"
+BACKUP_TAG=promformatech
 
 require_root() {
     if [[ $EUID -ne 0 ]]; then
@@ -19,23 +23,45 @@ require_root() {
 }
 
 stop_writers() {
-    systemctl stop "$TIMER"
-    systemctl stop "$WORKER"
-    systemctl stop "$WEB"
+    systemctl stop "$TIMER" || return
+    systemctl stop "$WORKER" || return
+    systemctl stop "$WEB" || return
+}
+
+backup_ready() {
+    command -v restic >/dev/null || { echo 'restic is not installed.' >&2; return 1; }
+    [[ -f "$BACKUP_PASSWORD_FILE" && -f "$BACKUP_REPOSITORY/config" ]] || {
+        echo 'Initialize the local backup repository and password first.' >&2; return 1;
+    }
 }
 
 snapshot() {
-    local directory
-    directory=$(mktemp -d "$ROOT/backups/$(date -u +%Y%m%dT%H%M%SZ)-XXXXXX") || return
-    if [[ -f "$SHARED/database/site.sqlite" ]]; then
-        sqlite3 "$SHARED/database/site.sqlite" ".backup '$directory/site.sqlite'" || return
-        [[ $(sqlite3 "$directory/site.sqlite" 'PRAGMA integrity_check;') == ok ]] || return
+    local database="$BACKUP_STAGING/site.sqlite"
+    backup_ready || return
+    [[ -f "$SHARED/database/site.sqlite" && -d "$SHARED/media" ]] || {
+        echo 'Database or media directory is missing.' >&2; return 1;
+    }
+    install -d -m 700 "$BACKUP_STAGING" || return
+    rm -f -- "$database" || return
+    if ! sqlite3 -readonly "$SHARED/database/site.sqlite" ".backup '$database'"; then
+        rm -f -- "$database"
+        return 1
     fi
-    cp -a --reflink=auto "$SHARED/media" "$directory/media" || return
-    cp -a "$ENV_FILE" "$directory/app.env" || return
-    readlink -f "$ROOT/current" > "$directory/release.txt" || true
-    touch "$directory/COMPLETE" || return
-    printf '%s\n' "$directory"
+    if [[ $(sqlite3 -readonly "$database" 'PRAGMA integrity_check;') != ok ]]; then
+        rm -f -- "$database"
+        return 1
+    fi
+    if ! restic -r "$BACKUP_REPOSITORY" --password-file "$BACKUP_PASSWORD_FILE" \
+        backup --tag "$BACKUP_TAG" "$database" "$SHARED/media"; then
+        rm -f -- "$database"
+        return 1
+    fi
+    rm -f -- "$database"
+}
+
+prune_snapshots() {
+    restic -r "$BACKUP_REPOSITORY" --password-file "$BACKUP_PASSWORD_FILE" \
+        forget --tag "$BACKUP_TAG" --keep-daily 7 --keep-weekly 4 --prune
 }
 
 check_ready() {
