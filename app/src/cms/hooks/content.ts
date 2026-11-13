@@ -13,11 +13,10 @@ import {
 } from "payload";
 import { COLLECTIONS, CONTENT_CACHE, PUBLICATION } from "@/config/content";
 import { HTTP } from "@/config/http";
-import { MEDIA_STATUS } from "@/config/media";
-import { mediaPublicationSnapshot } from "@/features/media/publication";
 import { collectMediaReferences } from "@/features/media/references";
 import { slugify } from "@/lib/slug";
 import { isStaff } from "../access";
+import { publishReferencedMedia } from "./publication-media";
 
 const assignSlug: CollectionBeforeValidateHook = ({ data, originalDoc }) => {
 	if (data && !data.slug) {
@@ -70,40 +69,7 @@ async function validatePublication(
 	const { ids, expectedKinds } = collectMediaReferences(data);
 	if (data._status === PUBLICATION.published) {
 		for (const id of ids) {
-			const media = await req.payload.findByID({
-				collection: COLLECTIONS.media,
-				id,
-				depth: 0,
-				draft: true,
-				overrideAccess: true,
-				req,
-			});
-			if (media.processingStatus !== MEDIA_STATUS.ready || media.archived) {
-				throw new APIError(
-					`Файл «${media.title || media.filename}» ещё не готов или архивирован. Дождитесь обработки и повторите публикацию.`,
-					HTTP.badRequest,
-				);
-			}
-			if (
-				[...(expectedKinds.get(id) || [])].some((kind) => kind !== media.kind)
-			) {
-				throw new APIError(
-					`Файл «${media.title}» выбран не в том поле. Используйте фотографию для изображения и видеозапись для видео.`,
-					HTTP.badRequest,
-				);
-			}
-			if (media._status !== PUBLICATION.published) {
-				await req.payload.update({
-					collection: COLLECTIONS.media,
-					id,
-					data: {
-						...mediaPublicationSnapshot(media),
-						_status: PUBLICATION.published,
-					},
-					overrideAccess: true,
-					req,
-				});
-			}
+			await publishReferencedMedia(id, expectedKinds.get(id) || new Set(), req);
 		}
 	}
 	return ids;

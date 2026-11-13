@@ -18,6 +18,7 @@ import {
 	publishReadyMedia,
 	queueMedia,
 } from "../hooks/media";
+import { assignMediaTitle } from "../hooks/media-title";
 import { cleanupFailedUpload } from "../hooks/media-upload";
 
 const internal = (field: Field): Field =>
@@ -54,6 +55,7 @@ export const Media: CollectionConfig = {
 	},
 	hooks: {
 		beforeOperation: [protectCollectionDrafts, protectUsedMedia],
+		beforeValidate: [assignMediaTitle],
 		beforeChange: [
 			preserveOriginal,
 			publishReadyMedia,
@@ -95,7 +97,17 @@ export const Media: CollectionConfig = {
 			index: true,
 			admin: { hidden: true },
 		}),
-		{ name: "title", type: "text", label: "Название", required: true },
+		{
+			name: "title",
+			type: "text",
+			label: "Название",
+			required: true,
+			admin: {
+				components: {
+					Field: "/cms/components/MediaTitleField#MediaTitleField",
+				},
+			},
+		},
 		{
 			name: "alt",
 			type: "text",

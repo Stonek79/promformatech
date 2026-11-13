@@ -43,6 +43,11 @@ export const MEDIA_STATUS = {
 	error: "error",
 } as const;
 
+export const MEDIA_TITLE = {
+	maximumCharacters: 180,
+	fileField: "file",
+} as const;
+
 export const MEDIA_POLICY = {
 	maxFileBytes: 524_288_000,
 	maxImagePixels: 40_000_000,
