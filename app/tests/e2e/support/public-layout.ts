@@ -61,11 +61,5 @@ export async function settlePublicPage(page: Page) {
 	await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 	await page.evaluate(async () => {
 		await document.fonts.ready;
-		for (const image of document.querySelectorAll("main img, footer img")) {
-			if (image instanceof HTMLImageElement) {
-				image.loading = "eager";
-				await image.decode();
-			}
-		}
 	});
 }

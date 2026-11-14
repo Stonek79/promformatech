@@ -9,7 +9,7 @@ const MAX_SCRIM_OPACITY = 0.5;
 
 test("hero keeps the photo behind the whole banner in both themes and on mobile", async ({
 	page,
-}, testInfo) => {
+}) => {
 	await page.goto(ROUTES.home);
 	const hero = page
 		.locator("main section")
@@ -54,10 +54,6 @@ test("hero keeps the photo behind the whole banner in both themes and on mobile"
 			expect(alpha).toBeGreaterThan(0);
 			expect(alpha).toBeLessThan(MAX_SCRIM_OPACITY);
 			scrims.push(overlay.color);
-			await page.screenshot({
-				animations: "disabled",
-				path: testInfo.outputPath(`hero-${theme}-${viewport.width}.png`),
-			});
 		}
 		expect(scrims[0]).not.toBe(scrims[1]);
 	}

@@ -73,7 +73,7 @@ function measureCards(cards: Locator) {
 test("product card rows align headings and descriptions at larger text sizes", async ({
 	page,
 	request,
-}, testInfo) => {
+}) => {
 	await login(request, "owner");
 	const cards = page.locator(`main a[href^="${ROUTES.products}/"]`).filter({
 		has: page.getByRole("heading"),
@@ -156,11 +156,6 @@ test("product card rows align headings and descriptions at larger text sizes", a
 		}
 		await page.setViewportSize({ width: 1920, height: HEIGHT });
 		await cards.last().scrollIntoViewIfNeeded();
-		await page.screenshot({
-			path: testInfo.outputPath("products-large-desktop.png"),
-			animations: "disabled",
-			fullPage: true,
-		});
 	} finally {
 		for (const id of createdIDs) {
 			expect((await request.delete(`${API}/${id}`)).ok()).toBe(true);

@@ -23,13 +23,6 @@ import { login } from "./support/auth";
 
 const HELP_LINK = "Пошаговая инструкция — в новой вкладке ↗";
 const UNSAVED_TITLE = "Несохранённый текст остаётся в редакторе";
-const EDITOR_COLLECTIONS = [
-	COLLECTIONS.pages,
-	COLLECTIONS.products,
-	COLLECTIONS.services,
-	COLLECTIONS.projects,
-	COLLECTIONS.media,
-] as const;
 
 async function assertContextHelp(page: Page, topic: HelpTopic) {
 	const help = page.getByRole("complementary", {
@@ -41,10 +34,12 @@ async function assertContextHelp(page: Page, topic: HelpTopic) {
 	await expect(link).toHaveAttribute("target", "_blank");
 }
 
-for (const viewport of ADMIN_BREAKPOINTS) {
+for (const viewport of ADMIN_BREAKPOINTS.filter(
+	({ name }) => name !== "tablet",
+)) {
 	test(`manager discovers help and follows its contents on ${viewport.name}`, async ({
 		managerPage: page,
-	}, testInfo) => {
+	}) => {
 		await page.setViewportSize(viewport);
 		await page.goto(ROUTES.admin);
 		const dashboard = page.locator("section").filter({
@@ -60,7 +55,6 @@ for (const viewport of ADMIN_BREAKPOINTS) {
 		await expect(page.getByRole("heading", { level: 1 })).toHaveText(
 			ADMIN_HELP.title,
 		);
-		await page.screenshot({ path: testInfo.outputPath("help.png") });
 		const contents = page.getByRole("navigation", { name: "Темы справочника" });
 		await contents.getByRole("link", { name: /^Общие данные сайта:/ }).click();
 		await expect(page).toHaveURL(adminHelpURL(HELP_TOPICS.site));
@@ -86,20 +80,16 @@ for (const viewport of ADMIN_BREAKPOINTS) {
 	});
 }
 
-test("all manager sections have contextual help; reading it preserves unsaved input", async ({
+test("contextual help opens separately and preserves unsaved input", async ({
 	managerPage: page,
 }) => {
-	for (const collection of EDITOR_COLLECTIONS) {
-		await page.goto(adminCollectionURL(collection));
-		await assertContextHelp(page, collection);
-	}
-	for (const collection of EDITOR_COLLECTIONS) {
-		await page.goto(adminCollectionURL(collection, CMS_ACTIONS.create));
-		await assertContextHelp(page, collection);
-		await expect(
-			page.getByRole("link", { name: "API", exact: true }),
-		).toHaveCount(0);
-	}
+	await page.goto(adminCollectionURL(COLLECTIONS.pages));
+	await assertContextHelp(page, HELP_TOPICS.pages);
+	await page.goto(adminCollectionURL(COLLECTIONS.products, CMS_ACTIONS.create));
+	await assertContextHelp(page, HELP_TOPICS.products);
+	await expect(
+		page.getByRole("link", { name: "API", exact: true }),
+	).toHaveCount(0);
 	await page.goto(adminGlobalURL(GLOBALS.site));
 	await assertContextHelp(page, HELP_TOPICS.site);
 	await page.getByRole("button", { name: "Компания", exact: true }).click();

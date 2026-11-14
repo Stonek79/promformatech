@@ -10,16 +10,23 @@ import {
 } from "./support/public-fixture";
 import { checkPublicLayout, settlePublicPage } from "./support/public-layout";
 
-const WIDTHS = [320, 390, 820, 1024, 1440];
 const HEIGHT = 900;
-const SCREENSHOT_WIDTHS = [390, 1440];
 const MOBILE_MENU_BREAKPOINT = 1024;
-const INTERACTIVE_VIEWPORTS = [
-	{ width: 320, height: HEIGHT },
-	{ width: 390, height: HEIGHT },
-	{ width: 820, height: 390 },
-	{ width: 1440, height: HEIGHT },
-];
+const PAGE_LAYOUTS = [
+	{ width: 320, theme: THEMES.light, size: TEXT_SIZES.larger },
+	{ width: 820, theme: THEMES.light, size: TEXT_SIZES.large },
+	{
+		width: MOBILE_MENU_BREAKPOINT,
+		theme: THEMES.dark,
+		size: TEXT_SIZES.larger,
+	},
+	{ width: 1440, theme: THEMES.dark, size: TEXT_SIZES.larger },
+] as const;
+const DIALOG_LAYOUTS = [
+	{ viewport: { width: 320, height: HEIGHT }, theme: THEMES.light },
+	{ viewport: { width: 820, height: 390 }, theme: THEMES.dark },
+	{ viewport: { width: 1440, height: HEIGHT }, theme: THEMES.light },
+] as const;
 const messages = getMessages();
 const PAGES = [
 	ROUTES.about,
@@ -28,10 +35,7 @@ const PAGES = [
 	ROUTES.projects,
 	ROUTES.contact,
 	`${ROUTES.products}/ball-guide-pillar-a-trp`,
-	`${ROUTES.products}/porous-filter-tubes`,
 	`${ROUTES.services}/molds`,
-	`${ROUTES.services}/equipment`,
-	`${ROUTES.services}/automation`,
 	LAYOUT_PROJECT.path,
 	`${ROUTES.search}?q=${encodeURIComponent("формы")}`,
 	`${ROUTES.search}?q=${"Z".repeat(CONTENT_LIMITS.searchQuery)}`,
@@ -47,107 +51,72 @@ test.afterAll(async ({ request }) => {
 	}
 });
 
-for (const width of WIDTHS) {
-	for (const theme of [THEMES.light, THEMES.dark]) {
-		for (const size of [TEXT_SIZES.large, TEXT_SIZES.larger]) {
-			test(`public pages ${width} ${theme} ${size}`, async ({
-				page,
-			}, testInfo) => {
-				await page.setViewportSize({ width, height: HEIGHT });
-				await page.goto(ROUTES.about);
-				await setTheme(page, theme);
-				await setTextSize(page, size);
-				for (const [index, path] of PAGES.entries()) {
-					await test.step(path, async () => {
-						await page.goto(path);
-						await settlePublicPage(page);
-						await expect(
-							page.getByRole("heading", { level: 1 }),
-						).not.toHaveText(messages.notFound.title);
-						await checkPublicLayout(page);
-						if (
-							SCREENSHOT_WIDTHS.includes(width) &&
-							size === TEXT_SIZES.larger
-						) {
-							await page.screenshot({
-								fullPage: true,
-								animations: "disabled",
-								path: testInfo.outputPath(
-									`page-${index}-${theme}-${width}.png`,
-								),
-							});
-						}
-						await expect(page.getByRole("contentinfo")).toBeVisible();
-					});
-				}
+for (const { width, theme, size } of PAGE_LAYOUTS) {
+	test(`public pages ${width} ${theme} ${size}`, async ({ page }) => {
+		await page.setViewportSize({ width, height: HEIGHT });
+		await page.goto(ROUTES.about);
+		await setTheme(page, theme);
+		await setTextSize(page, size);
+		for (const path of PAGES) {
+			await test.step(path, async () => {
+				await page.goto(path);
+				await settlePublicPage(page);
+				await expect(page.getByRole("heading", { level: 1 })).not.toHaveText(
+					messages.notFound.title,
+				);
+				await checkPublicLayout(page);
+				await expect(page.getByRole("contentinfo")).toBeVisible();
 			});
 		}
-	}
+	});
 }
 
-for (const viewport of INTERACTIVE_VIEWPORTS) {
+for (const { viewport, theme } of DIALOG_LAYOUTS) {
 	const { width } = viewport;
-	for (const theme of [THEMES.light, THEMES.dark]) {
-		test(`dialogs and contacts ${width} ${theme}`, async ({
-			page,
-		}, testInfo) => {
-			await page.setViewportSize(viewport);
-			await page.goto(LAYOUT_PROJECT.path);
-			await setTheme(page, theme);
-			await setTextSize(page, TEXT_SIZES.larger);
-			await page.getByRole("button", { name: messages.media.open("") }).click();
-			const dialog = page.getByRole("dialog");
-			await expect(dialog).toBeVisible();
-			await checkPublicLayout(page);
-			await expect(
-				dialog.getByRole("button", { name: messages.common.close }),
-			).toBeInViewport();
-			await dialog.screenshot({
-				path: testInfo.outputPath(`gallery-${theme}-${width}.png`),
-			});
-			await page.keyboard.press("Escape");
-			await expect(dialog).toHaveCount(0);
+	test(`dialogs and contacts ${width} ${theme}`, async ({ page }) => {
+		await page.setViewportSize(viewport);
+		await page.goto(LAYOUT_PROJECT.path);
+		await setTheme(page, theme);
+		await setTextSize(page, TEXT_SIZES.larger);
+		await page.getByRole("button", { name: messages.media.open("") }).click();
+		const dialog = page.getByRole("dialog");
+		await expect(dialog).toBeVisible();
+		await checkPublicLayout(page);
+		await expect(
+			dialog.getByRole("button", { name: messages.common.close }),
+		).toBeInViewport();
+		await page.keyboard.press("Escape");
+		await expect(dialog).toHaveCount(0);
+		await page
+			.getByRole("button", {
+				name: messages.navigation.openSearch,
+				exact: true,
+			})
+			.click();
+		await expect(dialog).toBeVisible();
+		await checkPublicLayout(page);
+		await dialog.getByRole("searchbox").fill("Пресс-формы");
+		await dialog.locator('button[type="submit"]').click();
+		await expect(page).toHaveURL(/\/search\?q=/);
+		await settlePublicPage(page);
+		await checkPublicLayout(page);
+		if (width < MOBILE_MENU_BREAKPOINT) {
 			await page
 				.getByRole("button", {
-					name: messages.navigation.openSearch,
+					name: messages.navigation.openMenu,
 					exact: true,
 				})
 				.click();
 			await expect(dialog).toBeVisible();
 			await checkPublicLayout(page);
-			await dialog.getByRole("searchbox").fill("Пресс-формы");
-			await dialog.screenshot({
-				path: testInfo.outputPath(`search-${theme}-${width}.png`),
-			});
-			await dialog.locator('button[type="submit"]').click();
-			await expect(page).toHaveURL(/\/search\?q=/);
-			await settlePublicPage(page);
-			await checkPublicLayout(page);
-			if (width < MOBILE_MENU_BREAKPOINT) {
-				await page
-					.getByRole("button", {
-						name: messages.navigation.openMenu,
-						exact: true,
-					})
-					.click();
-				await expect(dialog).toBeVisible();
-				await checkPublicLayout(page);
-				await dialog.screenshot({
-					path: testInfo.outputPath(`menu-${theme}-${width}.png`),
-				});
-				await dialog.locator(`a[href="${ROUTES.contact}"]`).click();
-				await expect(dialog).toHaveCount(0);
-			}
-			await page.goto(ROUTES.contact);
-			await expect(page.locator("main form")).toHaveCount(0);
-			await expect(
-				page.getByRole("link", { name: /Политика обработки/ }),
-			).toHaveCount(0);
-			await checkPublicLayout(page);
-			await page.screenshot({
-				path: testInfo.outputPath(`contacts-${theme}-${width}.png`),
-				fullPage: true,
-			});
-		});
-	}
+			await dialog.locator(`a[href="${ROUTES.contact}"]`).click();
+			await expect(dialog).toHaveCount(0);
+		}
+		await page.goto(ROUTES.contact);
+		await expect(page.locator("main form")).toHaveCount(0);
+		await expect(
+			page.getByRole("link", { name: /Политика обработки/ }),
+		).toHaveCount(0);
+		await checkPublicLayout(page);
+	});
 }

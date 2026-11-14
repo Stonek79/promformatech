@@ -1,10 +1,10 @@
 # Автодеплой и локальные резервные копии
 
-Workflow `ci.yml` запускается для PR в `main`. Он проверяет код и серверные скрипты, прогоняет тесты SQLite, обработки медиа и браузерные сценарии в Chromium на отдельной базе. Доступ к VPS для этих проверок не нужен.
+Workflow `ci.yml` запускается для PR в `main`: проверяет формат, типы, CSS и синтаксис серверных скриптов. Модульные, интеграционные, браузерные тесты и тесты серверных скриптов запускаются локально по [инструкции проекта](../../app/README.md#проверка-перед-коммитом).
 
-Workflow `release.yml` повторяет тот же CI на коммите релиза, собирает и проверяет Linux x86_64-артефакт в GitHub Actions. При пуше в `main` успешный релиз отправляется на VPS, если задана переменная `VPS_AUTO_DEPLOY=true`. Сборка и установка зависимостей выполняются в GitHub Actions.
+Workflow `release.yml` сразу собирает Linux x86_64-артефакт. Перед упаковкой GitHub Actions запускает готовый релиз вне исходного каталога и проверяет запуск, миграции SQLite, админку, вход, ассеты и CLI обработчика. При пуше в `main` успешный релиз отправляется на VPS, если задана переменная `VPS_AUTO_DEPLOY=true`. Сборка и установка зависимостей выполняются в GitHub Actions.
 
-Первую проверку запустите через PR в `main`. Как только `release.yml` появится в основной ветке, станет доступен ручной запуск **Actions → Native Linux release → Run workflow**. По умолчанию он только создаёт архив и контрольную сумму. Чтобы отправить ручной релиз на VPS, выберите ветку `main` и включите `deploy_to_vps`. [Условия ручного запуска GitHub Actions](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch)
+Ручная проверка сборки: **Actions → Native Linux release → Run workflow**. По умолчанию она только создаёт архив и контрольную сумму. Чтобы отправить ручной релиз на VPS, выберите ветку `main` и включите `deploy_to_vps`. [Условия ручного запуска GitHub Actions](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch)
 
 ## Резервное копирование
 

@@ -6,7 +6,6 @@ import { runWorker } from "./support/jobs";
 import { createVideoFixture } from "./support/video";
 
 const MEDIA = {
-	list: "/admin/collections/media",
 	create: "/admin/collections/media/create",
 	api: "/api/media",
 	pages: "/api/pages",
@@ -21,8 +20,7 @@ test("manager uploads a photo, sees processing, downloads the original and draft
 	managerPage: page,
 	visitorPage: visitor,
 }) => {
-	await page.goto(MEDIA.list);
-	await page.locator(`a[href="${MEDIA.create}"]`).first().click();
+	await page.goto(MEDIA.create);
 	await page.getByRole("textbox", { name: /^Название/ }).fill(MEDIA.title);
 	await page
 		.getByRole("textbox", { name: "Что изображено", exact: true })

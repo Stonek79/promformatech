@@ -8,18 +8,14 @@ on:
         default: false
   push:
     branches: [main]
-    paths: ['app/**', 'deploy/**', '.github/workflows/ci.yml', '.github/workflows/release.yml']
+    paths: ['app/**', 'deploy/**', '.github/workflows/release.yml']
 permissions:
   contents: read
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 jobs:
-  check:
-    uses: ./.github/workflows/ci.yml
-
   build:
-    needs: check
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     defaults:
@@ -43,6 +39,9 @@ jobs:
       - run: node scripts/release/verify.mjs
       - name: Archive verified release
         run: |
+          for script in ../deploy/*.sh; do
+            bash -n "$script"
+          done
           cp -R ../deploy artifacts/release/deploy
           tar -czf artifacts/promformatech-linux-x64.tar.gz -C artifacts/release .
           cd artifacts

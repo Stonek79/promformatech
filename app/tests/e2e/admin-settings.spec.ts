@@ -91,6 +91,13 @@ test("manager edits every settings tab, previews a private draft and publishes e
 			visitor.getByText(SETTINGS.copyright, { exact: true }),
 		).toBeVisible();
 		await expect(visitor.locator("main form")).toHaveCount(0);
+		const unpublished = await page.request.post(SETTINGS.api, {
+			headers: E2E_HEADERS,
+			data: { _status: "draft" },
+		});
+		expect(unpublished.ok()).toBe(true);
+		const publicSettings = await visitor.request.get(SETTINGS.api);
+		expect((await publicSettings.json()).phone).toBeUndefined();
 	} finally {
 		const restored = await page.request.post(SETTINGS.api, {
 			headers: E2E_HEADERS,

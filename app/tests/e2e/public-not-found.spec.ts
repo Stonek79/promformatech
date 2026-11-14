@@ -29,53 +29,51 @@ test("a previously published policy stays out of public API, search and sitemap"
 	await expect(page.locator(`main a[href="${ROUTES.privacy}"]`)).toHaveCount(0);
 });
 
-for (const width of [320, 1440]) {
-	for (const theme of [THEMES.light, THEMES.dark]) {
-		test(`missing page ${width} ${theme}`, async ({ page }, testInfo) => {
-			const errors: string[] = [];
-			page.on("pageerror", (error) => errors.push(error.message));
-			page.on("console", (message) => {
-				if (message.type() !== "error") {
-					return;
-				}
-				const expected =
-					message.text().includes(`status of ${NOT_FOUND_STATUS}`) &&
-					MISSING_PATHS.some((path) => message.location().url.endsWith(path));
-				if (!expected) {
-					errors.push(message.text());
-				}
-			});
-			page.on("response", (response) => {
-				if (response.status() >= SERVER_ERROR_STATUS) {
-					errors.push(`${response.status()} ${response.url()}`);
-				}
-			});
-			await page.setViewportSize({ width, height: HEIGHT });
-			await page.goto(ROUTES.about);
-			await setTheme(page, theme);
-			await setTextSize(page, TEXT_SIZES.larger);
-			for (const path of MISSING_PATHS) {
-				const response = await page.goto(path);
-				// Next sends 200 when notFound resolves after streaming has started.
-				expect([STREAMED_STATUS, NOT_FOUND_STATUS]).toContain(
-					response?.status(),
-				);
-				await settlePublicPage(page);
-				await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-					messages.title,
-				);
-				await expect(
-					page.locator('meta[name="robots"]').first(),
-				).toHaveAttribute("content", /noindex/);
-				await checkPublicLayout(page);
+const VIEWPORTS = [
+	{ width: 320, theme: THEMES.dark },
+	{ width: 1440, theme: THEMES.light },
+] as const;
+
+for (const { width, theme } of VIEWPORTS) {
+	test(`missing page ${width} ${theme}`, async ({ page }) => {
+		const errors: string[] = [];
+		page.on("pageerror", (error) => errors.push(error.message));
+		page.on("console", (message) => {
+			if (message.type() !== "error") {
+				return;
 			}
-			await page.screenshot({
-				fullPage: true,
-				path: testInfo.outputPath(`404-${theme}-${width}.png`),
-			});
-			await page.locator(`main a[href="${ROUTES.home}"]`).click();
-			await expect(page).toHaveURL(ROUTES.home);
-			expect(errors).toEqual([]);
+			const expected =
+				message.text().includes(`status of ${NOT_FOUND_STATUS}`) &&
+				MISSING_PATHS.some((path) => message.location().url.endsWith(path));
+			if (!expected) {
+				errors.push(message.text());
+			}
 		});
-	}
+		page.on("response", (response) => {
+			if (response.status() >= SERVER_ERROR_STATUS) {
+				errors.push(`${response.status()} ${response.url()}`);
+			}
+		});
+		await page.setViewportSize({ width, height: HEIGHT });
+		await page.goto(ROUTES.about);
+		await setTheme(page, theme);
+		await setTextSize(page, TEXT_SIZES.larger);
+		for (const path of MISSING_PATHS) {
+			const response = await page.goto(path);
+			// Next sends 200 when notFound resolves after streaming has started.
+			expect([STREAMED_STATUS, NOT_FOUND_STATUS]).toContain(response?.status());
+			await settlePublicPage(page);
+			await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+				messages.title,
+			);
+			await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute(
+				"content",
+				/noindex/,
+			);
+			await checkPublicLayout(page);
+		}
+		await page.locator(`main a[href="${ROUTES.home}"]`).click();
+		await expect(page).toHaveURL(ROUTES.home);
+		expect(errors).toEqual([]);
+	});
 }

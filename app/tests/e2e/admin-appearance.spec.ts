@@ -18,7 +18,7 @@ const UNSAVED_NAME = "Название ещё не сохранено";
 
 test("manager changes native theme and text size without losing input", async ({
 	managerPage: page,
-}, testInfo) => {
+}) => {
 	await page.emulateMedia({ colorScheme: "light" });
 	await page.goto(adminGlobalURL(GLOBALS.site));
 	await page.getByRole("button", { name: "Компания", exact: true }).click();
@@ -56,10 +56,6 @@ test("manager changes native theme and text size without losing input", async ({
 	for (const viewport of ADMIN_BREAKPOINTS) {
 		await page.setViewportSize(viewport);
 		await checkSizeControl(page, TEXT_SIZES.larger);
-		await page.screenshot({
-			animations: "disabled",
-			path: testInfo.outputPath(`admin-dark-${viewport.width}.png`),
-		});
 		expect(
 			await page.evaluate(() => ({
 				width: innerWidth,
@@ -82,10 +78,6 @@ test("manager changes native theme and text size without losing input", async ({
 		"data-theme",
 		THEMES.light,
 	);
-	await page.screenshot({
-		animations: "disabled",
-		path: testInfo.outputPath("admin-light.png"),
-	});
 });
 
 test("array actions use Russian labels for managers and owners", async ({

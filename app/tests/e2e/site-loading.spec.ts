@@ -3,12 +3,16 @@ import { expect, test } from "./support/admin";
 
 const VIEWPORT = { width: 390, height: 844 };
 const MIN_CONTENT_HEIGHT_RATIO = 0.65;
+// Layout engines can round fractional CSS pixels.
+const MIN_CONTENT_HEIGHT = Math.floor(
+	VIEWPORT.height * MIN_CONTENT_HEIGHT_RATIO,
+);
 
 test("server shell reserves content space and respects reduced motion", async ({
 	browser,
 	baseURL,
 	page,
-}, testInfo) => {
+}) => {
 	// Freeze the real streamed fallback before React replaces it with content.
 	const context = await browser.newContext({
 		baseURL,
@@ -24,16 +28,11 @@ test("server shell reserves content space and respects reduced motion", async ({
 		});
 		await expect(loading).toBeVisible();
 		const content = await initialPage.locator("main:visible").boundingBox();
-		expect(content?.height).toBeGreaterThanOrEqual(
-			VIEWPORT.height * MIN_CONTENT_HEIGHT_RATIO,
-		);
+		expect(content?.height).toBeGreaterThanOrEqual(MIN_CONTENT_HEIGHT);
 		await expect(loading.locator('[aria-hidden="true"]').first()).toHaveCSS(
 			"animation-name",
 			"none",
 		);
-		await initialPage.screenshot({
-			path: testInfo.outputPath("loading-mobile.png"),
-		});
 	} finally {
 		await context.close();
 	}
@@ -45,9 +44,7 @@ test("server shell reserves content space and respects reduced motion", async ({
 	).toHaveCount(0);
 	const content = await page.locator("main").boundingBox();
 	const footer = await page.locator("footer").boundingBox();
-	expect(content?.height).toBeGreaterThanOrEqual(
-		VIEWPORT.height * MIN_CONTENT_HEIGHT_RATIO,
-	);
+	expect(content?.height).toBeGreaterThanOrEqual(MIN_CONTENT_HEIGHT);
 	expect(footer?.y).toBeGreaterThanOrEqual(
 		(content?.y ?? 0) + (content?.height ?? 0),
 	);

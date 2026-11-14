@@ -7,48 +7,6 @@ import { runWorker } from "./support/jobs";
 
 const MAX_MEDIA_JOB_RUNS = 5;
 
-test("global contacts have a private draft and published snapshot", async ({
-	request,
-	playwright,
-}) => {
-	await login(request);
-	const guest = await playwright.request.newContext({ baseURL: origin });
-	try {
-		const before = await (await guest.get("/api/globals/site-settings")).json();
-		expect(
-			(
-				await request.post("/api/globals/site-settings?draft=true", {
-					data: { phone: "+7 999 123-45-67", _status: "draft" },
-				})
-			).ok(),
-		).toBe(true);
-		expect(
-			(await (await guest.get("/api/globals/site-settings")).json()).phone,
-		).toBe(before.phone);
-		expect(
-			(
-				await request.post("/api/globals/site-settings", {
-					data: { phone: "+7 999 123-45-67", _status: "published" },
-				})
-			).ok(),
-		).toBe(true);
-		expect(
-			(await (await guest.get("/api/globals/site-settings")).json()).phone,
-		).toBe("+7 999 123-45-67");
-		await request.post("/api/globals/site-settings", {
-			data: { _status: "draft", phone: "UNPUBLISHED" },
-		});
-		expect(
-			(await (await guest.get("/api/globals/site-settings")).json()).phone,
-		).toBeUndefined();
-		await request.post("/api/globals/site-settings", {
-			data: { _status: "published", phone: "+7 999 123-45-67" },
-		});
-	} finally {
-		await guest.dispose();
-	}
-});
-
 test("upload processing, originals, published file access and revocation", async ({
 	request,
 	playwright,
