@@ -33,6 +33,7 @@ backup_ready() {
     [[ -f "$BACKUP_PASSWORD_FILE" && -f "$BACKUP_REPOSITORY/config" ]] || {
         echo 'Initialize the local backup repository and password first.' >&2; return 1;
     }
+    install -d -m 700 "$ROOT/backups/restic-cache"
 }
 
 snapshot() {
@@ -51,7 +52,8 @@ snapshot() {
         rm -f -- "$database"
         return 1
     fi
-    if ! restic -r "$BACKUP_REPOSITORY" --password-file "$BACKUP_PASSWORD_FILE" \
+    if ! restic --cache-dir "$ROOT/backups/restic-cache" \
+        -r "$BACKUP_REPOSITORY" --password-file "$BACKUP_PASSWORD_FILE" \
         backup --tag "$BACKUP_TAG" "$database" "$SHARED/media"; then
         rm -f -- "$database"
         return 1
@@ -60,7 +62,8 @@ snapshot() {
 }
 
 prune_snapshots() {
-    restic -r "$BACKUP_REPOSITORY" --password-file "$BACKUP_PASSWORD_FILE" \
+    restic --cache-dir "$ROOT/backups/restic-cache" \
+        -r "$BACKUP_REPOSITORY" --password-file "$BACKUP_PASSWORD_FILE" \
         forget --tag "$BACKUP_TAG" --keep-daily 7 --keep-weekly 4 --prune
 }
 

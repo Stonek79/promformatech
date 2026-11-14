@@ -102,7 +102,7 @@
 .cardBody {
 	padding: var(--pf-space-lg);
 }
-.card h3 {
+.card :is(h2, h3) {
 	margin: 0;
 	overflow-wrap: anywhere;
 	font-size: var(--pf-font-size-card);
@@ -112,6 +112,34 @@
 .card p {
 	margin: var(--pf-space-md) 0 0;
 	font-size: var(--pf-font-size-small);
+}
+.cards.productCards {
+	grid-template-columns: minmax(0, var(--pf-product-card-max-width));
+}
+.productCards .cardBody {
+	display: grid;
+	row-gap: var(--pf-space-sm);
+	padding: var(--pf-space-md);
+}
+.productCards h2 {
+	font-size: var(--pf-font-size-product-card-title);
+}
+.productCards p {
+	margin: 0;
+	font-size: var(--pf-font-size-product-card-summary);
+	color: var(--pf-color-muted);
+}
+@supports (grid-template-rows: subgrid) {
+	.productCards .card {
+		display: grid;
+		grid-template-rows: subgrid;
+		grid-row: span 3;
+		row-gap: 0;
+	}
+	.productCards .cardBody {
+		grid-template-rows: subgrid;
+		grid-row: span 2;
+	}
 }
 .card:focus-visible {
 	outline: var(--pf-border-accent) solid var(--pf-color-focus);
@@ -195,6 +223,12 @@
 	.cards {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
+	.cards.productCards {
+		grid-template-columns: repeat(
+				2,
+				minmax(0, var(--pf-product-card-max-width))
+			);
+	}
 	.steps {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
@@ -202,6 +236,12 @@
 @media (--tablet) {
 	.cards {
 		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+	.cards.productCards {
+		grid-template-columns: repeat(
+				3,
+				minmax(0, var(--pf-product-card-max-width))
+			);
 	}
 	.textImage {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -214,6 +254,12 @@
 	}
 }
 @media (--wide) {
+	.cards.productCards {
+		grid-template-columns: repeat(
+				4,
+				minmax(0, var(--pf-product-card-max-width))
+			);
+	}
 	.steps {
 		grid-template-columns: repeat(6, minmax(0, 1fr));
 	}

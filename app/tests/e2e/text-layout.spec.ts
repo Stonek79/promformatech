@@ -6,7 +6,7 @@ import { setTextSize, setTheme } from "./support/appearance";
 
 const VIEWPORT_WIDTHS = [320, 390, 820, 1024, 1440, 1920, 2560];
 const VIEWPORT_HEIGHT = 1000;
-const MAX_FRAME_WIDTH = 1920;
+const MAX_FRAME_WIDTH = 1600;
 const FRAME = "#main-content > div";
 
 async function measure(page: Page) {
@@ -16,6 +16,7 @@ async function measure(page: Page) {
 		return {
 			width: frame.width,
 			left: frame.left,
+			right: document.documentElement.clientWidth - frame.right,
 			padding: style.paddingInlineStart,
 			rootFont: getComputedStyle(document.documentElement).fontSize,
 			scrollWidth: document.documentElement.scrollWidth,
@@ -66,6 +67,7 @@ test("text size changes typography while the page frame stays fixed at every vie
 			expect(original.scrollWidth).toBe(width);
 			expect(original.width).toBe(Math.min(width, MAX_FRAME_WIDTH));
 			expect(original.left).toBeCloseTo((width - original.width) / 2);
+			expect(original.right).toBeCloseTo(original.left);
 			await page.screenshot({
 				animations: "disabled",
 				path: testInfo.outputPath(`home-${theme}-${width}-large.png`),

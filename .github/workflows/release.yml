@@ -1,37 +1,44 @@
 name: Native Linux release
 on:
   workflow_dispatch:
+    inputs:
+      deploy_to_vps:
+        description: 'Deploy this release to the VPS (main only)'
+        type: boolean
+        default: false
   push:
     branches: [main]
-    paths: ['app/**', 'deploy/**', '.github/workflows/release.yml']
+    paths: ['app/**', 'deploy/**', '.github/workflows/ci.yml', '.github/workflows/release.yml']
 permissions:
   contents: read
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 jobs:
+  check:
+    uses: ./.github/workflows/ci.yml
+
   build:
+    needs: check
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     defaults:
       run:
         working-directory: app
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
         with:
           package_json_file: app/package.json
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22.22.0'
           cache: pnpm
           cache-dependency-path: app/pnpm-lock.yaml
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg sqlite3
-      - run: bash -n ../deploy/*.sh
-      - run: PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s ../deploy/tests -v
       - run: pnpm install --frozen-lockfile
-      - run: pnpm check
-      - run: pnpm test:integration
       - run: pnpm release:build
       - run: node scripts/release/verify.mjs
       - name: Archive verified release
@@ -40,7 +47,7 @@ jobs:
           tar -czf artifacts/promformatech-linux-x64.tar.gz -C artifacts/release .
           cd artifacts
           sha256sum promformatech-linux-x64.tar.gz > promformatech-linux-x64.tar.gz.sha256
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: promformatech-${{ github.sha }}
           path: |
@@ -50,12 +57,15 @@ jobs:
           if-no-files-found: error
 
   deploy:
-    if: github.ref == 'refs/heads/main'
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      ((github.event_name == 'push' && vars.VPS_HOST != '') ||
+      (github.event_name == 'workflow_dispatch' && inputs.deploy_to_vps))
     needs: build
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: promformatech-${{ github.sha }}
           path: release
@@ -67,8 +77,14 @@ jobs:
           VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
         run: |
           set -Eeuo pipefail
-          [[ "$VPS_HOST" =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]*$ ]]
-          [[ -n "$VPS_DEPLOY_PRIVATE_KEY" && -n "$VPS_KNOWN_HOSTS" ]]
+          if [[ ! "$VPS_HOST" =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]*$ ]]; then
+            echo '::error::Set the Actions variable VPS_HOST to the VPS hostname or IPv4 address.'
+            exit 1
+          fi
+          if [[ -z "$VPS_DEPLOY_PRIVATE_KEY" || -z "$VPS_KNOWN_HOSTS" ]]; then
+            echo '::error::Set the Actions secrets VPS_DEPLOY_PRIVATE_KEY and VPS_KNOWN_HOSTS.'
+            exit 1
+          fi
           umask 077
           mkdir -p "$HOME/.ssh"
           printf '%s\n' "$VPS_DEPLOY_PRIVATE_KEY" > "$HOME/.ssh/pft-deploy"

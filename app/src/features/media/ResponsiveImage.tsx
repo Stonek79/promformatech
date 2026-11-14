@@ -12,10 +12,11 @@ type Props = {
 	readonly height: number;
 	readonly sizes: string;
 	readonly priority?: boolean;
+	readonly eager?: boolean;
 	readonly className?: string;
 };
 
-export function ResponsiveImage({ id, priority, ...props }: Props) {
+export function ResponsiveImage({ id, priority, eager, ...props }: Props) {
 	function loader({ width }: ImageLoaderProps) {
 		return derivativeURL(id, width);
 	}
@@ -24,7 +25,7 @@ export function ResponsiveImage({ id, priority, ...props }: Props) {
 			{...props}
 			src={mediaURL(id, MEDIA_DELIVERY.image)}
 			loader={loader}
-			loading={priority ? "eager" : "lazy"}
+			loading={priority || eager ? "eager" : "lazy"}
 			fetchPriority={priority ? "high" : "auto"}
 		/>
 	);

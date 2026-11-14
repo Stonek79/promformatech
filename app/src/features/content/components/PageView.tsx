@@ -38,6 +38,7 @@ export async function PageView({ page, viewer, settings }: Props) {
 				<Section>
 					{materials.length ? (
 						<MaterialCards
+							compact={list === PAGE_KINDS.products}
 							items={materials.map((material) => ({
 								collection: list as ShowcaseCollection,
 								material,

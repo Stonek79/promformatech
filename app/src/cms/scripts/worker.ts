@@ -1,14 +1,15 @@
 import { setTimeout as delay } from "node:timers/promises";
+import type { Payload } from "payload";
 import { getCMS } from "@/cms/client";
 import { JOB_POLICY, JOBS } from "@/config/jobs";
 import { MEDIA_POLICY, MEDIA_UPLOAD } from "@/config/media";
+import { getRuntimeConfig } from "@/config/runtime";
 import { reconcilePendingOriginals } from "@/features/media/orphan-originals";
 import { stopMediaProcesses } from "@/features/media/process-command";
 import { startWorkerHeartbeat } from "../jobs/worker-heartbeat";
 import { acquireWorker } from "../jobs/worker-lock";
 
 const FORCE_EXIT_DELAY_MILLISECONDS = 5000;
-const cms = await getCMS();
 const abort = new AbortController();
 let stopping = false;
 let shutdownTimer: ReturnType<typeof setTimeout> | undefined;
@@ -29,19 +30,13 @@ function stop() {
 	);
 	exitTimer.unref();
 }
-function lostLock() {
+function lostLock(cms: Payload) {
 	// No further database writes are safe after ownership is lost.
 	stopMediaProcesses();
 	cms.logger.error("Worker database lock lost; stopping immediately");
 	process.exit(1);
 }
-process.once("SIGINT", stop);
-process.once("SIGTERM", stop);
-let release: (() => Promise<void>) | undefined;
-let heartbeat: (() => Promise<void>) | undefined;
-try {
-	release = await acquireWorker(cms, lostLock);
-	heartbeat = await startWorkerHeartbeat(cms);
+async function runJobs(cms: Payload) {
 	let lastReconciliation = 0;
 	do {
 		if (stopping) {
@@ -76,18 +71,51 @@ try {
 			/* Shutdown interrupts the idle wait. */
 		}
 	} while (!stopping);
+}
+
+async function run() {
+	const cms = await getCMS();
+	let release: (() => Promise<void>) | undefined;
+	let heartbeat: (() => Promise<void>) | undefined;
+	try {
+		if (stopping) {
+			return;
+		}
+		release = await acquireWorker(cms, () => lostLock(cms));
+		if (stopping) {
+			return;
+		}
+		heartbeat = await startWorkerHeartbeat(cms);
+		await runJobs(cms);
+	} finally {
+		try {
+			await heartbeat?.();
+		} finally {
+			await cms.destroy().finally(() => release?.());
+		}
+	}
+}
+
+process.on("SIGINT", stop);
+process.on("SIGTERM", stop);
+try {
+	await run();
+} catch (error) {
+	if (
+		error instanceof Error &&
+		"code" in error &&
+		error.code === "ELOCKED" &&
+		!getRuntimeConfig().production
+	) {
+		throw new Error(
+			"SQLite уже используется другим воркером. Остановите прежний pnpm dev или pnpm worker и дождитесь его завершения.",
+			{ cause: error },
+		);
+	}
+	throw error;
 } finally {
 	clearTimeout(shutdownTimer);
 	clearTimeout(exitTimer);
 	process.removeListener("SIGINT", stop);
 	process.removeListener("SIGTERM", stop);
-	try {
-		await heartbeat?.();
-	} finally {
-		try {
-			await release?.();
-		} finally {
-			await cms.destroy();
-		}
-	}
 }

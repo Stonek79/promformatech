@@ -4,7 +4,7 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"dev": "pnpm prepare:app && next dev --turbopack --hostname 127.0.0.1",
+		"dev": "node scripts/dev.mjs",
 		"build": "node scripts/build.mjs",
 		"start": "next start",
 		"lint": "biome check . && node scripts/check-code-structure.mjs",

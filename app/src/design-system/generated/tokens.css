@@ -42,6 +42,8 @@
 		clamp(1.1875rem, 1rem + 0.5vw, 1.5625rem) *
 		var(--pf-text-scale)
 	);
+	--pf-font-size-product-card-title: calc(1.2rem * var(--pf-text-scale));
+	--pf-font-size-product-card-summary: calc(1rem * var(--pf-text-scale));
 	--pf-line-height-body: 1.7;
 	--pf-line-height-title: 1.25;
 	--pf-letter-spacing-label: 0.025em;
@@ -52,7 +54,8 @@
 	--pf-space-xl: clamp(2rem, 1.4rem + 2vw, 4rem);
 	--pf-space-section: clamp(3rem, 1.8rem + 4vw, 6rem);
 	--pf-space-page: clamp(1rem, 0.75rem + 0.5vw, 1.5rem);
-	--pf-container-width: 120rem;
+	--pf-container-width: 100rem;
+	--pf-product-card-max-width: 28.125rem;
 	--pf-reading-width: 65rem;
 	--pf-form-width: 42rem;
 	--pf-form-field-min-width: 18em;

@@ -1,8 +1,11 @@
-import { spawnSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
+import { MEDIA_STATUS } from "../../src/config/media";
 import { login } from "./support/auth";
 import { E2E_ORIGIN as origin } from "./support/config";
+import { runWorker } from "./support/jobs";
+
+const MAX_MEDIA_JOB_RUNS = 5;
 
 test("global contacts have a private draft and published snapshot", async ({
 	request,
@@ -63,16 +66,17 @@ test("upload processing, originals, published file access and revocation", async
 		expect(upload.status()).toBe(201);
 		const { doc: media } = await upload.json();
 		expect((await guest.get(`/media/${media.id}/image`)).status()).toBe(404);
-		const worker = spawnSync("pnpm", ["worker:once"], {
-			env: process.env,
-			encoding: "utf8",
-			timeout: 60000,
-		});
-		expect(worker.status, worker.stderr).toBe(0);
-		const ready = await (
-			await request.get(`/api/media/${media.id}?draft=true`)
-		).json();
-		expect(ready.processingStatus).toBe("ready");
+		let processingStatus: string | undefined;
+		for (let attempt = 0; attempt < MAX_MEDIA_JOB_RUNS; attempt++) {
+			runWorker();
+			const ready = await request.get(`/api/media/${media.id}?draft=true`);
+			expect(ready.ok()).toBe(true);
+			processingStatus = (await ready.json()).processingStatus;
+			if (processingStatus === MEDIA_STATUS.ready) {
+				break;
+			}
+		}
+		expect(processingStatus).toBe(MEDIA_STATUS.ready);
 		const original = await request.get(`/media/${media.id}/original`);
 		expect(await original.body()).toEqual(bytes);
 		expect((await guest.get(`/media/${media.id}/original`)).status()).toBe(404);

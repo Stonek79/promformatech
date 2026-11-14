@@ -38,6 +38,8 @@ export const tokens = {
 		"calc(clamp(1.625rem, 1.2rem + 1.25vw, 2.5rem) * var(--pf-text-scale))",
 	"font-size-card":
 		"calc(clamp(1.1875rem, 1rem + 0.5vw, 1.5625rem) * var(--pf-text-scale))",
+	"font-size-product-card-title": "calc(1.2rem * var(--pf-text-scale))",
+	"font-size-product-card-summary": "calc(1rem * var(--pf-text-scale))",
 	"line-height-body": "1.7",
 	"line-height-title": "1.25",
 	"letter-spacing-label": "0.025em",
@@ -48,7 +50,8 @@ export const tokens = {
 	"space-xl": "clamp(2rem, 1.4rem + 2vw, 4rem)",
 	"space-section": "clamp(3rem, 1.8rem + 4vw, 6rem)",
 	"space-page": "clamp(1rem, 0.75rem + 0.5vw, 1.5rem)",
-	"container-width": "120rem",
+	"container-width": "100rem",
+	"product-card-max-width": "28.125rem",
 	"reading-width": "65rem",
 	"form-width": "42rem",
 	"form-field-min-width": "18em",
