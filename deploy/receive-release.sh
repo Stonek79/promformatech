@@ -21,7 +21,7 @@ destination="$root/releases/$name"
 stage=$(mktemp -d "$root/releases/.incoming.XXXXXXXX")
 trap 'rm -rf -- "$stage"' EXIT
 
-free_bytes=$(df -PB1 --output=avail "$stage" | tail -n 1 | tr -d ' ')
+free_bytes=$(df --block-size=1 --output=avail "$stage" | tail -n 1 | tr -d ' ')
 [[ $free_bytes =~ ^[0-9]+$ && $free_bytes -gt $minimum_free_bytes ]] || {
     echo 'Insufficient free disk space for release delivery.' >&2; exit 1;
 }

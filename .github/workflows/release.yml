@@ -59,7 +59,7 @@ jobs:
   deploy:
     if: >-
       github.ref == 'refs/heads/main' &&
-      ((github.event_name == 'push' && vars.VPS_HOST != '') ||
+      ((github.event_name == 'push' && vars.VPS_AUTO_DEPLOY == 'true') ||
       (github.event_name == 'workflow_dispatch' && inputs.deploy_to_vps))
     needs: build
     runs-on: ubuntu-24.04
@@ -69,6 +69,16 @@ jobs:
         with:
           name: promformatech-${{ github.sha }}
           path: release
+      - name: Confirm that the release is still current
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -Eeuo pipefail
+          current_sha=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)
+          if [[ "$current_sha" != "$GITHUB_SHA" ]]; then
+            echo '::error::This release is no longer the tip of main. Deploy the latest release instead.'
+            exit 1
+          fi
       - name: Deliver and activate verified release
         shell: bash
         env:
