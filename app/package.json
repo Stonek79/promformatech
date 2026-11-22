@@ -30,7 +30,8 @@
 		"test:media": "vitest run --config vitest.media.config.ts",
 		"test:integration": "node tests/integration/run.mjs",
 		"release:build": "pnpm build && node scripts/release/build.mjs",
-		"release:verify": "node scripts/release/verify.mjs"
+		"release:verify": "node scripts/release/verify.mjs",
+		"deploy:vps": "gh workflow run release.yml --repo Stonek79/promformatech --ref main -f deploy_to_vps=true"
 	},
 	"dependencies": {
 		"@base-ui/react": "1.9.0",

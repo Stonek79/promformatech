@@ -1,6 +1,6 @@
 # VPS с доменом: SQLite, systemd, Nginx, готовый релиз
 
-30.10.2026. Целевая среда: отдельный Ubuntu 24.04 x86_64, Node.js 22.22.0. Код и шаблоны подготовлены; реальные DNS, сертификат, systemd и внешний backup проверяются после покупки сервера. Docker, PostgreSQL, Redis и PM2 не нужны.
+Целевая среда — Ubuntu 24.04 x86_64 и Node.js 22.23.5. Сайт работает с SQLite, а службы запускает systemd.
 
 ## Что запускается
 
@@ -12,7 +12,7 @@ Worker запускается по timer: один файл, выход, сле�
 
 ## 1. Получить релиз из GitHub
 
-Workflow `.github/workflows/release.yml` собирает на Ubuntu 24.04 x64, проверяет код, пустую SQLite и готовый релиз вне исходников. Запускается вручную или push в main. Production-секреты ему не нужны. Заберите из Actions артефакт `promformatech-<sha>` с tar.gz и sha256. Он рассчитан на Linux x64, не ARM и не Alpine/musl.
+Workflow `.github/workflows/release.yml` собирает релиз на Ubuntu 24.04 x64 и проверяет его вне исходного каталога на тестовой SQLite. Сборка запускается вручную или по пушу в `main` с изменениями файлов из фильтра релиза. Для ручной установки скачайте из Actions артефакт `promformatech-<sha>` с tar.gz и sha256. Артефакт рассчитан на Linux x86_64 с glibc. [Фильтр релиза](../../.github/workflows/release.yml)
 
 На сервере проверьте рядом с архивом:
 
@@ -24,7 +24,7 @@ Checksum защищает от повреждения передачи; исто
 
 ## 2. Подготовить сервер
 
-Настройте SSH-ключи, обновите Ubuntu. Установите Node.js 22.22.0 из официального дистрибутива с проверкой SHASUMS; команды служб используют `/usr/bin/node` (при установке в `/usr/local` скорректируйте путь во всех unit/scripts). Не используйте Node из nvm для системной службы.
+Настройте SSH-ключи, обновите Ubuntu. Установите Node.js 22.23.5 из официального дистрибутива и проверьте SHASUMS. Службы используют `/usr/bin/node`. Если устанавливаете Node.js в `/usr/local`, обновите путь к нему во всех unit-файлах и серверных скриптах. [Версия Node.js для сборки](../../.github/workflows/release.yml)
 
 ```bash
 sudo apt update
@@ -87,7 +87,7 @@ sudo -u promformatech env NODE_ENV=production \
 ```bash
 sudo install -d /usr/local/lib/promformatech
 sudo install -m 755 deploy/*.sh /usr/local/lib/promformatech/
-sudo install -m 644 deploy/systemd/* /etc/systemd/system/
+sudo install -m 644 deploy/systemd/*.service deploy/systemd/*.timer /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo /usr/local/lib/promformatech/update.sh /srv/promformatech/releases/<sha>
 sudo systemctl enable promformatech-web.service promformatech-worker.timer
@@ -122,6 +122,8 @@ sudo certbot renew --dry-run
 Nginx передаёт правильные Host/Proto; сайт использует SERVER_URL при запросе. Оригиналы и черновики обслуживаются только через проверки Payload — не добавляйте alias на shared/media. Кеширование админки и предпросмотра не включено. Лимит загрузки 502 MiB оставляет место multipart поверх лимита файла 500 MiB. Настроено ограничение попыток входа; это не защита канала от объёмного DDoS. Такой фильтр предоставляет провайдер VPS/CDN, его выбираем отдельно.
 
 ## 7. Обновление
+
+На настроенном VPS штатное обновление запускается из корня репозитория командой `pnpm --dir app deploy:vps`. Для ручного обновления используйте следующие шаги. [Порядок выкладки через Actions](../../README.md#деплой-и-обновления-vps)
 
 1. Скачать новый доверенный артефакт, проверить sha256, распаковать в новый каталог по SHA. Свободного диска должно хватать на новый релиз и полную локальную копию DB/media.
 2. Установить изменённые unit/scripts осознанно, выполнить `systemctl daemon-reload`. Не затирать вручную настройки домена/TLS.

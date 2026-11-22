@@ -15,6 +15,7 @@ pnpm dev
 
 При переходе со старой версии укажите `DATABASE_URL=file:./private/database/site.sqlite` в существующем `.env`. Относительный путь считается от каталога `app`. Для уже созданной пустой базы начальные материалы можно добавить командой `pnpm seed`. Не запускайте dev и production на одном файле базы.
 - [Домашний сервер и локальная сеть](../docs/deployment/home-server.md)
+- [Сборка на GitHub и обновление VPS одной командой](../README.md#деплой-и-обновления-vps)
 - [VPS: CI-релиз, systemd, Nginx/TLS, обновления и копии](../docs/deployment/native-vps.md)
 - [Помощь менеджеру](../docs/admin/manager-guide.md), также встроена в `/admin/help`.
 

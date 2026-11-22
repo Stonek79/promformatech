@@ -2,9 +2,9 @@
 
 Workflow `ci.yml` запускается для PR в `main`: проверяет формат, типы, CSS и синтаксис серверных скриптов. Модульные, интеграционные, браузерные тесты и тесты серверных скриптов запускаются локально по [инструкции проекта](../../app/README.md#проверка-перед-коммитом).
 
-Workflow `release.yml` сразу собирает Linux x86_64-артефакт. Перед упаковкой GitHub Actions запускает готовый релиз вне исходного каталога и проверяет запуск, миграции SQLite, админку, вход, ассеты и CLI обработчика. При пуше в `main` успешный релиз отправляется на VPS, если задана переменная `VPS_AUTO_DEPLOY=true`. Сборка и установка зависимостей выполняются в GitHub Actions.
+Workflow `release.yml` собирает Linux x86_64-артефакт при ручном запуске или пуше в `main` с изменениями файлов из фильтра релиза. Правки только в документации и локальных тестах сборку не запускают. Перед упаковкой GitHub Actions запускает готовый релиз вне исходного каталога и проверяет запуск, миграции SQLite, админку, вход, ассеты и CLI обработчика. Автоматическая выкладка после пуша требует `VPS_AUTO_DEPLOY=true`. Сборка и установка зависимостей выполняются в GitHub Actions. [Фильтр релиза](../../.github/workflows/release.yml)
 
-Ручная проверка сборки: **Actions → Native Linux release → Run workflow**. По умолчанию она только создаёт архив и контрольную сумму. Чтобы отправить ручной релиз на VPS, выберите ветку `main` и включите `deploy_to_vps`. [Условия ручного запуска GitHub Actions](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch)
+Для сборки без выкладки откройте **Actions → Native Linux release → Run workflow** и оставьте `deploy_to_vps` выключенным. Для запуска сборки с выкладкой выполните `pnpm --dir app deploy:vps` из корня репозитория. Команда запускает ручной workflow для текущего `main` на GitHub. [Порядок обновления](../../README.md#деплой-и-обновления-vps) · [Условия ручного запуска GitHub Actions](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch)
 
 ## Первый релиз с локализацией
 
@@ -35,7 +35,8 @@ restic -r /srv/promformatech/backups/restic \
 ```bash
 install -m 755 /srv/promformatech/source/deploy/*.sh /usr/local/lib/promformatech/
 install -m 755 /srv/promformatech/source/deploy/extract-release.py /usr/local/lib/promformatech/
-install -m 644 /srv/promformatech/source/deploy/systemd/* /etc/systemd/system/
+install -m 644 /srv/promformatech/source/deploy/systemd/*.service \
+  /srv/promformatech/source/deploy/systemd/*.timer /etc/systemd/system/
 systemctl daemon-reload
 systemctl start promformatech-backup.service
 journalctl -u promformatech-backup.service -n 30 --no-pager
@@ -123,7 +124,7 @@ df --block-size=1 --output=avail /srv/promformatech/releases
 for script in maintenance.sh update.sh receive-release.sh deploy-gateway.sh extract-release.py; do
   cmp -s "deploy/$script" "/usr/local/lib/promformatech/$script" || printf 'Отличается скрипт %s\n' "$script"
 done
-for unit in deploy/systemd/*; do
+for unit in deploy/systemd/*.service deploy/systemd/*.timer; do
   cmp -s "$unit" "/etc/systemd/system/${unit##*/}" || printf 'Отличается unit %s\n' "${unit##*/}"
 done
 nginx -t
@@ -132,7 +133,7 @@ curl --fail --silent --show-error http://127.0.0.1:3001/api/health/ready
 
 Сравнивайте файлы после получения проверенного коммита `main`. Отличия разберите отдельно. Если отличается только `receive-release.sh`, обновите этот скрипт как root командой `install -m 755 deploy/receive-release.sh /usr/local/lib/promformatech/`. Для этого шага перезапуск сайта не требуется. Действующие конфиги Nginx, TLS, `shared/app.env` и systemd настраиваются администратором.
 
-Сначала запустите ручную доставку из `main` с `deploy_to_vps`, проверьте публичный сайт, админку и резервную копию. После успешного запуска добавьте в GitHub Actions переменную `VPS_AUTO_DEPLOY` со значением `true`.
+Первую выкладку запустите вручную командой `pnpm --dir app deploy:vps`. Проверьте публичный сайт, админку и резервную копию. Для следующих ручных выкладок достаточно этой же команды. Если хотите выкладывать автоматически после рабочих пушей в `main`, после проверки добавьте переменную GitHub Actions `VPS_AUTO_DEPLOY=true`.
 
 Workflow выполняется последовательно на `main`; при новом запуске активное обновление не прерывается. Перед отправкой CI проверяет, что SHA релиза по-прежнему совпадает с вершиной `main`. Приёмник сверяет checksum, идентификатор коммита, установленные скрипты и unit-файлы до остановки сайта. Изменения серверной инфраструктуры применяются отдельно. При изменении unit-файлов требуется `systemctl daemon-reload`.
 

@@ -8,7 +8,31 @@ on:
         default: false
   push:
     branches: [main]
-    paths: ['app/**', 'deploy/**', '.github/workflows/release.yml']
+    paths:
+      - 'app/src/**'
+      - '!app/src/**/*.md'
+      - '!app/src/**/*.test.*'
+      - '!app/src/**/*.spec.*'
+      - 'app/public/**'
+      - 'app/seed-assets/**'
+      - 'app/package.json'
+      - 'app/pnpm-lock.yaml'
+      - 'app/pnpm-workspace.yaml'
+      - 'app/next.config.ts'
+      - 'app/tsconfig.json'
+      - 'app/postcss.config.mjs'
+      - 'app/biome.json'
+      - 'app/scripts/build.mjs'
+      - 'app/scripts/generate-payload-types.mjs'
+      - 'app/scripts/generate-tokens.mjs'
+      - 'app/scripts/lib/payload-type-paths.mjs'
+      - 'app/scripts/split-payload-types.mjs'
+      - 'app/scripts/release/build.mjs'
+      - 'app/scripts/release/verify.mjs'
+      - 'deploy/*.sh'
+      - 'deploy/extract-release.py'
+      - 'deploy/systemd/*.service'
+      - 'deploy/systemd/*.timer'
 permissions:
   contents: read
 concurrency:
@@ -42,7 +66,11 @@ jobs:
           for script in ../deploy/*.sh; do
             bash -n "$script"
           done
-          cp -R ../deploy artifacts/release/deploy
+          deployment=artifacts/release/deploy
+          mkdir -p "$deployment/nginx" "$deployment/systemd"
+          cp ../deploy/*.sh ../deploy/extract-release.py ../deploy/app.env.example "$deployment/"
+          cp ../deploy/nginx/*.conf "$deployment/nginx/"
+          cp ../deploy/systemd/*.service ../deploy/systemd/*.timer "$deployment/systemd/"
           tar -czf artifacts/promformatech-linux-x64.tar.gz -C artifacts/release .
           cd artifacts
           sha256sum promformatech-linux-x64.tar.gz > promformatech-linux-x64.tar.gz.sha256
