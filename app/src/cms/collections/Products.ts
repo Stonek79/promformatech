@@ -1,5 +1,6 @@
 import { COLLECTIONS } from "@/config/content";
 import { getArrayLabels } from "@/i18n/messages";
+import { requiredSourceText } from "../fields/common";
 import { showcaseCollection } from "./showcase";
 
 export const Products = showcaseCollection({
@@ -7,15 +8,32 @@ export const Products = showcaseCollection({
 	singular: "Продукция",
 	plural: "Продукция",
 	extraFields: [
-		{ name: "category", type: "text", label: "Группа продукции" },
+		{
+			name: "category",
+			type: "text",
+			label: "Группа продукции",
+			localized: true,
+		},
 		{
 			name: "specifications",
 			type: "array",
 			label: "Характеристики",
 			labels: getArrayLabels("specifications"),
 			fields: [
-				{ name: "label", type: "text", label: "Название", required: true },
-				{ name: "value", type: "text", label: "Значение", required: true },
+				{
+					name: "label",
+					type: "text",
+					label: "Название",
+					localized: true,
+					validate: requiredSourceText,
+				},
+				{
+					name: "value",
+					type: "text",
+					label: "Значение",
+					localized: true,
+					validate: requiredSourceText,
+				},
 			],
 		},
 	],

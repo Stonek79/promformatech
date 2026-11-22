@@ -5,6 +5,7 @@ import {
 	CONTENT_LIMITS,
 	PAGE_KINDS,
 } from "@/config/content";
+import { parseLocale } from "@/i18n/config";
 import { ownerOnly, staffOnly } from "../access";
 import { blocksField } from "../blocks/content-blocks";
 import {
@@ -28,10 +29,19 @@ export const Pages: CollectionConfig = {
 		group: "Содержание сайта",
 		useAsTitle: "title",
 		defaultColumns: ["title", "_status", "updatedAt"],
-		preview: (doc) => previewURL({ collection: COLLECTIONS.pages, id: doc.id }),
+		preview: (doc, { locale }) =>
+			previewURL({
+				collection: COLLECTIONS.pages,
+				id: doc.id,
+				locale: parseLocale(locale),
+			}),
 		livePreview: {
-			url: ({ data }) =>
-				previewURL({ collection: COLLECTIONS.pages, id: data.id }),
+			url: ({ data, locale }) =>
+				previewURL({
+					collection: COLLECTIONS.pages,
+					id: data.id,
+					locale: parseLocale(locale.code),
+				}),
 			breakpoints: [...ADMIN_BREAKPOINTS],
 		},
 	},
@@ -45,14 +55,19 @@ export const Pages: CollectionConfig = {
 	versions: { drafts: true, maxPerDoc: CONTENT_LIMITS.versions },
 	hooks: contentCollectionHooks(),
 	fields: [
-		titleField(),
+		titleField(true),
 		{
 			type: "tabs",
 			tabs: [
 				{
 					label: "Содержание",
 					fields: [
-						{ name: "heading", type: "text", label: "Заголовок на сайте" },
+						{
+							name: "heading",
+							type: "text",
+							label: "Заголовок на сайте",
+							localized: true,
+						},
 						{
 							name: "kind",
 							type: "select",
@@ -68,10 +83,10 @@ export const Pages: CollectionConfig = {
 								{ label: "Контакты", value: PAGE_KINDS.contacts },
 							],
 						},
-						blocksField(),
+						blocksField(true),
 					],
 				},
-				{ label: "Дополнительно", fields: [slugField(), seoField()] },
+				{ label: "Дополнительно", fields: [slugField(), seoField(true)] },
 			],
 		},
 		mediaReferencesField(),

@@ -1,39 +1,52 @@
 import Link from "next/link";
+import { BrandMark } from "@/components/site/BrandMark/BrandMark";
 import { Container } from "@/components/ui/Layout/Layout";
 import { ROUTES } from "@/config/content";
 import { IMAGE_SIZES } from "@/config/image";
-import { MediaImage } from "@/features/media/MediaView";
-import { mediaView } from "@/features/media/view-model";
+import type { SiteSettingsView } from "@/features/content/site-settings";
+import type { Locale } from "@/i18n/config";
 import { getMessages } from "@/i18n/messages";
-import { isPublicHref, phoneHref } from "@/lib/urls";
-import type { SiteSetting } from "@/payload-types";
+import {
+	interfaceLabels,
+	navigationLink,
+	siteBrandName,
+} from "@/i18n/site-copy";
+import { sitePath } from "@/i18n/site-path";
+import { phoneHref } from "@/lib/urls";
 import styles from "./Header.module.css";
 import { HeaderControls } from "./HeaderControls";
 
-export function Header({ settings }: { readonly settings: SiteSetting }) {
-	const { navigation: messages } = getMessages();
-	const navigation = (settings.navigation || [])
-		.filter((item) => item.visible !== false && isPublicHref(item.url))
-		.map((item) => ({ label: item.label, url: item.url || ROUTES.home }));
+export function Header({
+	settings,
+	locale,
+}: {
+	readonly settings: SiteSettingsView;
+	readonly locale: Locale;
+}) {
+	const { navigation: messages } = getMessages(locale);
+	const labels = interfaceLabels(settings, locale);
+	const navigation = settings.navigation
+		.filter((item) => item.visible !== false)
+		.flatMap((item) => navigationLink(item, locale));
 	return (
 		<header className={styles.header}>
 			<Container>
 				<div className={styles.top}>
 					<Link
-						href={ROUTES.home}
+						href={sitePath(ROUTES.home, locale)}
 						className={styles.logo}
-						aria-label={messages.homeLabel(settings.companyName)}
-					>
-						{typeof settings.logo === "object" && settings.logo ? (
-							<MediaImage
-								sizes={IMAGE_SIZES.logo}
-								asset={mediaView(settings.logo)}
-								alt={settings.companyName}
-								priority
-							/>
-						) : (
-							settings.companyName
+						aria-label={messages.homeLabel(
+							siteBrandName(settings.companyName, locale),
 						)}
+					>
+						<BrandMark
+							company={settings.companyName}
+							logo={settings.logo}
+							locale={locale}
+							sizes={IMAGE_SIZES.headerLogo}
+							className={styles.wordmark}
+							priority
+						/>
 					</Link>
 					<div className={styles.contacts}>
 						{settings.phone && (
@@ -41,19 +54,15 @@ export function Header({ settings }: { readonly settings: SiteSetting }) {
 						)}
 						<HeaderControls
 							navigation={navigation}
-							searchTitle={settings.labels?.searchTitle || messages.search}
-							searchPlaceholder={
-								settings.labels?.searchPlaceholder || messages.searchPlaceholder
-							}
-							searchButton={
-								settings.labels?.searchButton || messages.searchButton
-							}
+							searchTitle={labels.searchTitle}
+							searchPlaceholder={labels.searchPlaceholder}
+							searchButton={labels.searchButton}
 						/>
 					</div>
 				</div>
 				<nav className={styles.navigation} aria-label={messages.mainMenu}>
 					{navigation.map((item) => (
-						<Link key={item.url} href={item.url}>
+						<Link key={item.id || item.url} href={item.url} lang={item.lang}>
 							{item.label}
 						</Link>
 					))}

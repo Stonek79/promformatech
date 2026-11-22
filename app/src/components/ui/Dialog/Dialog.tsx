@@ -10,6 +10,7 @@ import styles from "./Dialog.module.css";
 
 type Props = {
 	readonly title: string;
+	readonly titleLanguage?: string;
 	readonly trigger: ReactElement;
 	readonly children: ReactNode;
 	readonly open?: boolean;
@@ -19,6 +20,7 @@ type Props = {
 
 export function Dialog({
 	title,
+	titleLanguage,
 	trigger,
 	children,
 	open,
@@ -34,7 +36,7 @@ export function Dialog({
 				<Primitive.Viewport className={styles.viewport}>
 					<Primitive.Popup className={classes(styles.popup, className)}>
 						<div className={styles.header}>
-							<Primitive.Title className={styles.title}>
+							<Primitive.Title className={styles.title} lang={titleLanguage}>
 								{title}
 							</Primitive.Title>
 							<Primitive.Close

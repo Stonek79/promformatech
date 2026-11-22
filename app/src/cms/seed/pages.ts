@@ -1,10 +1,73 @@
+import type { Payload } from "payload";
 import { BLOCK_TYPES } from "@/config/blocks";
-import { PAGE_KINDS, PAGE_SLUGS, PUBLICATION, ROUTES } from "@/config/content";
+import {
+	COLLECTIONS,
+	PAGE_KINDS,
+	PAGE_SLUGS,
+	PUBLICATION,
+	ROUTES,
+} from "@/config/content";
+import { DEFAULT_LOCALE, LOCALES } from "@/i18n/config";
+import { getMessages } from "@/i18n/messages";
 import type { Page } from "@/payload-types";
 import type { AssetLookup } from "./assets";
 import { richText } from "./rich-text";
 
-export function initialPages(
+const seedNames = {
+	[PAGE_SLUGS.home]: "home",
+	[PAGE_SLUGS.about]: "about",
+	[PAGE_SLUGS.products]: "products",
+	[PAGE_SLUGS.services]: "services",
+	[PAGE_SLUGS.projects]: "projects",
+	[PAGE_SLUGS.contacts]: "contact",
+} as const;
+
+async function seedPage(
+	cms: Payload,
+	data: ReturnType<typeof initialPages>[number],
+) {
+	const { id } = await cms.create({
+		collection: COLLECTIONS.pages,
+		locale: DEFAULT_LOCALE,
+		data,
+		overrideAccess: true,
+	});
+	const key = seedNames[data.slug as keyof typeof seedNames];
+	if (!key) {
+		return;
+	}
+	for (const locale of [LOCALES.en, LOCALES.de]) {
+		await cms.update({
+			collection: COLLECTIONS.pages,
+			id,
+			locale,
+			data: {
+				title: getMessages(locale).navigation.items[key],
+				_status: PUBLICATION.published,
+			},
+			overrideAccess: true,
+		});
+	}
+}
+
+export async function seedInitialPages(
+	cms: Payload,
+	asset: AssetLookup,
+	services: readonly number[],
+) {
+	for (const data of initialPages(asset, services)) {
+		const found = await cms.count({
+			collection: COLLECTIONS.pages,
+			where: { slug: { equals: data.slug } },
+			overrideAccess: true,
+		});
+		if (!found.totalDocs) {
+			await seedPage(cms, data);
+		}
+	}
+}
+
+function initialPages(
 	asset: AssetLookup,
 	services: readonly number[],
 ): Omit<Page, "id" | "createdAt" | "updatedAt">[] {

@@ -1,5 +1,7 @@
 import { Fragment, type ReactNode } from "react";
 import { COLLECTIONS, SHOWCASE_COLLECTIONS } from "@/config/content";
+import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
+import { localizedPublicHref } from "@/i18n/site-copy";
 import { isSafeHref, materialPath, pagePath } from "@/lib/urls";
 import styles from "./content.module.css";
 
@@ -72,9 +74,9 @@ function renderText(node: Node): ReactNode {
 	return text;
 }
 
-function renderNode(node: Node, key: number): ReactNode {
+function renderNode(node: Node, key: number, locale: Locale): ReactNode {
 	const children = Array.isArray(node.children)
-		? node.children.map(renderNode)
+		? node.children.map((child, index) => renderNode(child, index, locale))
 		: null;
 	switch (node.type) {
 		case "text":
@@ -103,7 +105,7 @@ function renderNode(node: Node, key: number): ReactNode {
 		case "autolink": {
 			const url = linkURL(node.fields);
 			return url ? (
-				<a key={key} href={url} rel="noreferrer">
+				<a key={key} href={localizedPublicHref(url, locale)} rel="noreferrer">
 					{children}
 				</a>
 			) : (
@@ -115,7 +117,15 @@ function renderNode(node: Node, key: number): ReactNode {
 	}
 }
 
-export function RichText({ data }: { readonly data: unknown }) {
+export function RichText({
+	data,
+	locale,
+	language = DEFAULT_LOCALE,
+}: {
+	readonly data: unknown;
+	readonly locale: Locale;
+	readonly language?: Locale;
+}) {
 	if (
 		!data ||
 		typeof data !== "object" ||
@@ -128,6 +138,8 @@ export function RichText({ data }: { readonly data: unknown }) {
 		return null;
 	}
 	return (
-		<div className={styles.richText}>{data.root.children.map(renderNode)}</div>
+		<div className={styles.richText} lang={language}>
+			{data.root.children.map((node, index) => renderNode(node, index, locale))}
+		</div>
 	);
 }

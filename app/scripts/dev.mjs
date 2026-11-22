@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import { once } from "node:events";
-import { PROCESS_ROLE } from "../src/config/runtime.ts";
+import { PROCESS_ROLE, RUNTIME } from "../src/config/runtime.ts";
 
 const DEFAULT_HOST = "127.0.0.1";
 const BOOTSTRAP_SCRIPT = "src/cms/scripts/bootstrap-dev.ts";
@@ -28,18 +28,21 @@ function stop() {
 function launch(
 	command,
 	args,
-	{ bootstrap = false, detached = false, role = PROCESS_ROLE.web } = {},
+	{ bootstrap = false, detached = false, role = PROCESS_ROLE.web, env } = {},
 ) {
 	const stdio = [detached ? "ignore" : "inherit", "inherit", "inherit"];
 	const watchParent = bootstrap || detached;
-	const env = { ...environment, APP_PROCESS_ROLE: role };
+	const childEnv = { ...environment, ...env, APP_PROCESS_ROLE: role };
 	if (watchParent) {
-		env.NODE_OPTIONS = [env.NODE_OPTIONS, `--import=${WATCH_PARENT.href}`]
+		childEnv.NODE_OPTIONS = [
+			childEnv.NODE_OPTIONS,
+			`--import=${WATCH_PARENT.href}`,
+		]
 			.filter(Boolean)
 			.join(" ");
 	}
 	const child = spawn(command, args, {
-		env,
+		env: childEnv,
 		detached,
 		stdio: watchParent ? [...stdio, "ipc"] : stdio,
 	});
@@ -100,7 +103,10 @@ async function run() {
 				DEFAULT_HOST,
 				...process.argv.slice(2),
 			],
-			{ detached: true },
+			{
+				detached: true,
+				env: { SQLITE_SCHEMA_PUSH: RUNTIME.disabledSchemaPush },
+			},
 		),
 		launch("payload", ["run", WORKER_SCRIPT], {
 			detached: true,

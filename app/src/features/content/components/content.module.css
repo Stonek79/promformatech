@@ -157,7 +157,6 @@
 	order: -1;
 	padding: var(--pf-space-md);
 	text-align: center;
-	text-transform: uppercase;
 }
 .serviceCard .cardImage img {
 	height: 100%;
@@ -192,7 +191,6 @@
 	margin: 0;
 	font-size: var(--pf-font-size-body);
 	line-height: var(--pf-line-height-title);
-	text-transform: uppercase;
 }
 .steps p {
 	margin: 0;

@@ -1,41 +1,78 @@
+import { AddressMapLink } from "@/components/site/AddressMapLink";
 import { Heading } from "@/components/ui/Layout/Layout";
-import { isSafeHref, phoneHref } from "@/lib/urls";
-import type { SiteSetting } from "@/payload-types";
-import styles from "./pages.module.css";
+import { CONTACT_MAP_POSITION } from "@/config/maps";
+import { contactMap } from "@/features/content/contact-map";
+import type {
+	ContactLocation,
+	SiteSettingsView,
+} from "@/features/content/site-settings";
+import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
+import { AddressMapPreview } from "./AddressMapPreview";
+import { ContactPeople } from "./ContactPeople";
+import styles from "./Contacts.module.css";
 
-export function Contacts({ settings }: { readonly settings: SiteSetting }) {
+function OfficeCard({
+	location,
+	locale,
+}: {
+	readonly location: ContactLocation;
+	readonly locale: Locale;
+}) {
+	const address = location.address?.trim();
+	const map = contactMap(location);
+	const preview = map?.preview ? (
+		<AddressMapPreview
+			address={map.address}
+			addressLanguage={location.addressLanguage}
+			href={map.href}
+			locale={locale}
+			preview={map.preview}
+		/>
+	) : null;
+	const position = preview ? map?.position : undefined;
+
 	return (
-		<div className={styles.locations}>
+		<section className={styles.location} data-map-position={position}>
+			<div className={styles.details}>
+				{location.title && (
+					<Heading as="h2" lang={location.titleLanguage}>
+						{location.title}
+					</Heading>
+				)}
+				<address className={styles.address}>
+					{address && (
+						<p className={styles.street} lang={location.addressLanguage}>
+							{map && !preview ? (
+								<AddressMapLink
+									address={address}
+									href={map.href}
+									locale={location.addressLanguage}
+								/>
+							) : (
+								address
+							)}
+						</p>
+					)}
+					{position === CONTACT_MAP_POSITION.address && preview}
+					<ContactPeople people={location.people} />
+				</address>
+			</div>
+			{position !== CONTACT_MAP_POSITION.address && preview}
+		</section>
+	);
+}
+
+export function Contacts({
+	settings,
+	locale,
+}: {
+	readonly settings: SiteSettingsView;
+	readonly locale: Locale;
+}) {
+	return (
+		<div className={styles.locations} lang={DEFAULT_LOCALE}>
 			{settings.locations?.map((location) => (
-				<section key={location.id} className={styles.location}>
-					<Heading as="h2">{location.title}</Heading>
-					<address>
-						<p>{location.address}</p>
-						{location.people?.map((person) => (
-							<div key={person.id} className={styles.person}>
-								<h3>
-									{person.name}
-									{person.position && <span> — {person.position}</span>}
-								</h3>
-								{person.phone && (
-									<a href={phoneHref(person.phone)}>{person.phone}</a>
-								)}
-								{person.email && (
-									<a href={`mailto:${person.email}`}>{person.email}</a>
-								)}
-								{isSafeHref(person.messengerURL) && (
-									<a
-										href={person.messengerURL}
-										target="_blank"
-										rel="noreferrer"
-									>
-										WhatsApp / WeChat ↗
-									</a>
-								)}
-							</div>
-						))}
-					</address>
-				</section>
+				<OfficeCard key={location.id} location={location} locale={locale} />
 			))}
 		</div>
 	);

@@ -1,3 +1,6 @@
+import { LOCALES } from "../../src/i18n/config";
+import { getMessages } from "../../src/i18n/messages";
+import { sitePath } from "../../src/i18n/site-path";
 import {
 	closePreview,
 	expect,
@@ -13,7 +16,6 @@ const HOME = {
 	api: "/api/pages",
 	editor: "/admin/collections/pages",
 	public: "/",
-	exitPreview: "/api/preview/exit",
 	heading: "Главная страница после правки менеджера",
 } as const;
 
@@ -33,10 +35,7 @@ test("manager edits the existing home hero, previews it and publishes without ex
 			.getByRole("heading", { level: 1 })
 			.textContent();
 		await page.goto(`${HOME.editor}/${original.id}`);
-		await page
-			.getByRole("textbox", { name: "Заголовок", exact: true })
-			.first()
-			.fill(HOME.heading);
+		await page.locator('input[name="blocks.0.heading"]').fill(HOME.heading);
 		await saveDraft(page, endpoint);
 		await visitor.reload();
 		await expect(visitor.getByRole("heading", { level: 1 })).toHaveText(
@@ -52,8 +51,20 @@ test("manager edits the existing home hero, previews it and publishes without ex
 				exact: true,
 			}),
 		).toHaveAttribute("href", `${HOME.editor}/${original.id}`);
+		const localizedHome = sitePath(HOME.public, LOCALES.de);
+		const { preview: messages } = getMessages(LOCALES.de);
+		await preview.goto(localizedHome);
+		await expect(preview.getByText(messages.status)).toBeVisible();
+		await expect(preview.getByRole("heading", { level: 1 })).toHaveText(
+			HOME.heading,
+		);
+		await preview.getByRole("button", { name: messages.exit }).click();
+		await expect(preview).toHaveURL(localizedHome);
+		await expect(preview.getByText(messages.status)).toHaveCount(0);
+		await expect(preview.getByRole("heading", { level: 1 })).toHaveText(
+			originalHeading || "",
+		);
 		await closePreview(preview);
-		await page.request.get(HOME.exitPreview);
 		await publish(page, endpoint);
 		await visitor.reload();
 		await expect(visitor.getByRole("heading", { level: 1 })).toHaveText(

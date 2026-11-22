@@ -2,12 +2,12 @@ import { mkdir, stat } from "node:fs/promises";
 import path from "node:path";
 import { getCMS } from "@/cms/client";
 import { seedSite } from "@/cms/seed/run";
-import { getRuntimeConfig } from "@/config/runtime";
+import { getRuntimeConfig, PROCESS_ROLE } from "@/config/runtime";
 import { databasePath } from "@/features/database/path";
 
 const runtime = getRuntimeConfig();
 const send = process.send?.bind(process);
-if (!runtime.schemaPush || !send) {
+if (runtime.role !== PROCESS_ROLE.web || !send) {
 	throw new Error("Запускайте подготовку базы через pnpm dev.");
 }
 
@@ -20,9 +20,16 @@ const existingFile = await stat(file).catch((error: unknown) => {
 	throw error;
 });
 
+const emptyDatabase = !existingFile || existingFile.size === 0;
+if (emptyDatabase && !runtime.schemaPush) {
+	throw new Error(
+		"SQLite-база пуста. Примените миграции или включите синхронизацию схемы.",
+	);
+}
+
 const cms = await getCMS();
 try {
-	if (!existingFile || existingFile.size === 0) {
+	if (emptyDatabase) {
 		await seedSite(cms);
 	}
 } finally {

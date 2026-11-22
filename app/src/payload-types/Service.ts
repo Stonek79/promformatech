@@ -8,7 +8,7 @@ import type { Media } from "./Media";
  */
 export interface Service {
 	id: number;
-	title: string;
+	title?: string | null;
 	summary?: string | null;
 	/**
 	 * Добавляйте готовые блоки, меняйте их порядок и отключайте ненужные. Сохраните черновик перед предпросмотром.

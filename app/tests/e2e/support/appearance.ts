@@ -4,6 +4,7 @@ import {
 	type TextSize,
 	THEMES,
 } from "../../../src/config/appearance";
+import { DEFAULT_LOCALE, type Locale } from "../../../src/i18n/config";
 import { getMessages } from "../../../src/i18n/messages";
 import { expect } from "./admin";
 
@@ -13,8 +14,10 @@ export function themeSwitch(page: Page) {
 	return page.getByRole("switch", { name: messages.darkTheme, exact: true });
 }
 
-export function sizeButton(page: Page) {
-	return page.getByRole("button", { name: messages.sizeAction("") });
+export function sizeButton(page: Page, locale: Locale = DEFAULT_LOCALE) {
+	return page.getByRole("button", {
+		name: getMessages(locale).appearance.sizeAction(""),
+	});
 }
 
 export async function setTheme(
@@ -29,9 +32,14 @@ export async function setTheme(
 	await expect(control).toHaveAttribute("aria-checked", String(checked));
 }
 
-export async function setTextSize(page: Page, size: TextSize) {
-	const control = sizeButton(page);
-	const label = messages.sizeAction(messages.sizes[size]);
+export async function setTextSize(
+	page: Page,
+	size: TextSize,
+	locale: Locale = DEFAULT_LOCALE,
+) {
+	const control = sizeButton(page, locale);
+	const { appearance } = getMessages(locale);
+	const label = appearance.sizeAction(appearance.sizes[size]);
 	for (const _option of TEXT_SIZE_OPTIONS) {
 		if ((await control.getAttribute("aria-label")) === label) {
 			return;

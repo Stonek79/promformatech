@@ -13,7 +13,7 @@
 .address {
 	display: grid;
 	gap: var(--pf-space-md);
-	max-width: var(--pf-reading-width);
+	max-width: min(100%, var(--pf-reading-width));
 	font-style: normal;
 	font-size: var(--pf-font-size-small);
 }
@@ -29,9 +29,26 @@
 .address svg {
 	color: var(--pf-color-brand);
 }
+.contactLine {
+	min-inline-size: 0;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+.address .addressLink {
+	text-decoration: underline;
+}
 .logo {
-	width: var(--pf-logo-width);
-	max-width: 100%;
+	max-width: min(100%, var(--pf-header-wordmark-width));
+}
+.logo img {
+	width: min(100%, var(--pf-header-wordmark-width));
+	height: auto;
+}
+.wordmark {
+	font-family: var(--pf-font-body);
+	font-size: var(--pf-font-size-header-brand);
+	font-weight: var(--pf-font-weight-strong);
 }
 .bottom {
 	display: flex;

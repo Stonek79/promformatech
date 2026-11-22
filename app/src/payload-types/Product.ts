@@ -8,13 +8,13 @@ import type { Media } from "./Media";
  */
 export interface Product {
 	id: number;
-	title: string;
+	title?: string | null;
 	summary?: string | null;
 	category?: string | null;
 	specifications?:
 		| {
-				label: string;
-				value: string;
+				label?: string | null;
+				value?: string | null;
 				id?: string | null;
 		  }[]
 		| null;

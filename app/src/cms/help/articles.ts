@@ -3,6 +3,7 @@ import { editorialHelp } from "./editorial";
 import { mediaHelp } from "./media";
 import { publicationHelp } from "./publication";
 import { settingsHelp } from "./settings";
+import { translationsHelp } from "./translations";
 import { troubleshootingHelp } from "./troubleshooting";
 import type { HelpArticle } from "./types";
 
@@ -11,5 +12,6 @@ export const helpArticles: Readonly<Record<HelpTopic, HelpArticle>> = {
 	...editorialHelp,
 	[HELP_TOPICS.media]: mediaHelp,
 	...settingsHelp,
+	[HELP_TOPICS.translations]: translationsHelp,
 	[HELP_TOPICS.troubleshooting]: troubleshootingHelp,
 };

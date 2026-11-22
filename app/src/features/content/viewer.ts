@@ -11,10 +11,15 @@ import {
 	ROUTES,
 	SHOWCASE_COLLECTIONS,
 } from "@/config/content";
+import {
+	DEFAULT_LOCALE,
+	type Locale,
+	SITE_LANGUAGE_QUERY,
+} from "@/i18n/config";
 
 export const PREVIEW_TARGET_COOKIE = "pf-preview-target";
 
-function editURL(target: unknown) {
+function editURL(target: unknown, locale: Locale) {
 	if (!target || typeof target !== "object") {
 		return ROUTES.admin;
 	}
@@ -28,20 +33,28 @@ function editURL(target: unknown) {
 		) &&
 		/^[1-9]\d*$/.test(String(value.id))
 	) {
-		return adminCollectionURL(String(value.collection), String(value.id));
+		const url = adminCollectionURL(String(value.collection), String(value.id));
+		return locale !== DEFAULT_LOCALE
+			? `${url}?${SITE_LANGUAGE_QUERY}=${locale}`
+			: url;
 	}
 	return ROUTES.admin;
 }
 
-export const getViewer = cache(async () => {
+export const getViewer = cache(async (locale: Locale = DEFAULT_LOCALE) => {
 	await connection();
 	const mode = await draftMode();
 	if (!mode.isEnabled) {
-		return { preview: false as const, user: null, editURL: ROUTES.admin };
+		return {
+			preview: false as const,
+			user: null,
+			editURL: ROUTES.admin,
+			locale,
+		};
 	}
 	const { user } = await (await getCMS()).auth({ headers: await headers() });
 	if (!isStaff(user)) {
-		redirect(ROUTES.exitPreview);
+		redirect(`${ROUTES.exitPreview}?${SITE_LANGUAGE_QUERY}=${locale}`);
 	}
 	let target = {};
 	try {
@@ -53,7 +66,12 @@ export const getViewer = cache(async () => {
 	} catch {
 		/* A malformed target never changes permissions. */
 	}
-	return { preview: true as const, user, editURL: editURL(target) };
+	return {
+		preview: true as const,
+		user,
+		editURL: editURL(target, locale),
+		locale,
+	};
 });
 
 export type Viewer = Awaited<ReturnType<typeof getViewer>>;

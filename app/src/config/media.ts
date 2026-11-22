@@ -11,6 +11,7 @@ export const MEDIA_FIELDS = {
 	video: "video",
 	logo: "logo",
 	footerLogo: "footerLogo",
+	mapPreview: "mapPreview",
 	cover: "cover",
 } as const;
 export const MEDIA_REFERENCE_FIELDS = {

@@ -1,19 +1,36 @@
-import type { Field } from "payload";
+import type { Field, TextField } from "payload";
+import { text as validateText } from "payload/shared";
 import { COLLECTIONS, CONTENT_LIMITS } from "@/config/content";
+import { DEFAULT_LOCALE } from "@/i18n/config";
 import { isSafeHref, isValidSlug } from "@/lib/urls";
 
-export const titleField = (): Field => ({
+export function requiredSourceText(
+	value: string | null | undefined,
+	options: Parameters<typeof validateText>[1],
+) {
+	return validateText(value?.trim(), {
+		...options,
+		required: options.req.locale === DEFAULT_LOCALE,
+	});
+}
+
+export const titleField = (
+	localized = false,
+): Extract<TextField, { hasMany?: false }> => ({
 	name: "title",
 	type: "text",
 	label: "Название",
-	required: true,
+	required: !localized,
+	localized,
+	...(localized ? { validate: requiredSourceText } : {}),
 	maxLength: CONTENT_LIMITS.title,
 });
 
-export const headingField = (): Field => ({
+export const headingField = (localized = false): Field => ({
 	name: "heading",
 	type: "text",
 	label: "Заголовок",
+	localized,
 });
 export const visibilityField = (): Field => ({
 	name: "visible",
@@ -61,16 +78,17 @@ export const slugField = (): Field => ({
 		"Используйте латинские буквы, цифры и дефисы; служебные адреса заняты.",
 });
 
-export const seoField = (): Field => ({
+export const seoField = (localized = false): Field => ({
 	name: "seo",
 	type: "group",
 	label: "Для поисковиков и ссылок",
 	fields: [
-		{ name: "title", type: "text", label: "Заголовок в поиске" },
+		{ name: "title", type: "text", label: "Заголовок в поиске", localized },
 		{
 			name: "description",
 			type: "textarea",
 			label: "Описание в поиске",
+			localized,
 			maxLength: CONTENT_LIMITS.summary,
 		},
 		mediaField("image", "Изображение для ссылки"),
@@ -92,7 +110,7 @@ export const mediaReferencesField = (): Field => ({
 	access: { create: () => false, update: () => false },
 });
 
-export const galleryField = (): Field => ({
+export const galleryField = (localized = false): Field => ({
 	name: "gallery",
 	type: "array",
 	labels: { singular: "файл", plural: "файлы" },
@@ -100,6 +118,6 @@ export const galleryField = (): Field => ({
 	admin: { description: "Перетаскивайте строки, чтобы изменить порядок." },
 	fields: [
 		mediaField("asset", "Файл"),
-		{ name: "caption", type: "text", label: "Подпись" },
+		{ name: "caption", type: "text", label: "Подпись", localized },
 	],
 });

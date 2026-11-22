@@ -74,7 +74,12 @@ export interface Config {
 	db: {
 		defaultIDType: number;
 	};
-	fallbackLocale: null;
+	fallbackLocale:
+		| ("false" | "none" | "null")
+		| false
+		| null
+		| ("ru" | "en" | "de")
+		| ("ru" | "en" | "de")[];
 	globals: {
 		[GLOBALS.site]: SiteSetting;
 		[GLOBALS.service]: ServiceSetting;
@@ -85,7 +90,7 @@ export interface Config {
 			| ServiceSettingsSelect<false>
 			| ServiceSettingsSelect<true>;
 	};
-	locale: null;
+	locale: "ru" | "en" | "de";
 	widgets: {
 		collections: CollectionsWidget;
 	};

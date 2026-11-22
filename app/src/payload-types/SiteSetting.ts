@@ -19,12 +19,33 @@ export interface SiteSetting {
 	footerLogo?: (number | null) | Media;
 	phone?: string | null;
 	email?: string | null;
-	address?: string | null;
-	hours?: string | null;
 	locations?:
 		| {
 				title?: string | null;
+				/**
+				 * Выберите язык контента в верхней панели и введите адрес на этом языке.
+				 */
 				address?: string | null;
+				showInFooter?: boolean | null;
+				/**
+				 * Сначала укажите адрес офиса или производства. Чтобы добавить карту, вставьте ссылку на нужную точку и выберите изображение карты.
+				 */
+				map?: {
+					visible?: boolean | null;
+					position?: ("beside" | "address" | "bottom") | null;
+					/**
+					 * Скопируйте ссылку из функции «Поделиться» выбранной карты. Без ссылки адрес откроется в поиске по картам.
+					 */
+					url?: string | null;
+					/**
+					 * Выберите изображение карты из медиатеки. Без превью адрес будет ссылкой.
+					 */
+					mapPreview?: (number | null) | Media;
+					/**
+					 * Очистите это поле при смене адреса. Чтобы заменить превью, выберите изображение карты выше.
+					 */
+					existingPreview?: string | null;
+				};
 				people?:
 					| {
 							name?: string | null;
@@ -40,7 +61,7 @@ export interface SiteSetting {
 		| null;
 	navigation?:
 		| {
-				label: string;
+				label?: string | null;
 				url?: string | null;
 				visible?: boolean | null;
 				id?: string | null;
@@ -53,6 +74,8 @@ export interface SiteSetting {
 				id?: string | null;
 		  }[]
 		| null;
+	footerTitle?: string | null;
+	hours?: string | null;
 	copyright?: string | null;
 	labels?: {
 		searchTitle?: string | null;
@@ -61,7 +84,6 @@ export interface SiteSetting {
 		emptySearch?: string | null;
 		emptyList?: string | null;
 		readMore?: string | null;
-		contactTitle?: string | null;
 		task?: string | null;
 		solution?: string | null;
 		result?: string | null;

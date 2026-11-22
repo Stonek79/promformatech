@@ -20,7 +20,7 @@ test("manager creates, previews and publishes a project with private drafts", as
 	await page.goto(adminCollectionURL(COLLECTIONS.projects, CMS_ACTIONS.create));
 	await page.getByRole("textbox", { name: /^Название/ }).fill(PROJECT_TITLE);
 	await page
-		.getByRole("textbox", { name: "Краткое описание", exact: true })
+		.locator('textarea[name="summary"]')
 		.fill("Первое описание проекта");
 	await saveDraft(page, api);
 	await expect(page).toHaveURL(new RegExp(`${editor}/\\d+$`));
@@ -67,13 +67,13 @@ test("manager creates, previews and publishes a project with private drafts", as
 	).toBeVisible();
 	await page.getByRole("button", { name: "Содержание", exact: true }).click();
 	await page
-		.getByRole("textbox", { name: "Краткое описание", exact: true })
+		.locator('textarea[name="summary"]')
 		.fill("Новая правка в черновике");
 	await saveDraft(page, endpoint);
 	await page.reload();
-	await expect(
-		page.getByRole("textbox", { name: "Краткое описание", exact: true }),
-	).toHaveValue("Новая правка в черновике");
+	await expect(page.locator('textarea[name="summary"]')).toHaveValue(
+		"Новая правка в черновике",
+	);
 	await visitor.reload();
 	await expect(
 		visitor.getByText("Первое описание проекта", { exact: true }),

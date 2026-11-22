@@ -20,17 +20,11 @@ body {
 	font-size: var(--pf-font-size-body);
 	line-height: var(--pf-line-height-body);
 	overflow-wrap: anywhere;
+	hyphens: none;
 }
 body > main {
 	flex: 1;
 	min-height: var(--pf-page-min-height);
-}
-h1,
-h2,
-h3,
-p,
-figcaption {
-	hyphens: auto;
 }
 h1,
 h2,

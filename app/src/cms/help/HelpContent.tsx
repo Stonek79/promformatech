@@ -59,7 +59,12 @@ export function HelpContent() {
 						{article.note && <p className={styles.note}>{article.note}</p>}
 						<div className={styles.links}>
 							{article.links?.map((link) => (
-								<Link href={link.href} key={link.href}>
+								<Link
+									href={link.href}
+									key={link.href}
+									download={link.download}
+									prefetch={link.download ? false : undefined}
+								>
 									{link.label}
 								</Link>
 							))}

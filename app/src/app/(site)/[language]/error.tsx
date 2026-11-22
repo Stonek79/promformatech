@@ -2,13 +2,15 @@
 
 import { Button } from "@/components/ui/Button/Button";
 import { Heading, Section } from "@/components/ui/Layout/Layout";
+import { useMessages } from "@/i18n/MessagesProvider";
 
 export default function ErrorPage({ reset }: { readonly reset: () => void }) {
+	const { error: messages } = useMessages();
 	return (
 		<Section>
-			<Heading as="h1">Не удалось загрузить страницу</Heading>
-			<p>Попробуйте ещё раз немного позже.</p>
-			<Button onClick={reset}>Повторить</Button>
+			<Heading as="h1">{messages.title}</Heading>
+			<p>{messages.description}</p>
+			<Button onClick={reset}>{messages.retry}</Button>
 		</Section>
 	);
 }

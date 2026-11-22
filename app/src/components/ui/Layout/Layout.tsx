@@ -25,12 +25,18 @@ export function Heading({
 	children,
 	as: Tag = "h2",
 	className,
+	lang,
 }: {
 	readonly children: ReactNode;
 	readonly as?: "h1" | "h2" | "h3";
 	readonly className?: string;
+	readonly lang?: string;
 }) {
-	return <Tag className={classes(styles.heading, className)}>{children}</Tag>;
+	return (
+		<Tag className={classes(styles.heading, className)} lang={lang}>
+			{children}
+		</Tag>
+	);
 }
 
 export function Stack({

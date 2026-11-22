@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { classes } from "@/lib/classes";
 import styles from "./Switch.module.css";
 
 type Props = {
@@ -6,6 +7,7 @@ type Props = {
 	readonly label: string;
 	readonly hint: string;
 	readonly children: ReactNode;
+	readonly className?: string;
 	readonly onCheckedChange: (checked: boolean) => void;
 };
 
@@ -14,6 +16,7 @@ export function Switch({
 	label,
 	hint,
 	children,
+	className,
 	onCheckedChange,
 }: Props) {
 	return (
@@ -23,7 +26,7 @@ export function Switch({
 			aria-label={label}
 			aria-checked={checked}
 			title={hint}
-			className={styles.switch}
+			className={classes(styles.switch, className)}
 			onClick={() => onCheckedChange(!checked)}
 		>
 			<span className={styles.track} aria-hidden="true">

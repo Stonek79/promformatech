@@ -10,10 +10,9 @@
 .heading {
 	margin: 0;
 	font-size: var(--pf-font-size-title);
-	font-weight: var(--pf-font-weight-body);
+	font-weight: var(--pf-font-weight-strong);
 	line-height: var(--pf-line-height-title);
 	overflow-wrap: anywhere;
-	text-transform: uppercase;
 }
 .stack {
 	display: flex;

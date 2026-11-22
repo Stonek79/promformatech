@@ -1,6 +1,6 @@
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
-import type { MigrateUpArgs } from "@payloadcms/db-sqlite";
+import type { MigrateDownArgs, MigrateUpArgs } from "@payloadcms/db-sqlite";
 import lockfile from "proper-lockfile";
 import { getCMS } from "@/cms/client";
 import { getRuntimeConfig, PROCESS_ROLE } from "@/config/runtime";
@@ -26,6 +26,7 @@ try {
 				...migration,
 				// Payload's base adapter erases the provider-specific migration arguments.
 				up: (args: unknown) => migration.up(args as MigrateUpArgs),
+				down: (args: unknown) => migration.down(args as MigrateDownArgs),
 			})),
 		});
 		await verifyLedger(cms);

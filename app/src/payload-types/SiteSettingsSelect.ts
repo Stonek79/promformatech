@@ -11,13 +11,21 @@ export interface SiteSettingsSelect<T extends boolean = true> {
 	footerLogo?: T;
 	phone?: T;
 	email?: T;
-	address?: T;
-	hours?: T;
 	locations?:
 		| T
 		| {
 				title?: T;
 				address?: T;
+				showInFooter?: T;
+				map?:
+					| T
+					| {
+							visible?: T;
+							position?: T;
+							url?: T;
+							mapPreview?: T;
+							existingPreview?: T;
+					  };
 				people?:
 					| T
 					| {
@@ -45,6 +53,8 @@ export interface SiteSettingsSelect<T extends boolean = true> {
 				url?: T;
 				id?: T;
 		  };
+	footerTitle?: T;
+	hours?: T;
 	copyright?: T;
 	labels?:
 		| T
@@ -55,7 +65,6 @@ export interface SiteSettingsSelect<T extends boolean = true> {
 				emptySearch?: T;
 				emptyList?: T;
 				readMore?: T;
-				contactTitle?: T;
 				task?: T;
 				solution?: T;
 				result?: T;

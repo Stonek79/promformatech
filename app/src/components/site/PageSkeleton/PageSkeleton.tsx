@@ -1,10 +1,11 @@
 import { Container } from "@/components/ui/Layout/Layout";
 import { Skeleton } from "@/components/ui/Skeleton/Skeleton";
+import type { Locale } from "@/i18n/config";
 import { getMessages } from "@/i18n/messages";
 import styles from "./PageSkeleton.module.css";
 
-export function PageSkeleton() {
-	const { common: messages } = getMessages();
+export function PageSkeleton({ locale }: { readonly locale: Locale }) {
+	const { common: messages } = getMessages(locale);
 	return (
 		<div
 			role="status"
@@ -24,7 +25,7 @@ export function PageSkeleton() {
 	);
 }
 
-export function ShellSkeleton() {
+export function ShellSkeleton({ locale }: { readonly locale: Locale }) {
 	return (
 		<main id="main-content">
 			<Container>
@@ -32,7 +33,7 @@ export function ShellSkeleton() {
 					<Skeleton className={styles.logo} />
 					<Skeleton className={styles.control} />
 				</div>
-				<PageSkeleton />
+				<PageSkeleton locale={locale} />
 			</Container>
 		</main>
 	);

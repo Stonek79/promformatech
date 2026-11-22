@@ -1,143 +1,242 @@
 import { ButtonLink } from "@/components/ui/Button/Button";
 import { Heading, Section } from "@/components/ui/Layout/Layout";
 import { BLOCK_TYPES } from "@/config/blocks";
-import { PUBLICATION, type ShowcaseCollection } from "@/config/content";
 import { IMAGE_SIZES } from "@/config/image";
 import { Gallery } from "@/features/media/Gallery";
 import { MediaImage, MediaVideo } from "@/features/media/MediaView";
 import { mediaView } from "@/features/media/view-model";
+import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
+import { localizedPublicHref } from "@/i18n/site-copy";
 import { classes } from "@/lib/classes";
 import { isPublicHref } from "@/lib/urls";
-import type { Page } from "@/payload-types";
+import {
+	type ArticleBlock,
+	blockOfType,
+	localizedBody,
+} from "../article-blocks";
+import { localizedText, matchRows } from "../localized-fields";
+import { localizedGallery } from "../localized-gallery";
+import { relatedMaterialCards } from "../material-locales";
 import styles from "./content.module.css";
 import { MaterialCards } from "./MaterialCards";
 import { RichText } from "./RichText";
-import specificationStyles from "./specifications.module.css";
+import { Specifications, Steps } from "./StructuredBlocks";
 
-type Blocks = NonNullable<Page["blocks"]>;
+type Blocks = ArticleBlock[];
 type Props = {
 	readonly blocks: Blocks | null | undefined;
+	readonly source?: Blocks | null;
 	readonly preview: boolean;
 	readonly home?: boolean;
+	readonly locale: Locale;
+	readonly contentLocale?: Locale;
 };
 
-export function ContentBlocks({ blocks, preview, home }: Props) {
-	return blocks
-		?.filter((block) => block.visible !== false)
-		.map((block, index) => {
-			if (block.blockType === BLOCK_TYPES.hero) {
-				return (
-					<section key={block.id} className={styles.hero}>
-						<div className={styles.heroImage}>
-							<MediaImage
-								asset={mediaView(block.image)}
-								priority={index === 0}
-								cover
-								sizes={IMAGE_SIZES.full}
-							/>
-						</div>
-						<div className={styles.heroOverlay} />
-						<div className={styles.heroBody}>
-							{block.heading && (
-								<Heading as={home && index === 0 ? "h1" : "h2"}>
-									{block.heading}
-								</Heading>
-							)}
-							{block.text && <p>{block.text}</p>}
-							{block.buttonLabel && isPublicHref(block.buttonURL) && (
-								<ButtonLink href={block.buttonURL}>
-									{block.buttonLabel}
-								</ButtonLink>
-							)}
-						</div>
-					</section>
-				);
-			}
+type BannerBlock = Extract<
+	ArticleBlock,
+	{
+		blockType: typeof BLOCK_TYPES.hero | typeof BLOCK_TYPES.callToAction;
+	}
+>;
+
+function BannerText({
+	block,
+	original,
+	locale,
+	language,
+}: {
+	readonly block: BannerBlock;
+	readonly original?: BannerBlock;
+	readonly locale: Locale;
+	readonly language: Locale;
+}) {
+	const text = localizedText(language, block.text, original?.text);
+	const button = localizedText(
+		language,
+		block.buttonLabel,
+		original?.buttonLabel,
+	);
+	return (
+		<>
+			{text.value && <p lang={text.lang}>{text.value}</p>}
+			{button.value && isPublicHref(block.buttonURL) && (
+				<ButtonLink href={localizedPublicHref(block.buttonURL, locale)}>
+					<span lang={button.lang}>{button.value}</span>
+				</ButtonLink>
+			)}
+		</>
+	);
+}
+
+function BlockContent({
+	block,
+	original,
+	locale,
+	language,
+	preview,
+}: {
+	readonly block: ArticleBlock;
+	readonly original?: ArticleBlock;
+	readonly locale: Locale;
+	readonly language: Locale;
+	readonly preview: boolean;
+}) {
+	switch (block.blockType) {
+		case BLOCK_TYPES.text: {
+			const source = blockOfType(original, block.blockType);
 			return (
-				<Section key={block.id} className={styles.block}>
-					{block.heading && <Heading>{block.heading}</Heading>}
-					{block.blockType === BLOCK_TYPES.text && (
-						<RichText data={block.body} />
-					)}
-					{block.blockType === BLOCK_TYPES.textImage && (
-						<div
-							className={classes(
-								styles.textImage,
-								block.imagePosition === "left" && styles.imageFirst,
-							)}
-						>
-							<RichText data={block.body} />
-							<MediaImage asset={mediaView(block.image)} />
-						</div>
-					)}
-					{block.blockType === BLOCK_TYPES.gallery && (
-						<Gallery
-							items={(block.gallery || []).flatMap((item) => {
-								const asset = mediaView(item.asset);
-								return asset ? [{ asset, caption: item.caption }] : [];
-							})}
-						/>
-					)}
-					{block.blockType === BLOCK_TYPES.video && (
-						<figure className={styles.figure}>
-							<MediaVideo asset={mediaView(block.video)} />
-							{block.caption && <figcaption>{block.caption}</figcaption>}
-						</figure>
-					)}
-					{block.blockType === BLOCK_TYPES.steps && (
-						<ol className={styles.steps}>
-							{block.items?.map((step) => (
-								<li key={step.id}>
-									<h3>{step.title}</h3>
-									<p>{step.text}</p>
-									{step.duration && <span>{step.duration}</span>}
-								</li>
-							))}
-						</ol>
-					)}
-					{block.blockType === BLOCK_TYPES.specifications && (
-						<dl
-							className={classes(
-								styles.specifications,
-								specificationStyles.list,
-							)}
-						>
-							{block.items?.map((item) => (
-								<div key={item.id}>
-									<dt>{item.label}</dt>
-									<dd>{item.value}</dd>
-								</div>
-							))}
-						</dl>
-					)}
-					{block.blockType === BLOCK_TYPES.cards && (
-						<MaterialCards
-							items={(block.items || []).flatMap((item) => {
-								const material = item.value;
-								return material &&
-									typeof material === "object" &&
-									(preview || material._status === PUBLICATION.published)
-									? [
-											{
-												collection: item.relationTo as ShowcaseCollection,
-												material,
-											},
-										]
-									: [];
-							})}
-						/>
-					)}
-					{block.blockType === BLOCK_TYPES.callToAction && (
-						<div className={styles.callToAction}>
-							<p>{block.text}</p>
-							{block.buttonLabel && isPublicHref(block.buttonURL) && (
-								<ButtonLink href={block.buttonURL}>
-									{block.buttonLabel}
-								</ButtonLink>
-							)}
-						</div>
-					)}
-				</Section>
+				<RichText
+					{...localizedBody(language, block.body, source?.body)}
+					locale={locale}
+				/>
 			);
-		});
+		}
+		case BLOCK_TYPES.textImage: {
+			const source = blockOfType(original, block.blockType);
+			return (
+				<div
+					className={classes(
+						styles.textImage,
+						block.imagePosition === "left" && styles.imageFirst,
+					)}
+				>
+					<RichText
+						{...localizedBody(language, block.body, source?.body)}
+						locale={locale}
+					/>
+					<MediaImage asset={mediaView(block.image)} />
+				</div>
+			);
+		}
+		case BLOCK_TYPES.gallery: {
+			const source = blockOfType(original, block.blockType);
+			return (
+				<Gallery
+					items={localizedGallery(language, block.gallery, source?.gallery)}
+				/>
+			);
+		}
+		case BLOCK_TYPES.video: {
+			const source = blockOfType(original, block.blockType);
+			const caption = localizedText(language, block.caption, source?.caption);
+			return (
+				<figure className={styles.figure}>
+					<MediaVideo asset={mediaView(block.video)} locale={locale} />
+					{caption.value && (
+						<figcaption lang={caption.lang}>{caption.value}</figcaption>
+					)}
+				</figure>
+			);
+		}
+		case BLOCK_TYPES.steps:
+			return (
+				<Steps
+					block={block}
+					original={blockOfType(original, block.blockType)}
+					language={language}
+				/>
+			);
+		case BLOCK_TYPES.specifications:
+			return (
+				<Specifications
+					block={block}
+					original={blockOfType(original, block.blockType)}
+					language={language}
+				/>
+			);
+		case BLOCK_TYPES.cards:
+			return (
+				<MaterialCards
+					locale={locale}
+					items={relatedMaterialCards(
+						block,
+						blockOfType(original, block.blockType),
+						language,
+						preview,
+					)}
+				/>
+			);
+		case BLOCK_TYPES.callToAction:
+			return (
+				<div className={styles.callToAction}>
+					<BannerText
+						block={block}
+						original={blockOfType(original, block.blockType)}
+						locale={locale}
+						language={language}
+					/>
+				</div>
+			);
+		default:
+			return null;
+	}
+}
+
+export function ContentBlocks({
+	blocks,
+	source,
+	preview,
+	home,
+	locale,
+	contentLocale = DEFAULT_LOCALE,
+}: Props) {
+	return matchRows(
+		blocks?.filter((block) => block.visible !== false),
+		source,
+		(block, original) => ({
+			block,
+			original: blockOfType(original, block.blockType),
+		}),
+	).map(({ block, original }, index) => {
+		const heading = localizedText(
+			contentLocale,
+			block.heading,
+			original?.heading,
+		);
+		if (block.blockType === BLOCK_TYPES.hero) {
+			return (
+				<section key={block.id} className={styles.hero}>
+					<div className={styles.heroImage}>
+						<MediaImage
+							asset={mediaView(block.image)}
+							priority={index === 0}
+							cover
+							sizes={IMAGE_SIZES.full}
+						/>
+					</div>
+					<div className={styles.heroOverlay} />
+					<div className={styles.heroBody}>
+						{heading.value && (
+							<Heading
+								as={home && index === 0 ? "h1" : "h2"}
+								lang={heading.lang}
+							>
+								{heading.value}
+							</Heading>
+						)}
+						<BannerText
+							block={block}
+							original={blockOfType(original, block.blockType)}
+							locale={locale}
+							language={contentLocale}
+						/>
+					</div>
+				</section>
+			);
+		}
+		return (
+			<Section key={block.id} className={styles.block}>
+				{heading.value && (
+					<Heading lang={heading.lang}>{heading.value}</Heading>
+				)}
+				<BlockContent
+					block={block}
+					original={original}
+					locale={locale}
+					language={contentLocale}
+					preview={preview}
+				/>
+			</Section>
+		);
+	});
 }

@@ -10,5 +10,6 @@ export type HelpArticle = {
 	readonly links?: readonly {
 		readonly label: string;
 		readonly href: string;
+		readonly download?: true;
 	}[];
 };

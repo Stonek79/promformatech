@@ -8,7 +8,7 @@ import type { Media } from "./Media";
  */
 export interface Page {
 	id: number;
-	title: string;
+	title?: string | null;
 	heading?: string | null;
 	kind: "content" | "home" | "products" | "projects" | "services" | "contacts";
 	/**

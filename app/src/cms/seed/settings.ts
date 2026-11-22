@@ -1,7 +1,71 @@
-import { ROUTES } from "@/config/content";
+import type { Payload } from "payload";
+import { GLOBALS, PUBLICATION, ROUTES } from "@/config/content";
+import { DEFAULT_LOCALE, LOCALES, type Locale } from "@/i18n/config";
+import { getMessages } from "@/i18n/messages";
 import type { AssetLookup } from "./assets";
 
-export function initialSettings(asset: AssetLookup) {
+const officeAddresses = {
+	[LOCALES.ru]: "г. Москва, ул. Маршала Соколовского, д. 3, этаж 4",
+	[LOCALES.en]: "3 Marshala Sokolovskogo Street, 4th floor, Moscow",
+	[LOCALES.de]: "Marschala-Sokolowskogo-Straße 3, 4. Stock, Moskau",
+} as const;
+
+const navigationItems = [
+	{ url: ROUTES.home, key: "home" },
+	{ url: ROUTES.about, key: "about" },
+	{ url: ROUTES.products, key: "products" },
+	{ url: ROUTES.projects, key: "projects" },
+	{ url: ROUTES.contact, key: "contact" },
+] as const;
+
+function settingsCopy(locale: Locale) {
+	const messages = getMessages(locale);
+	return {
+		footerTitle: messages.common.contacts,
+		hours: messages.footer.hours("9:00", "18:00"),
+		copyright: messages.footer.copyright("2026", messages.common.brand),
+	};
+}
+
+export async function seedInitialSettings(cms: Payload, asset: AssetLookup) {
+	const data = initialSettings(asset);
+	const { locations, navigation } = await cms.updateGlobal({
+		slug: GLOBALS.site,
+		locale: DEFAULT_LOCALE,
+		data: { ...data, _status: PUBLICATION.published },
+		overrideAccess: true,
+	});
+	for (const locale of [LOCALES.en, LOCALES.de]) {
+		const labels = getMessages(locale).navigation.items;
+		const labelsByURL = new Map<string, string>(
+			navigationItems.map(({ url, key }) => [url, labels[key]]),
+		);
+		await cms.updateGlobal({
+			slug: GLOBALS.site,
+			locale,
+			data: {
+				...settingsCopy(locale),
+				_status: PUBLICATION.published,
+				navigation: navigation?.map((item) => ({
+					...item,
+					label: labelsByURL.get(item.url ?? ""),
+				})),
+				locations: locations?.map((office) => ({
+					...office,
+					title: undefined,
+					address: office.showInFooter ? officeAddresses[locale] : undefined,
+					people: office.people?.map((person) => ({
+						...person,
+						position: undefined,
+					})),
+				})),
+			},
+			overrideAccess: true,
+		});
+	}
+}
+
+function initialSettings(asset: AssetLookup) {
 	return {
 		companyName: "ПромФормаТех",
 		tagline:
@@ -10,29 +74,22 @@ export function initialSettings(asset: AssetLookup) {
 		footerLogo: asset("footerLogo"),
 		phone: "+7 985 306-98-66",
 		email: "jack@bgmold.com",
-		address: "г. Москва, ул. Маршала Соколовского, д. 3, этаж 4",
-		hours: "с 9:00 до 18:00",
-		navigation: [
-			{ label: "Главная", url: ROUTES.home, visible: true },
-			{ label: "О компании", url: ROUTES.about, visible: true },
-			{
-				label: "Наша продукция",
-				url: ROUTES.products,
-				visible: true,
-			},
-			{
-				label: "Реализованные проекты",
-				url: ROUTES.projects,
-				visible: true,
-			},
-			{ label: "Контакты", url: ROUTES.contact, visible: true },
-		],
+		...settingsCopy(DEFAULT_LOCALE),
+		navigation: navigationItems.map(({ key, url }) => ({
+			label: getMessages().navigation.items[key],
+			url,
+			visible: true,
+		})),
 		footerLinks: [],
-		copyright: "© 2026. ПромФормаТех. Все права защищены.",
 		locations: [
 			{
 				title: "Офис в Москве",
-				address: "г. Москва, ул. Маршала Соколовского, д. 3, этаж 4",
+				address: officeAddresses[LOCALES.ru],
+				showInFooter: true,
+				map: {
+					url: "https://www.openstreetmap.org/?mlat=55.79323&mlon=37.48931#map=17/55.79323/37.48931",
+					existingPreview: "/maps/moscow-office.webp",
+				},
 				people: [
 					{
 						name: "Jack",
@@ -92,7 +149,6 @@ export function initialSettings(asset: AssetLookup) {
 			emptyList:
 				"Материалы этого раздела скоро появятся. Свяжитесь с нами, чтобы обсудить вашу задачу.",
 			readMore: "Подробнее",
-			contactTitle: "Контакты",
 			task: "Задача клиента",
 			solution: "Наше решение",
 			result: "Результат",

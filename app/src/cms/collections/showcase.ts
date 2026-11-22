@@ -4,6 +4,7 @@ import {
 	CONTENT_LIMITS,
 	type ShowcaseCollection,
 } from "@/config/content";
+import { parseLocale } from "@/i18n/config";
 import { ownerOnly, publishedOrStaff, staffOnly } from "../access";
 import { blocksField } from "../blocks/content-blocks";
 import {
@@ -41,9 +42,19 @@ export function showcaseCollection({
 			group: "Содержание сайта",
 			useAsTitle: "title",
 			defaultColumns: ["title", "_status", "order", "updatedAt"],
-			preview: (doc) => previewURL({ collection: slug, id: doc.id }),
+			preview: (doc, { locale }) =>
+				previewURL({
+					collection: slug,
+					id: doc.id,
+					locale: parseLocale(locale),
+				}),
 			livePreview: {
-				url: ({ data }) => previewURL({ collection: slug, id: data.id }),
+				url: ({ data, locale }) =>
+					previewURL({
+						collection: slug,
+						id: data.id,
+						locale: parseLocale(locale.code),
+					}),
 				breakpoints: [...ADMIN_BREAKPOINTS],
 			},
 		},
@@ -57,7 +68,7 @@ export function showcaseCollection({
 		versions: { drafts: true, maxPerDoc: CONTENT_LIMITS.versions },
 		hooks: contentCollectionHooks(),
 		fields: [
-			titleField(),
+			titleField(true),
 			{
 				type: "tabs",
 				tabs: [
@@ -68,17 +79,18 @@ export function showcaseCollection({
 								name: "summary",
 								type: "textarea",
 								label: "Краткое описание",
+								localized: true,
 								maxLength: CONTENT_LIMITS.summary,
 							},
 							...extraFields,
-							blocksField(),
+							blocksField(true),
 						],
 					},
 					{
 						label: "Фото и видео",
 						fields: [
 							mediaField("featuredImage", "Главное изображение"),
-							galleryField(),
+							galleryField(true),
 						],
 					},
 					{
@@ -91,7 +103,7 @@ export function showcaseCollection({
 								label: "Порядок",
 								defaultValue: 0,
 							},
-							seoField(),
+							seoField(true),
 						],
 					},
 				],

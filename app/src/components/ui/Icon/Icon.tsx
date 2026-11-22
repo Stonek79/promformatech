@@ -7,12 +7,13 @@ const paths = {
 	menu: "M3 6h18M3 12h18M3 18h18",
 	close: "m6 6 12 12M18 6 6 18",
 	search: "m21 21-5-5M10.5 3a7.5 7.5 0 1 0 0 15 7.5 7.5 0 0 0 0-15Z",
+	globe:
+		"M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM3 12h18m-9-9a14 14 0 0 1 0 18 14 14 0 0 1 0-18Z",
 	arrow: "M4 12h16m-6-6 6 6-6 6",
 	phone:
 		"M7 3H4a1 1 0 0 0-1 1c0 9.4 7.6 17 17 17a1 1 0 0 0 1-1v-3l-5-2-2 2a13 13 0 0 1-7-7l2-2-2-5Z",
 	mail: "M3 5h18v14H3V5Zm0 0 9 8 9-8",
-	location:
-		"M12 21s7-7 7-12A7 7 0 0 0 5 9c0 5 7 12 7 12Zm0-15a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z",
+	externalLink: "M13 5h6v6m0-6-9 9m7-1v6H5V7h6",
 } as const;
 
 export function Icon({ name }: { readonly name: keyof typeof paths }) {

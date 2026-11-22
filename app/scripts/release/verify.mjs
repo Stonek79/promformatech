@@ -9,6 +9,10 @@ import { setTimeout as delay } from "node:timers/promises";
 const output = path.resolve("artifacts/release");
 const directory = await mkdtemp(path.join(os.tmpdir(), "pft-release-"));
 const release = path.join(directory, "release");
+const localizedCatalogs = [
+	{ locale: "en", heading: "Products" },
+	{ locale: "de", heading: "Produkte" },
+];
 // Moving outside the checkout catches accidental fallback to source node_modules.
 await cp(output, release, { recursive: true, verbatimSymlinks: true });
 const env = {
@@ -34,6 +38,18 @@ function cli(name, role = "web", args = []) {
 	});
 	assert.equal(result.status, 0, `Packaged CLI failed: ${name}`);
 }
+
+async function verifyLocalizedCatalog({ locale, heading }, headers) {
+	const response = await fetch(`http://127.0.0.1:3201/${locale}/products`, {
+		headers,
+	});
+	assert.equal(response.status, 200);
+	const html = await response.text();
+	assert(html.includes(`<html lang="${locale}"`));
+	assert(html.includes(`>${heading}</h1>`));
+	assert(html.includes("Шариковая направляющая колонна A-TRP"));
+}
+
 async function verifyWeb(origin, databaseAvailable = true) {
 	const child = spawn(process.execPath, ["server.js"], {
 		cwd: release,
@@ -101,6 +117,11 @@ async function verifyWeb(origin, databaseAvailable = true) {
 			}),
 		});
 		assert.equal(login.status, 200);
+		await Promise.all(
+			localizedCatalogs.map((catalog) =>
+				verifyLocalizedCatalog(catalog, headers),
+			),
+		);
 	} finally {
 		child.kill("SIGTERM");
 		for (let i = 0; i < 40 && child.exitCode === null; i++) {
@@ -122,7 +143,7 @@ try {
 	await verifyWeb("https://second-runtime.example.test");
 	await verifyWeb(env.SERVER_URL, false);
 	console.log(
-		"Relocated release: CLI, native SQLite/Sharp, web, assets, login and two runtime origins passed.",
+		"Relocated release: CLI, native SQLite/Sharp, localized pages, assets, login and two runtime origins passed.",
 	);
 } finally {
 	await rm(directory, { recursive: true, force: true });

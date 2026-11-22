@@ -1,7 +1,7 @@
 import { IMAGE_SIZES } from "@/config/image";
 import { mediaURL } from "@/config/media";
 import { MEDIA_DELIVERY } from "@/config/media-assets";
-import { LOCALES } from "@/i18n/config";
+import { LOCALES, type Locale } from "@/i18n/config";
 import { getMessages } from "@/i18n/messages";
 import { classes } from "@/lib/classes";
 import styles from "./media.module.css";
@@ -46,10 +46,12 @@ export function MediaImage({
 
 export function MediaVideo({
 	asset,
+	locale,
 }: {
 	readonly asset: MediaView | null | undefined;
+	readonly locale: Locale;
 }) {
-	const { media: messages } = getMessages();
+	const { media: messages } = getMessages(locale);
 	if (!isReadyVideo(asset)) {
 		return null;
 	}

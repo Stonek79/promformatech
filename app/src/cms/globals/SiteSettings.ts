@@ -5,6 +5,7 @@ import {
 	GLOBALS,
 	PUBLICATION,
 } from "@/config/content";
+import { parseLocale } from "@/i18n/config";
 import { isStaff, staffOnly } from "../access";
 import { mediaReferencesField } from "../fields/common";
 import { helpDescription } from "../help/config";
@@ -30,9 +31,11 @@ export const SiteSettings: GlobalConfig = {
 			elements: { Description: helpDescription(GLOBALS.site) },
 		},
 		group: "Содержание сайта",
-		preview: () => previewURL({ global: GLOBALS.site }),
+		preview: (_, { locale }) =>
+			previewURL({ global: GLOBALS.site, locale: parseLocale(locale) }),
 		livePreview: {
-			url: () => previewURL({ global: GLOBALS.site }),
+			url: ({ locale }) =>
+				previewURL({ global: GLOBALS.site, locale: parseLocale(locale.code) }),
 			breakpoints: [...ADMIN_BREAKPOINTS],
 		},
 	},

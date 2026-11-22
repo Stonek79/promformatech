@@ -24,7 +24,7 @@ import { MEDIA_POLICY, MEDIA_UPLOAD } from "./config/media";
 import { getRuntimeConfig } from "./config/runtime";
 import { ensureMediaStorage } from "./features/media/storage";
 import { uploadDirectory } from "./features/media/upload-source";
-import { DEFAULT_LOCALE, LOCALES } from "./i18n/config";
+import { DEFAULT_LOCALE, LOCALES, SITE_LANGUAGES } from "./i18n/config";
 import { allowedOrigins, serverURL } from "./lib/urls";
 
 const directory = path.dirname(fileURLToPath(import.meta.url));
@@ -59,6 +59,14 @@ export default buildConfig({
 	},
 	collections: [Users, Pages, Products, Services, Projects, Media],
 	globals: [SiteSettings, ServiceSettings],
+	localization: {
+		locales: Object.values(LOCALES).map((code) => ({
+			code,
+			label: SITE_LANGUAGES[code].name,
+		})),
+		defaultLocale: DEFAULT_LOCALE,
+		fallback: false,
+	},
 	i18n: {
 		fallbackLanguage: DEFAULT_LOCALE,
 		supportedLanguages: { [LOCALES.ru]: ru },

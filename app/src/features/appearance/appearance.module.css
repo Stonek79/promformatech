@@ -3,10 +3,40 @@
 	align-items: center;
 	gap: var(--pf-space-sm);
 }
+.themeSwitch {
+	--sun-display: inline-flex;
+	--moon-display: none;
+}
+.themeSwitch[aria-checked="true"] {
+	--sun-display: none;
+	--moon-display: inline-flex;
+}
+.sun {
+	display: var(--sun-display);
+}
+.moon {
+	display: var(--moon-display);
+}
+:global(html[data-site-theme]) .controls {
+	--pf-switch-width: var(--pf-header-switch-width);
+	--pf-switch-height: var(--pf-header-switch-height);
+	--pf-switch-thumb: var(--pf-header-switch-thumb);
+	--pf-switch-icon: var(--pf-header-switch-icon);
+	gap: var(--pf-space-xs);
+}
+:global(html[data-site-theme]) .themeSwitch {
+	/* The resolved CSS theme is available on the first paint and after navigation. */
+	--switch-visual-position: var(--pf-theme-switch-position);
+	--sun-display: var(--pf-theme-switch-sun);
+	--moon-display: var(--pf-theme-switch-moon);
+}
 .controls .sizeButton {
 	position: relative;
 	border-radius: var(--pf-radius-control);
 	padding-bottom: var(--pf-space-sm);
+}
+:global(html[data-site-theme]) .sizeButton {
+	--pf-icon-size: var(--pf-header-control-icon);
 }
 .levels {
 	position: absolute;

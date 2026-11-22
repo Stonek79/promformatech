@@ -12,6 +12,27 @@ import {
 const DARK_BACKGROUND = "rgb(17, 25, 35)";
 const LIGHT_BACKGROUND = "rgb(255, 255, 255)";
 const NARROW_VIEWPORT = { width: 320, height: 900 };
+
+test.describe("before JavaScript runs", () => {
+	test.use({ javaScriptEnabled: false, colorScheme: "dark" });
+
+	test("the switch is drawn in the system dark position on first paint", async ({
+		page,
+	}) => {
+		await page.goto(ROUTES.home);
+		await expect(page.locator("body")).toHaveCSS(
+			"background-color",
+			DARK_BACKGROUND,
+		);
+		const thumb = themeSwitch(page).locator(":scope > span > span");
+		const offset = await thumb.evaluate(
+			(element) =>
+				new DOMMatrixReadOnly(getComputedStyle(element).transform).m41,
+		);
+		expect(offset).toBeGreaterThan(0);
+	});
+});
+
 test("site appearance follows OS and preserves explicit preferences", async ({
 	page,
 }) => {

@@ -1,12 +1,12 @@
 import path from "node:path";
 import type { Payload } from "payload";
-import { COLLECTIONS, GLOBALS, PUBLICATION } from "@/config/content";
+import { COLLECTIONS, GLOBALS } from "@/config/content";
 import { JOBS } from "@/config/jobs";
 import { MEDIA_STATUS } from "@/config/media";
 import { type AssetKey, type AssetLookup, SOURCE_ASSETS } from "./assets";
 import { initialProducts, initialServices } from "./materials";
-import { initialPages } from "./pages";
-import { initialSettings } from "./settings";
+import { seedInitialPages } from "./pages";
+import { seedInitialSettings } from "./settings";
 
 export async function seedSite(cms: Payload) {
 	const assets = new Map<AssetKey, number>();
@@ -84,31 +84,14 @@ export async function seedSite(cms: Payload) {
 			});
 		}
 	}
-	for (const data of initialPages(asset, serviceIDs)) {
-		const found = await cms.count({
-			collection: COLLECTIONS.pages,
-			where: { slug: { equals: data.slug } },
-			overrideAccess: true,
-		});
-		if (!found.totalDocs) {
-			await cms.create({
-				collection: COLLECTIONS.pages,
-				data,
-				overrideAccess: true,
-			});
-		}
-	}
+	await seedInitialPages(cms, asset, serviceIDs);
 	const settings = await cms.findGlobal({
 		slug: GLOBALS.site,
 		draft: true,
 		overrideAccess: true,
 	});
 	if (!settings.companyName) {
-		await cms.updateGlobal({
-			slug: GLOBALS.site,
-			data: { ...initialSettings(asset), _status: PUBLICATION.published },
-			overrideAccess: true,
-		});
+		await seedInitialSettings(cms, asset);
 	}
 	cms.logger.info(
 		"Начальные материалы добавлены. Существующий контент не перезаписан.",

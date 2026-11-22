@@ -11,6 +11,8 @@ import {
 } from "@/config/content";
 import { HTTP } from "@/config/http";
 import { PREVIEW_TARGET_COOKIE } from "@/features/content/viewer";
+import { parseLocale, SITE_LANGUAGE_QUERY } from "@/i18n/config";
+import { sitePath } from "@/i18n/site-path";
 import { materialPath, pagePath } from "@/lib/urls";
 
 export async function GET(request: Request) {
@@ -23,9 +25,10 @@ export async function GET(request: Request) {
 	const collection = parameters.get("collection");
 	const id = Number(parameters.get("id"));
 	const global = parameters.get("global");
+	const locale = parseLocale(parameters.get(SITE_LANGUAGE_QUERY));
 	let destination: string;
 	if (global === GLOBALS.site) {
-		destination = ROUTES.home;
+		destination = ROUTES.contact;
 	} else if (
 		collection &&
 		[COLLECTIONS.pages, ...SHOWCASE_COLLECTIONS].some(
@@ -40,6 +43,7 @@ export async function GET(request: Request) {
 		const doc = await cms.findByID({
 			collection: typedCollection,
 			id,
+			locale,
 			draft: true,
 			overrideAccess: false,
 			user,
@@ -65,5 +69,5 @@ export async function GET(request: Request) {
 			maxAge: AUTH.sessionSeconds,
 		},
 	);
-	redirect(destination);
+	redirect(sitePath(destination, locale));
 }

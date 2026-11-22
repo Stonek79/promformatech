@@ -4,6 +4,7 @@ export const ADMIN_HELP = {
 	path: "/help",
 	title: "Помощь менеджеру",
 	contentsID: "help-contents",
+	translationTemplate: "/templates/content-translations.csv",
 } as const;
 
 export const HELP_TOPICS = {
@@ -14,6 +15,7 @@ export const HELP_TOPICS = {
 	projects: COLLECTIONS.projects,
 	media: COLLECTIONS.media,
 	site: GLOBALS.site,
+	translations: "prepare-translations",
 	users: COLLECTIONS.users,
 	service: GLOBALS.service,
 	troubleshooting: "troubleshooting",

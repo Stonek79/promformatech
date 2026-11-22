@@ -37,6 +37,7 @@ export function AppearanceControls({
 	return (
 		<div className={styles.controls}>
 			<Switch
+				className={styles.themeSwitch}
 				checked={dark}
 				label={messages.darkTheme}
 				hint={dark ? messages.useLightTheme : messages.useDarkTheme}
@@ -44,7 +45,12 @@ export function AppearanceControls({
 					onThemeChange(checked ? THEMES.dark : THEMES.light)
 				}
 			>
-				<Icon name={dark ? "moon" : "sun"} />
+				<span className={styles.sun}>
+					<Icon name="sun" />
+				</span>
+				<span className={styles.moon}>
+					<Icon name="moon" />
+				</span>
 			</Switch>
 			<Button
 				variant="secondary"

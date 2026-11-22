@@ -6,7 +6,8 @@ import { Dialog } from "@/components/ui/Dialog/Dialog";
 import { IMAGE_SIZES } from "@/config/image";
 import { MEDIA_STATUS, mediaURL } from "@/config/media";
 import { MEDIA_DELIVERY, MEDIA_KIND } from "@/config/media-assets";
-import { useMessages } from "@/i18n/MessagesProvider";
+import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
+import { useLocale, useMessages } from "@/i18n/MessagesProvider";
 import { MediaImage, MediaVideo } from "./MediaView";
 import styles from "./media.module.css";
 import type { MediaView } from "./view-model";
@@ -14,19 +15,22 @@ import type { MediaView } from "./view-model";
 export type GalleryItem = {
 	readonly asset: MediaView;
 	readonly caption?: string | null;
+	readonly captionLanguage?: Locale;
 };
 
 export function Gallery({ items }: { readonly items: readonly GalleryItem[] }) {
 	const { media: messages } = useMessages();
+	const locale = useLocale();
 	const [selected, setSelected] = useState<number | null>(null);
 	return (
 		<div className={styles.gallery}>
 			{items
 				.filter(({ asset }) => asset.processingStatus === MEDIA_STATUS.ready)
-				.map(({ asset, caption }) => (
+				.map(({ asset, caption, captionLanguage }) => (
 					<figure key={asset.id} className={styles.figure}>
 						<Dialog
 							title={asset.title}
+							titleLanguage={DEFAULT_LOCALE}
 							open={selected === asset.id}
 							onOpenChange={(open) => setSelected(open ? asset.id : null)}
 							trigger={
@@ -56,12 +60,18 @@ export function Gallery({ items }: { readonly items: readonly GalleryItem[] }) {
 							{asset.kind === MEDIA_KIND.image ? (
 								<MediaImage asset={asset} sizes={IMAGE_SIZES.full} />
 							) : (
-								<MediaVideo asset={asset} />
+								<MediaVideo asset={asset} locale={locale} />
 							)}
-							{(caption || asset.caption) && <p>{caption || asset.caption}</p>}
+							{(caption || asset.caption) && (
+								<p lang={captionLanguage ?? DEFAULT_LOCALE}>
+									{caption || asset.caption}
+								</p>
+							)}
 						</Dialog>
 						{(caption || asset.caption) && (
-							<figcaption>{caption || asset.caption}</figcaption>
+							<figcaption lang={captionLanguage ?? DEFAULT_LOCALE}>
+								{caption || asset.caption}
+							</figcaption>
 						)}
 					</figure>
 				))}

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, type ReactNode, use } from "react";
+import { createContext, type ReactNode, useContext } from "react";
 import { DEFAULT_LOCALE, type Locale } from "./config";
 import { getMessages } from "./messages";
 
@@ -17,5 +17,9 @@ export function MessagesProvider({
 }
 
 export function useMessages() {
-	return getMessages(use(LocaleContext));
+	return getMessages(useLocale());
+}
+
+export function useLocale() {
+	return useContext(LocaleContext);
 }

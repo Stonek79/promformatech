@@ -1,7 +1,16 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { getCMS } from "@/cms/client";
-import { COLLECTIONS, PAGE_KINDS, PUBLICATION, ROLES } from "@/config/content";
+import {
+	COLLECTIONS,
+	CONTENT_LIMITS,
+	CONTEXT,
+	GLOBALS,
+	PAGE_KINDS,
+	PUBLICATION,
+	ROLES,
+} from "@/config/content";
+import { CONTACT_MAP_POSITION } from "@/config/maps";
 import { MEDIA_STATUS } from "@/config/media";
 
 if (!process.env.DATABASE_URL?.endsWith("/verification.sqlite")) {
@@ -62,6 +71,40 @@ try {
 	});
 	assert.equal(interrupted.processingStatus, MEDIA_STATUS.ready);
 	assert.equal(interrupted.derivativeKey, fixture.derivative);
+	const settings = await cms.findGlobal({ slug: GLOBALS.site, depth: 0 });
+	const [office, ...locations] = settings.locations ?? [];
+	assert(office);
+	await cms.updateGlobal({
+		slug: GLOBALS.site,
+		draft: false,
+		data: {
+			_status: PUBLICATION.published,
+			locations: [
+				{
+					...office,
+					map: {
+						visible: true,
+						position: CONTACT_MAP_POSITION.address,
+						mapPreview: fixture.mediaID,
+					},
+				},
+				...locations,
+			],
+		},
+		user: login.user,
+		overrideAccess: false,
+	});
+	const publishedSettings = await cms.findGlobal({
+		slug: GLOBALS.site,
+		draft: false,
+		depth: CONTENT_LIMITS.previewDepth,
+		overrideAccess: false,
+		context: { [CONTEXT.publicContent]: true },
+	});
+	const preview = publishedSettings.locations?.[0]?.map?.mapPreview;
+	assert(preview && typeof preview === "object");
+	assert.equal(preview.id, fixture.mediaID);
+	assert.equal(preview._status, PUBLICATION.published);
 	const maximum = (
 		await cms.find({
 			collection: COLLECTIONS.pages,

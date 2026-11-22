@@ -26,6 +26,14 @@ describe("runtime configuration", () => {
 			expect(runtime.schemaPush).toBe(role === PROCESS_ROLE.web);
 		},
 	);
+	it("can serve a migrated SQLite database without automatic schema changes", () => {
+		const runtime = getRuntimeConfig({
+			...ENVIRONMENT,
+			NODE_ENV: "development",
+			SQLITE_SCHEMA_PUSH: RUNTIME.disabledSchemaPush,
+		});
+		expect(runtime.schemaPush).toBe(false);
+	});
 	it("requires real runtime credentials but never echoes them", () => {
 		expect(() =>
 			getRuntimeConfig({ ...ENVIRONMENT, DATABASE_URL: undefined }),

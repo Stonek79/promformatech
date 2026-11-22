@@ -6,15 +6,31 @@ export const Projects = showcaseCollection({
 	singular: "Проект",
 	plural: "Реализованные проекты",
 	extraFields: [
-		{ name: "task", type: "textarea", label: "Задача клиента" },
-		{ name: "solution", type: "textarea", label: "Наше решение" },
-		{ name: "result", type: "textarea", label: "Результат" },
+		{
+			name: "task",
+			type: "textarea",
+			label: "Задача клиента",
+			localized: true,
+		},
+		{
+			name: "solution",
+			type: "textarea",
+			label: "Наше решение",
+			localized: true,
+		},
+		{ name: "result", type: "textarea", label: "Результат", localized: true },
 		{
 			name: "client",
 			type: "text",
 			label: "Клиент",
+			localized: true,
 			admin: { description: "Указывайте только с разрешения клиента." },
 		},
-		{ name: "location", type: "text", label: "Местоположение" },
+		{
+			name: "location",
+			type: "text",
+			label: "Местоположение",
+			localized: true,
+		},
 	],
 });

@@ -113,7 +113,7 @@ export type ContentBlock =
 			heading?: string | null;
 			items?:
 				| {
-						title: string;
+						title?: string | null;
 						text?: string | null;
 						duration?: string | null;
 						id?: string | null;
@@ -160,8 +160,8 @@ export type ContentBlock =
 			heading?: string | null;
 			items?:
 				| {
-						label: string;
-						value: string;
+						label?: string | null;
+						value?: string | null;
 						id?: string | null;
 				  }[]
 				| null;

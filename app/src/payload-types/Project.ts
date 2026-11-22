@@ -8,7 +8,7 @@ import type { Media } from "./Media";
  */
 export interface Project {
 	id: number;
-	title: string;
+	title?: string | null;
 	summary?: string | null;
 	task?: string | null;
 	solution?: string | null;

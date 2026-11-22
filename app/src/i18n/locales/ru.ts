@@ -11,6 +11,14 @@ export const ru = {
 		contacts: "Контакты",
 		footerNavigation: "Дополнительная навигация",
 	},
+	footer: {
+		hours: (open: string, close: string) => `с ${open} до ${close}`,
+		copyright: (year: string, brand: string) =>
+			`© ${year}. ${brand}. Все права защищены.`,
+	},
+	map: {
+		openAddress: (address: string) => `Открыть карту: ${address}`,
+	},
 	appearance: {
 		darkTheme: "Тёмная тема",
 		useLightTheme: "Включить светлую тему",
@@ -35,6 +43,40 @@ export const ru = {
 		mobileMenu: "Мобильное меню",
 		mainMenu: "Основное меню",
 		homeLabel: (company: string) => `${company} — главная`,
+		changeLanguage: (current: string) => `Язык сайта: ${current}`,
+		languages: "Язык сайта",
+		items: {
+			home: "Главная",
+			about: "О компании",
+			products: "Наша продукция",
+			services: "Услуги",
+			projects: "Реализованные проекты",
+			contact: "Контакты",
+		},
+	},
+	labels: {
+		searchTitle: "Поиск по сайту",
+		searchPlaceholder: "Что найти?",
+		searchButton: "Найти",
+		emptySearch:
+			"По вашему запросу ничего не найдено. Попробуйте другое название.",
+		emptyList:
+			"Материалы этого раздела скоро появятся. Свяжитесь с нами, чтобы обсудить вашу задачу.",
+		readMore: "Подробнее",
+		task: "Задача клиента",
+		solution: "Наше решение",
+		result: "Результат",
+		gallery: "Фото и видео",
+		specifications: "Характеристики",
+	},
+	search: {
+		resultsTitle: (title: string, query: string) =>
+			query ? `${title}: ${query}` : title,
+	},
+	error: {
+		title: "Не удалось загрузить страницу",
+		description: "Попробуйте ещё раз немного позже.",
+		retry: "Повторить",
 	},
 	media: {
 		open: (title: string) => `Открыть: ${title}`,

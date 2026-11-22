@@ -11,9 +11,15 @@ import {
 	type GlobalBeforeChangeHook,
 	type GlobalBeforeOperationHook,
 } from "payload";
-import { COLLECTIONS, CONTENT_CACHE, PUBLICATION } from "@/config/content";
+import {
+	CONTENT_CACHE,
+	PUBLICATION,
+	SHOWCASE_COLLECTIONS,
+	type ShowcaseCollection,
+} from "@/config/content";
 import { HTTP } from "@/config/http";
 import { collectMediaReferences } from "@/features/media/references";
+import { DEFAULT_LOCALE } from "@/i18n/config";
 import { slugify } from "@/lib/slug";
 import { isStaff } from "../access";
 import { publishReferencedMedia } from "./publication-media";
@@ -75,6 +81,57 @@ async function validatePublication(
 	return ids;
 }
 
+type PublicationContext = Parameters<CollectionBeforeChangeHook>[0];
+
+const hasText = (value: unknown) =>
+	typeof value === "string" && value.trim().length > 0;
+
+async function validateMaterialPublication(
+	values: Record<string, unknown>,
+	collection: ShowcaseCollection,
+	req: PublicationContext["req"],
+) {
+	if (req.locale === DEFAULT_LOCALE) {
+		if (!hasText(values.summary) || !values.featuredImage) {
+			throw new APIError(
+				"Для публикации добавьте краткое описание и главное изображение. Незавершённый материал можно сохранить черновиком.",
+				HTTP.badRequest,
+			);
+		}
+		return;
+	}
+	const id = values.id;
+	const source =
+		typeof id === "number" || typeof id === "string"
+			? await req.payload.findByID({
+					collection,
+					id,
+					locale: DEFAULT_LOCALE,
+					fallbackLocale: false,
+					draft: true,
+					depth: 0,
+					select: { title: true, summary: true },
+					disableErrors: true,
+					overrideAccess: false,
+					req: {
+						user: req.user,
+						transactionID: req.transactionID,
+						context: req.context,
+					},
+				})
+			: null;
+	if (
+		!hasText(source?.title) ||
+		!hasText(source?.summary) ||
+		!values.featuredImage
+	) {
+		throw new APIError(
+			"Для публикации заполните название и краткое описание на русском и добавьте главное изображение.",
+			HTTP.badRequest,
+		);
+	}
+}
+
 const validateCollectionPublication: CollectionBeforeChangeHook = async ({
 	data,
 	originalDoc,
@@ -82,16 +139,11 @@ const validateCollectionPublication: CollectionBeforeChangeHook = async ({
 	collection,
 }) => {
 	const merged = { ...originalDoc, ...data };
-	if (
-		merged._status === PUBLICATION.published &&
-		collection.slug !== COLLECTIONS.pages
-	) {
-		if (!merged.summary?.trim() || !merged.featuredImage) {
-			throw new APIError(
-				"Для публикации добавьте краткое описание и главное изображение. Незавершённый материал можно сохранить черновиком.",
-				HTTP.badRequest,
-			);
-		}
+	const showcase = SHOWCASE_COLLECTIONS.find(
+		(slug) => slug === collection.slug,
+	);
+	if (merged._status === PUBLICATION.published && showcase) {
+		await validateMaterialPublication(merged, showcase, req);
 	}
 	return { ...data, referencedMedia: await validatePublication(merged, req) };
 };
@@ -123,10 +175,15 @@ const invalidateAfterDelete: CollectionAfterDeleteHook = () => {
 
 export function contentCollectionHooks() {
 	return {
-		beforeOperation: [protectCollectionDrafts],
+		beforeOperation: [defaultContentLocale, protectCollectionDrafts],
 		beforeValidate: [assignSlug],
 		beforeChange: [validateCollectionPublication],
 		afterChange: [invalidateAfterChange],
 		afterDelete: [invalidateAfterDelete],
 	};
 }
+
+const defaultContentLocale: CollectionBeforeOperationHook = ({ args, req }) => {
+	req.locale ??= DEFAULT_LOCALE;
+	return args;
+};

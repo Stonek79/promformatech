@@ -38,6 +38,17 @@
 	border-radius: var(--pf-radius-circle);
 	background: var(--pf-color-button);
 	color: var(--pf-color-button-text);
+	transform: translateX(
+		calc(
+			(
+				var(--pf-switch-width) -
+				var(--pf-switch-thumb) -
+				var(--pf-switch-inset) *
+				2
+			) *
+			var(--switch-visual-position, var(--switch-checked-position, 0))
+		)
+	);
 	transition: transform var(--pf-motion-duration) var(--pf-motion-easing);
 }
 .thumb svg {
@@ -45,14 +56,7 @@
 	height: var(--pf-switch-icon);
 }
 .switch[aria-checked="true"] .thumb {
-	transform: translateX(
-		calc(
-			var(--pf-switch-width) -
-			var(--pf-switch-thumb) -
-			var(--pf-switch-inset) *
-			2
-		)
-	);
+	--switch-checked-position: 1;
 }
 @media (prefers-reduced-motion: reduce) {
 	.thumb {

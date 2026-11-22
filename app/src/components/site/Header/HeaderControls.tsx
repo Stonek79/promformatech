@@ -8,13 +8,18 @@ import { Input } from "@/components/ui/Field/Field";
 import { Icon } from "@/components/ui/Icon/Icon";
 import { CONTENT_LIMITS, ROUTES } from "@/config/content";
 import { SiteAppearance } from "@/features/appearance/SiteAppearance";
-import { useMessages } from "@/i18n/MessagesProvider";
+import type { Locale } from "@/i18n/config";
+import { useLocale, useMessages } from "@/i18n/MessagesProvider";
+import { sitePath } from "@/i18n/site-path";
 import styles from "./Header.module.css";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 type Props = {
 	readonly navigation: readonly {
-		readonly label: string;
+		readonly id?: string | null;
+		readonly label?: string | null;
 		readonly url: string;
+		readonly lang: Locale;
 	}[];
 	readonly searchTitle: string;
 	readonly searchPlaceholder: string;
@@ -28,9 +33,13 @@ export function HeaderControls({
 	searchButton,
 }: Props) {
 	const { navigation: messages } = useMessages();
+	const locale = useLocale();
 	const [menuOpen, setMenuOpen] = useState(false);
 	return (
 		<div className={styles.controls}>
+			<div className={styles.language}>
+				<LanguageSwitcher />
+			</div>
 			<div className={styles.quickControls}>
 				<Dialog
 					title={searchTitle}
@@ -46,7 +55,10 @@ export function HeaderControls({
 						</Button>
 					}
 				>
-					<form action={ROUTES.search} className={styles.search}>
+					<form
+						action={sitePath(ROUTES.search, locale)}
+						className={styles.search}
+					>
 						<label htmlFor="site-search">{searchPlaceholder}</label>
 						<Input
 							id="site-search"
@@ -76,8 +88,9 @@ export function HeaderControls({
 						>
 							{navigation.map((item) => (
 								<Link
-									key={item.url}
+									key={item.id || item.url}
 									href={item.url}
+									lang={item.lang}
 									onClick={() => setMenuOpen(false)}
 								>
 									{item.label}

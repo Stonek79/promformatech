@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { getCMS } from "@/cms/client";
 import {
 	COLLECTIONS,
@@ -6,12 +7,16 @@ import {
 	GLOBALS,
 	type ShowcaseCollection,
 } from "@/config/content";
+import { readMaterialCards, readMaterialLocales } from "./material-locales";
+import { readPageLocales } from "./page-locales";
 import {
+	materialListOptions,
 	publishedMaterial,
 	publishedMaterials,
 	publishedPage,
 	publishedSettings,
 } from "./queries";
+import { readLocalizedSettings } from "./site-settings";
 import type { Viewer } from "./viewer";
 
 const previewOptions = (viewer: Viewer) => ({
@@ -24,59 +29,84 @@ const previewOptions = (viewer: Viewer) => ({
 
 export async function readSettings(viewer: Viewer) {
 	if (!viewer.preview) {
-		return publishedSettings();
+		return publishedSettings(viewer.locale);
 	}
-	return (await getCMS()).findGlobal({
-		...previewOptions(viewer),
-		slug: GLOBALS.site,
-	});
+	const cms = await getCMS();
+	return readLocalizedSettings(viewer.locale, (locale) =>
+		cms.findGlobal({
+			...previewOptions(viewer),
+			slug: GLOBALS.site,
+			locale,
+			fallbackLocale: false,
+		}),
+	);
 }
 
-export async function readPage(slug: string, viewer: Viewer) {
+export const readPage = cache(async (slug: string, viewer: Viewer) => {
 	if (!viewer.preview) {
-		return publishedPage(slug);
+		return readPageLocales(viewer.locale, (locale) =>
+			publishedPage(slug, locale),
+		);
 	}
-	const { docs } = await (await getCMS()).find({
-		...previewOptions(viewer),
-		collection: COLLECTIONS.pages,
-		where: { slug: { equals: slug } },
-		limit: 1,
+	const cms = await getCMS();
+	return readPageLocales(viewer.locale, async (locale) => {
+		const { docs } = await cms.find({
+			...previewOptions(viewer),
+			collection: COLLECTIONS.pages,
+			locale,
+			fallbackLocale: false,
+			where: { slug: { equals: slug } },
+			limit: 1,
+		});
+		return docs[0] || null;
 	});
-	return docs[0] || null;
-}
+});
 
-export async function readMaterial(
-	collection: ShowcaseCollection,
-	slug: string,
-	viewer: Viewer,
-) {
-	if (!viewer.preview) {
-		return publishedMaterial(collection, slug);
-	}
-	const { docs } = await (await getCMS()).find({
-		...previewOptions(viewer),
-		collection,
-		where: { slug: { equals: slug } },
-		limit: 1,
-	});
-	return docs[0] || null;
-}
+export const readMaterial = cache(
+	async (collection: ShowcaseCollection, slug: string, viewer: Viewer) => {
+		if (!viewer.preview) {
+			return readMaterialLocales(viewer.locale, (locale) =>
+				publishedMaterial(collection, slug, locale),
+			);
+		}
+		const cms = await getCMS();
+		return readMaterialLocales(viewer.locale, async (locale) => {
+			const { docs } = await cms.find({
+				...previewOptions(viewer),
+				collection,
+				locale,
+				fallbackLocale: false,
+				where: { slug: { equals: slug } },
+				limit: 1,
+			});
+			return docs[0] || null;
+		});
+	},
+);
 
 export async function readMaterials(
 	collection: ShowcaseCollection,
 	viewer: Viewer,
 ) {
 	if (!viewer.preview) {
-		return publishedMaterials(collection);
+		return readMaterialCards(collection, viewer.locale, (locale) =>
+			publishedMaterials(collection, locale),
+		);
 	}
-	return (
-		await (
-			await getCMS()
-		).find({
-			...previewOptions(viewer),
-			collection,
-			sort: "order",
-			limit: CONTENT_LIMITS.pageSize,
-		})
-	).docs;
+	const cms = await getCMS();
+	return readMaterialCards(
+		collection,
+		viewer.locale,
+		async (locale) =>
+			(
+				await cms.find({
+					...previewOptions(viewer),
+					collection,
+					locale,
+					fallbackLocale: false,
+					...materialListOptions,
+					limit: CONTENT_LIMITS.pageSize,
+				})
+			).docs,
+	);
 }

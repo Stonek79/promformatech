@@ -8,5 +8,6 @@ export const IMAGE_SIZES = {
 	card: `(max-width: ${breakpoints.phone}) 100vw, (max-width: ${breakpoints.tablet}) 50vw, 33vw`,
 	productCard: `(min-width: ${breakpoints.wide}) min(25vw, ${productCardWidth}), (min-width: ${breakpoints.tablet}) min(33vw, ${productCardWidth}), (min-width: ${breakpoints.phone}) min(50vw, ${productCardWidth}), min(100vw, ${productCardWidth})`,
 	logo: `(max-width: ${breakpoints.wide}) 35vw, 33rem`,
+	headerLogo: tokens["header-wordmark-width"],
 } as const;
 export const IMAGE_QUERY = { width: "w" } as const;

@@ -8,6 +8,7 @@ export const RUNTIME = {
 	minimumSecretLength: 32,
 	databaseExtension: ".sqlite",
 	absoluteFilePrefix: "file:/",
+	disabledSchemaPush: "false",
 } as const;
 
 export const PROCESS_ROLE = {
@@ -136,7 +137,8 @@ export function getRuntimeConfig(
 		schemaPush:
 			!build &&
 			environment.NODE_ENV !== RUNTIME.production &&
-			role === PROCESS_ROLE.web,
+			role === PROCESS_ROLE.web &&
+			environment.SQLITE_SCHEMA_PUSH !== RUNTIME.disabledSchemaPush,
 		serverURL: getServerURL(environment),
 		databaseURL,
 		secret,

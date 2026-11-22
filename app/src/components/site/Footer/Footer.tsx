@@ -1,63 +1,83 @@
+import { AddressMapLink } from "@/components/site/AddressMapLink";
+import { BrandMark } from "@/components/site/BrandMark/BrandMark";
 import { Icon } from "@/components/ui/Icon/Icon";
 import { Container, Heading } from "@/components/ui/Layout/Layout";
 import { ANCHORS } from "@/config/content";
 import { IMAGE_SIZES } from "@/config/image";
-import { MediaImage } from "@/features/media/MediaView";
-import { mediaView } from "@/features/media/view-model";
+import { contactMap } from "@/features/content/contact-map";
+import type { SiteSettingsView } from "@/features/content/site-settings";
+import type { Locale } from "@/i18n/config";
 import { getMessages } from "@/i18n/messages";
-import { isPublicHref, phoneHref } from "@/lib/urls";
-import type { SiteSetting } from "@/payload-types";
+import { navigationLink } from "@/i18n/site-copy";
+import { phoneHref } from "@/lib/urls";
 import styles from "./Footer.module.css";
 
-export function Footer({ settings }: { readonly settings: SiteSetting }) {
-	const { common: messages } = getMessages();
-	const links = (settings.footerLinks || []).flatMap((link) =>
-		isPublicHref(link.url) ? [{ ...link, url: link.url }] : [],
+export function Footer({
+	settings,
+	locale,
+}: {
+	readonly settings: SiteSettingsView;
+	readonly locale: Locale;
+}) {
+	const { common: messages } = getMessages(locale);
+	const copy = settings.footer;
+	const office = settings.locations.find((location) => location.showInFooter);
+	const map = office && contactMap(office);
+	const links = settings.footerLinks.flatMap((link) =>
+		navigationLink(link, locale),
 	);
 	return (
 		<footer id={ANCHORS.contact} className={styles.footer}>
 			<Container>
-				<Heading>{settings.labels?.contactTitle || messages.contacts}</Heading>
+				<Heading lang={copy.title.value ? copy.title.lang : locale}>
+					{copy.title.value || messages.contacts}
+				</Heading>
 				<div className={styles.main}>
 					<address className={styles.address}>
 						{settings.phone && (
-							<a href={phoneHref(settings.phone)}>
+							<a href={phoneHref(settings.phone)} title={settings.phone}>
 								<Icon name="phone" />
-								{settings.phone}
+								<span className={styles.contactLine}>{settings.phone}</span>
 							</a>
 						)}
 						{settings.email && (
-							<a href={`mailto:${settings.email}`}>
+							<a href={`mailto:${settings.email}`} title={settings.email}>
 								<Icon name="mail" />
-								{settings.email}
+								<span className={styles.contactLine}>{settings.email}</span>
 							</a>
 						)}
-						{settings.address && (
-							<p>
-								<Icon name="location" />
-								{settings.address}
-							</p>
+						{map && office ? (
+							<AddressMapLink
+								address={map.address}
+								href={map.href}
+								locale={office.addressLanguage}
+								className={styles.addressLink}
+							/>
+						) : office?.address ? (
+							<p lang={office.addressLanguage}>{office.address}</p>
+						) : null}
+						{copy.hours.value && (
+							<p lang={copy.hours.lang}>{copy.hours.value}</p>
 						)}
-						{settings.hours && <p>{settings.hours}</p>}
 					</address>
 					<div className={styles.logo}>
-						{typeof settings.footerLogo === "object" && settings.footerLogo ? (
-							<MediaImage
-								sizes={IMAGE_SIZES.logo}
-								asset={mediaView(settings.footerLogo)}
-								alt={settings.companyName}
-							/>
-						) : (
-							settings.companyName
-						)}
+						<BrandMark
+							company={settings.companyName}
+							logo={settings.footerLogo}
+							locale={locale}
+							sizes={IMAGE_SIZES.headerLogo}
+							className={styles.wordmark}
+						/>
 					</div>
 				</div>
 				<div className={styles.bottom}>
-					<p>{settings.copyright}</p>
+					{copy.copyright.value && (
+						<p lang={copy.copyright.lang}>{copy.copyright.value}</p>
+					)}
 					{links.length > 0 && (
 						<nav aria-label={messages.footerNavigation}>
 							{links.map((link) => (
-								<a key={link.id} href={link.url}>
+								<a key={link.id || link.url} href={link.url} lang={link.lang}>
 									{link.label}
 								</a>
 							))}
