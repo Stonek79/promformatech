@@ -31,6 +31,7 @@ head -c "$((allowed_bytes + 1))" > "$stage/archive.tar.gz"
 archive_bytes=$(stat -c '%s' "$stage/archive.tar.gz")
 (( archive_bytes <= allowed_bytes )) || { echo 'Release archive exceeds the safe size.' >&2; exit 1; }
 printf '%s  %s\n' "$digest" "$stage/archive.tar.gz" | sha256sum -c -
+echo 'Archive verified on VPS. Extracting release.'
 mkdir "$stage/release"
 python3 /usr/local/lib/promformatech/extract-release.py "$stage/archive.tar.gz" "$stage/release" "$revision"
 
@@ -49,8 +50,31 @@ done
 chmod 755 "$stage/release"
 mv -- "$stage/release" "$destination"
 unit="promformatech-deploy-$run_id-$attempt"
-if ! systemd-run --unit "$unit" --wait --collect --service-type=exec \
-    /usr/local/lib/promformatech/update.sh "$destination"; then
+reported=0
+report_activation_progress() {
+    local line count=0
+    # Stream only fixed phase markers from this unit, keeping service output in the journal.
+    while IFS= read -r line; do
+        if (( ++count > reported )); then
+            printf '%s\n' "$line"
+        fi
+    done < <(journalctl --boot --quiet --no-pager --output=cat \
+        --grep='^Deploy (backup|migrations|readiness): (started|complete|failed)$' \
+        "_SYSTEMD_UNIT=$unit.service" _UID=0)
+    if (( count > reported )); then reported=$count; fi
+}
+
+systemd-run --unit "$unit" --wait --collect --service-type=exec \
+    /usr/local/lib/promformatech/update.sh "$destination" &
+activation_pid=$!
+while kill -0 "$activation_pid" 2>/dev/null; do
+    report_activation_progress
+    sleep 2
+done
+activation_status=0
+wait "$activation_pid" || activation_status=$?
+report_activation_progress
+if (( activation_status != 0 )); then
     echo "Deployment failed or its SSH session ended. Check: journalctl -u $unit" >&2
     exit 1
 fi

@@ -100,9 +100,10 @@ async function verifyPreview(preview: Page, locale: Locale) {
 		locale,
 	);
 	const [position, positionLang] = visibleCopy(locale, "position");
-	await expect(
-		main.getByText(`— ${position}`, { exact: true }),
-	).toHaveAttribute("lang", positionLang);
+	await expect(main.getByText(position, { exact: true })).toHaveAttribute(
+		"lang",
+		positionLang,
+	);
 	if (locale !== DEFAULT_LOCALE) {
 		await expect(main.locator('address p[lang="ru"]').first()).toBeVisible();
 	}

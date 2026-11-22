@@ -1,7 +1,9 @@
 .locations {
+	container: contact-locations / inline-size;
 	display: grid;
 	grid-template-columns: minmax(0, 1fr);
 	gap: var(--pf-space-md);
+	font-size: var(--pf-font-size-body);
 }
 .location {
 	display: grid;
@@ -13,6 +15,7 @@
 	background: var(--pf-color-surface);
 }
 .details {
+	container: contact-details / inline-size;
 	min-inline-size: 0;
 }
 .details h2 {
@@ -36,10 +39,7 @@
 }
 .people {
 	display: grid;
-	grid-template-columns: repeat(
-			auto-fit,
-			minmax(min(100%, var(--pf-contact-person-width)), 1fr)
-		);
+	grid-template-columns: minmax(0, 1fr);
 	gap: var(--pf-space-md);
 }
 .person {
@@ -50,22 +50,17 @@
 	padding-block-start: var(--pf-space-sm);
 	border-block-start: var(--pf-border-width) solid var(--pf-color-border);
 }
-.person h3 {
+.personIdentity :is(h3, p) {
 	margin: 0;
 	font-size: inherit;
 }
-.person span {
-	font-weight: var(--pf-font-weight-body);
+.personIdentity p {
+	color: var(--pf-color-muted);
 }
 .person a {
 	width: fit-content;
 	max-width: 100%;
 	color: var(--pf-color-action);
-}
-.contactLine {
-	overflow: hidden;
-	white-space: nowrap;
-	text-overflow: ellipsis;
 }
 .mapPreview {
 	position: relative;
@@ -126,6 +121,7 @@
 	font-family: var(--pf-font-reading);
 	font-size: var(--pf-font-size-small);
 	line-height: var(--pf-line-height-compact);
+	overflow-wrap: anywhere;
 }
 .mapAction:is(:hover, :focus-visible) .mapAddress {
 	visibility: visible;
@@ -150,8 +146,36 @@
 	.location[data-map-position] {
 		grid-column: 1 / -1;
 	}
+	@container contact-details (min-width: 22em) {
+		.people:has(> .person + .person) {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+		@supports (grid-template-rows: subgrid) {
+			.people:has(> .person + .person) {
+				row-gap: var(--pf-space-xs);
+				> .person {
+					grid-template-rows: subgrid;
+					grid-row: span 4;
+					> .personIdentity {
+						grid-row: 1;
+					}
+					> .phone {
+						grid-row: 2;
+					}
+					> .email {
+						grid-row: 3;
+					}
+					> .messenger {
+						grid-row: 4;
+					}
+				}
+			}
+		}
+	}
+}
+@container contact-locations (min-width: 48em) {
 	.location[data-map-position="beside"] {
-		grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 	.location[data-map-position="beside"] > .mapPreview {
 		aspect-ratio: auto;

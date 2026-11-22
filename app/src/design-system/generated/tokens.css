@@ -68,7 +68,6 @@
 	--pf-reading-width: 65rem;
 	--pf-map-preview-min-height: clamp(13rem, 22vw, 20rem);
 	--pf-map-preview-aspect-ratio: 16 / 10;
-	--pf-contact-person-width: calc(10.25rem * var(--pf-text-scale));
 	--pf-form-width: 42rem;
 	--pf-form-field-min-width: 18em;
 	--pf-control-height: 3rem;

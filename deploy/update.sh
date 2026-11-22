@@ -57,25 +57,35 @@ if ! stop_writers; then
     resume_previous || echo 'Could not restore the previous service state.' >&2
     exit 1
 fi
+echo 'Deploy backup: started'
 if ! snapshot; then
+    echo 'Deploy backup: failed'
     echo 'Backup failed before migration; restarting the previous release.' >&2
     resume_previous || echo 'Could not restore the previous service state.' >&2
     exit 1
 fi
+echo 'Deploy backup: complete'
 # Restarting old code after a partial schema change is unsafe.
-trap 'echo "Update failed after the migration stage began; inspect service status, backup and journal." >&2' ERR
+phase=migrations
+trap 'echo "Deploy $phase: failed"; echo "Update failed after the migration stage began; inspect service status, backup and journal." >&2' ERR
+echo 'Deploy migrations: started'
 cd "$release"
 runuser -u promformatech -- env APP_PROCESS_ROLE=migrator NODE_ENV=production \
     /usr/bin/node --env-file="$ENV_FILE" ops/migrate.mjs
+echo 'Deploy migrations: complete'
+phase=readiness
+echo 'Deploy readiness: started'
 ln -s "$release" "$ROOT/current.next"
 mv -Tf "$ROOT/current.next" "$ROOT/current"
 systemctl start "$WEB"
 if ! check_ready; then
     systemctl stop "$WEB"
+    echo 'Deploy readiness: failed'
     echo 'Readiness failed; worker stays stopped. Inspect journalctl.' >&2
     exit 1
 fi
 systemctl start "$TIMER"
+echo 'Deploy readiness: complete'
 echo 'Release activated. Check the public HTTPS site and admin before ending maintenance.'
 trap - ERR
 if ! prune_snapshots; then

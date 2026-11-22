@@ -36,6 +36,11 @@ test("contacts use the whole map as a link and reveal its address", async ({
 
 	const address = MOSCOW_EN;
 	const map = page.getByRole("link", { name: en.map.openAddress(address) });
+	const office = page
+		.locator('main section[data-map-position="beside"]')
+		.filter({
+			has: map,
+		});
 	const image = map.locator("img");
 	await expect(image).toBeVisible();
 	await expect
@@ -59,8 +64,35 @@ test("contacts use the whole map as a link and reveal its address", async ({
 	expect(new URL(target.url()).searchParams.get("mlat")).toBe("55.79323");
 	await target.close();
 
-	for (const width of [320, 693, 1920]) {
+	for (const width of [320, 390, 693, 1440, 1920]) {
 		await page.setViewportSize({ ...MOBILE, width });
+		const grid = await office.evaluate((section) => {
+			const details = section.firstElementChild?.getBoundingClientRect();
+			const preview = section.lastElementChild?.getBoundingClientRect();
+			const phones = Array.from(section.querySelectorAll('a[href^="tel:"]'));
+			const emails = Array.from(section.querySelectorAll('a[href^="mailto:"]'));
+			return {
+				columns: [details?.width ?? 0, preview?.width ?? 0],
+				mapBelow: (preview?.top ?? 0) >= (details?.bottom ?? 0),
+				people: phones.map(
+					(link) => link.parentElement?.getBoundingClientRect().width ?? 0,
+				),
+				phoneRows: phones.map((link) => link.getBoundingClientRect().top),
+				emailRows: emails.map((link) => link.getBoundingClientRect().top),
+			};
+		});
+		if (width >= 1440) {
+			expect(grid.mapBelow).toBe(false);
+			expect(grid.columns[0]).toBeCloseTo(grid.columns[1], 0);
+			expect(grid.people[0]).toBeCloseTo(grid.people[1], 0);
+			expect(grid.phoneRows[0]).toBeCloseTo(grid.phoneRows[1], 0);
+			expect(grid.emailRows[0]).toBeCloseTo(grid.emailRows[1], 0);
+		} else {
+			expect(grid.mapBelow).toBe(true);
+			if (width <= 390) {
+				expect(grid.phoneRows[1]).toBeGreaterThan(grid.phoneRows[0]);
+			}
+		}
 		const contacts = page.locator(
 			'main :is(a[href^="tel:"], a[href^="mailto:"])',
 		);

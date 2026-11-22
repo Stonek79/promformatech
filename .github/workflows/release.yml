@@ -127,11 +127,45 @@ jobs:
           printf '%s\n' "$VPS_DEPLOY_PRIVATE_KEY" > "$HOME/.ssh/pft-deploy"
           printf '%s\n' "$VPS_KNOWN_HOSTS" > "$HOME/.ssh/pft-known-hosts"
           cd release
-          sha256sum -c promformatech-linux-x64.tar.gz.sha256
-          digest=$(sha256sum promformatech-linux-x64.tar.gz | cut -d ' ' -f 1)
+          archive=promformatech-linux-x64.tar.gz
+          sha256sum -c "$archive.sha256"
+          digest=$(sha256sum "$archive" | cut -d ' ' -f 1)
           options=(-i "$HOME/.ssh/pft-deploy" -o IdentitiesOnly=yes -o BatchMode=yes
             -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/pft-known-hosts"
             -o ConnectTimeout=15)
-          ssh "${options[@]}" "pft-deploy@$VPS_HOST" \
-            "deploy $GITHUB_SHA $GITHUB_RUN_ID $GITHUB_RUN_ATTEMPT $digest" \
-            < promformatech-linux-x64.tar.gz
+          python3 - "$archive" <<'PY' | ssh "${options[@]}" "pft-deploy@$VPS_HOST" \
+            "deploy $GITHUB_SHA $GITHUB_RUN_ID $GITHUB_RUN_ATTEMPT $digest"
+          import os
+          import signal
+          import sys
+          from time import monotonic
+
+          def report(sent, total):
+              percent = sent * 100 // total
+              print(f"Archive transfer: {sent / 1e6:.1f}/{total / 1e6:.1f} MB ({percent}%)",
+                    file=sys.stderr, flush=True)
+
+          signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+          with open(sys.argv[1], "rb") as archive:
+              total = os.fstat(archive.fileno()).st_size
+              if not total:
+                  raise SystemExit("Release archive is empty.")
+              sent = 0
+              report(sent, total)
+              last_report = monotonic()
+              while chunk := archive.read(256 * 1024):
+                  sys.stdout.buffer.write(chunk)
+                  sys.stdout.buffer.flush()
+                  sent += len(chunk)
+                  now = monotonic()
+                  if sent == total or now - last_report >= 5:
+                      report(sent, total)
+                      last_report = now
+          PY
+      - name: Confirm public HTTPS readiness
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --retry 3 --max-time 10 \
+            https://promformateh.ru/api/health/ready | jq -e '.status == "ready"' >/dev/null
+          echo 'Public HTTPS readiness: confirmed.'

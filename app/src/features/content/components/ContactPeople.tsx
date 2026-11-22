@@ -14,32 +14,29 @@ export function ContactPeople({
 		<div className={styles.people}>
 			{people.map((person) => (
 				<div key={person.id} className={styles.person}>
-					<h3>
-						{person.name}
+					<div className={styles.personIdentity}>
+						<h3>{person.name}</h3>
 						{person.position && (
-							<span lang={person.positionLanguage}> — {person.position}</span>
+							<p lang={person.positionLanguage}>{person.position}</p>
 						)}
-					</h3>
+					</div>
 					{person.phone && (
-						<a
-							className={styles.contactLine}
-							href={phoneHref(person.phone)}
-							title={person.phone}
-						>
+						<a className={styles.phone} href={phoneHref(person.phone)}>
 							{person.phone}
 						</a>
 					)}
 					{person.email && (
-						<a
-							className={styles.contactLine}
-							href={`mailto:${person.email}`}
-							title={person.email}
-						>
+						<a className={styles.email} href={`mailto:${person.email}`}>
 							{person.email}
 						</a>
 					)}
 					{isSafeHref(person.messengerURL) && (
-						<a href={person.messengerURL} target="_blank" rel="noreferrer">
+						<a
+							className={styles.messenger}
+							href={person.messengerURL}
+							target="_blank"
+							rel="noreferrer"
+						>
 							WhatsApp / WeChat ↗
 						</a>
 					)}

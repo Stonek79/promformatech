@@ -62,7 +62,6 @@ export const tokens = {
 	"reading-width": "65rem",
 	"map-preview-min-height": "clamp(13rem, 22vw, 20rem)",
 	"map-preview-aspect-ratio": "16 / 10",
-	"contact-person-width": "calc(10.25rem * var(--pf-text-scale))",
 	"form-width": "42rem",
 	"form-field-min-width": "18em",
 	"control-height": "3rem",
