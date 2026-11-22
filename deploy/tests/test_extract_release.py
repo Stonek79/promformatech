@@ -1,6 +1,7 @@
 import io
 import importlib.util
 import json
+import stat
 import subprocess
 import sys
 import tarfile
@@ -36,6 +37,7 @@ class ExtractReleaseTests(unittest.TestCase):
             capture_output=True,
             text=True,
             check=False,
+            umask=0o077,
         )
 
     def create_archive(self, revision=REVISION, extra=None):
@@ -49,6 +51,22 @@ class ExtractReleaseTests(unittest.TestCase):
         self.create_archive()
         self.assertEqual(self.run_extractor().returncode, 0)
         self.assertEqual((self.output / "server.js").read_text(), "ok")
+
+    def test_runtime_can_traverse_release_directories_with_private_umask(self):
+        with tarfile.open(self.archive, "w:gz") as archive:
+            ops = tarfile.TarInfo("ops")
+            ops.type = tarfile.DIRTYPE
+            archive.addfile(ops)
+            add_file(archive, "ops/migrate.mjs", "ok")
+            add_file(archive, ".next/server/chunk.js", "ok")
+            add_file(archive, "release.json", json.dumps({"revision": REVISION}))
+            add_file(archive, "server.js", "ok")
+
+        result = self.run_extractor()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        for name in ("ops", ".next", ".next/server"):
+            with self.subTest(directory=name):
+                self.assertEqual(stat.S_IMODE((self.output / name).stat().st_mode), 0o755)
 
     def test_rejects_wrong_revision(self):
         self.create_archive(revision="b" * 40)

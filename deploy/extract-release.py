@@ -2,6 +2,7 @@
 """Extract a release without allowing archive paths to escape its directory."""
 
 import json
+import os
 import shutil
 import sys
 import tarfile
@@ -26,7 +27,13 @@ def main():
                 raise ValueError("Release exceeds extraction limits")
         if unpacked_bytes + MINIMUM_FREE_BYTES > shutil.disk_usage(destination).free:
             raise ValueError("Insufficient free disk space for release extraction")
-        archive.extractall(destination, members=members, filter="data")
+        # The data filter uses the process umask for extracted directories.
+        # The receiver keeps the surrounding staging directory private.
+        previous_umask = os.umask(0o022)
+        try:
+            archive.extractall(destination, members=members, filter="data")
+        finally:
+            os.umask(previous_umask)
 
     manifest = json.loads((destination / "release.json").read_text())
     if manifest.get("revision") != revision:

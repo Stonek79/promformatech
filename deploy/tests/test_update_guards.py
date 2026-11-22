@@ -33,7 +33,9 @@ class UpdateGuardTests(unittest.TestCase):
             "source /usr/local/lib/promformatech/maintenance.sh",
             f'source "{DEPLOY / "maintenance.sh"}"\n'
             f'ROOT="{self.root}"\nSHARED="$ROOT/shared"\n'
-            'ENV_FILE="$SHARED/app.env"\nrequire_root() { :; }',
+            'ENV_FILE="$SHARED/app.env"\nrequire_root() { :; }\n'
+            'runuser() { shift 3; [[ $3 != */ops/migrate.mjs ]] && "$@"; }\n'
+            'backup_ready() { echo "Backup preflight reached" >&2; return 1; }',
         ).replace("/usr/bin/node", NODE)
         if os.uname().sysname == "Darwin":
             update = update.replace("realpath -e", "realpath")
@@ -52,6 +54,20 @@ class UpdateGuardTests(unittest.TestCase):
         result = self.run_update()
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Database is missing", result.stderr)
+
+    def test_unreadable_migrator_fails_before_backup_and_service_changes(self):
+        database = self.root / "shared/database/site.sqlite"
+        database.parent.mkdir()
+        database.touch()
+        (self.release / "server.js").touch()
+        (self.release / "ops").mkdir()
+        (self.release / "ops/migrate.mjs").touch()
+        (self.release / "ops/worker.mjs").touch()
+
+        result = self.run_update()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Release entry is not readable by promformatech: ops/migrate.mjs", result.stderr)
+        self.assertNotIn("Backup preflight reached", result.stderr)
 
     def test_stale_next_link_fails_before_migration(self):
         os.symlink("missing", self.root / "current.next")

@@ -33,6 +33,12 @@ JS
 [[ -f "$SHARED/database/site.sqlite" ]] || {
     echo 'Database is missing. Initialize it explicitly before deployment.' >&2; exit 1;
 }
+for entry in server.js ops/migrate.mjs ops/worker.mjs; do
+    if [[ ! -f "$release/$entry" ]] || ! runuser -u promformatech -- test -r "$release/$entry"; then
+        printf 'Release entry is not readable by promformatech: %s\n' "$entry" >&2
+        exit 1
+    fi
+done
 backup_ready
 mkdir -p "$release/.next/cache" "$ROOT/backups"
 chown -R promformatech:promformatech "$release/.next/cache"
