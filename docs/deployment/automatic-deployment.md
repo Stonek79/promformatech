@@ -60,7 +60,7 @@ du -sh "$PFT_RESTORE_DIR/srv/promformatech/shared/media"
 
 ## Доступ GitHub Actions к VPS
 
-Используется отдельный системный пользователь `pft-deploy`: его ключ не является ключом root. Ключу назначена принудительная команда, принимающая только доставку релиза. Архив передаётся по SSH в root-owned временный каталог без второй промежуточной копии. Только администратор создаёт пользователя и root-owned `authorized_keys`, затем разрешает через проверенный `visudo` **только** `/usr/local/lib/promformatech/receive-release.sh`. Скрипт проверяет SHA-256, revision и содержимое архива; проверка SSH host key обязательна.
+Используется отдельный системный пользователь `pft-deploy`. Его ключу назначена принудительная команда для доставки релиза и запроса установки подписанных серверных файлов. Архив передаётся по SSH в каталог, принадлежащий root. Приёмник проверяет SHA-256, SHA коммита и содержимое архива. GitHub Actions проверяет SSH host key VPS.
 
 На Mac создать отдельный ключ без парольной фразы только для CI, не перезаписывая существующие ключи:
 
@@ -121,7 +121,7 @@ ssh -i ~/.ssh/id_promformatech_actions -o IdentitiesOnly=yes \
 ```bash
 cd /srv/promformatech/source
 df --block-size=1 --output=avail /srv/promformatech/releases
-for script in maintenance.sh update.sh receive-release.sh deploy-gateway.sh extract-release.py; do
+for script in backup.sh maintenance.sh update.sh receive-release.sh deploy-gateway.sh extract-release.py; do
   cmp -s "deploy/$script" "/usr/local/lib/promformatech/$script" || printf 'Отличается скрипт %s\n' "$script"
 done
 for unit in deploy/systemd/*.service deploy/systemd/*.timer; do
@@ -131,11 +131,83 @@ nginx -t
 curl --fail --silent --show-error http://127.0.0.1:3001/api/health/ready
 ```
 
-Сравнивайте файлы после получения проверенного коммита. Если изменились `receive-release.sh` и `update.sh`, до выкладки выполните из каталога проверенного коммита от root `install -m 755 deploy/receive-release.sh deploy/update.sh /usr/local/lib/promformatech/`. Скрипты вступят в действие при следующей выкладке.
+## Одноразовая настройка подписанных обновлений
+
+Подготовьте действующий VPS до первого пуша, который включает задачу `install-infrastructure`. Для этой настройки достаточно текущего доступа администратора. Конфигурация действующих служб, база и медиа лежат по прежним путям.
+
+### На Mac
+
+Создайте отдельный SSH-ключ для подписи. Если имя уже занято, выберите новый путь и используйте его в следующих командах. Задайте ключу пароль при генерации. Для SSH-подписи нужен Git версии 2.34 или новее.
+
+```bash
+cd /Users/alexstone/WebstormProjects/Promformatech
+/usr/bin/git --version
+ssh-keygen -t ed25519 -f ~/.ssh/id_promformatech_infra_signing -C promformatech-infra
+
+/usr/bin/git config --local gpg.format ssh
+/usr/bin/git config --local user.signingkey "$HOME/.ssh/id_promformatech_infra_signing"
+/usr/bin/git config --local commit.gpgsign true
+
+pft_signers="$HOME/.ssh/promformatech-infra-allowed-signers"
+awk '{print "promformatech-infra namespaces=\"git\" " $1 " " $2}' \
+  "$HOME/.ssh/id_promformatech_infra_signing.pub" > "$pft_signers"
+chmod 600 "$pft_signers"
+/usr/bin/git config --local gpg.ssh.allowedSignersFile "$pft_signers"
+```
+
+Передайте установщик, шлюз и файл с публичным ключом по проверенному административному SSH. Закрытый ключ подписи хранится на Mac.
+
+```bash
+pft_host=root@45.10.218.41
+pft_ssh="$HOME/.ssh/id_promformatech_vps"
+pft_bootstrap="$(ssh -i "$pft_ssh" -o IdentitiesOnly=yes "$pft_host" \
+  'mktemp -d /root/pft-infra-bootstrap.XXXXXXXX')" &&
+scp -i "$pft_ssh" -o IdentitiesOnly=yes \
+  deploy/install-infrastructure.py deploy/deploy-gateway.sh "$pft_signers" \
+  "$pft_host:$pft_bootstrap/" &&
+printf '%s\n' "$pft_bootstrap"
+```
+
+### На VPS от root
+
+Подставьте выведенный путь вместо `/root/pft-infra-bootstrap.XXXXXXXX`.
+
+```bash
+(
+  set -euo pipefail
+  pft_bootstrap=/root/pft-infra-bootstrap.XXXXXXXX
+  cd "$pft_bootstrap"
+  bash -n deploy-gateway.sh
+  test -s install-infrastructure.py
+  test -s promformatech-infra-allowed-signers
+
+  pft_sudoers="$(mktemp /etc/sudoers.d/.promformatech.XXXXXXXX)"
+  trap 'rm -f -- "$pft_sudoers"' EXIT
+  printf '%s\n' \
+    'pft-deploy ALL=(root) NOPASSWD: /usr/local/lib/promformatech/receive-release.sh *' \
+    'pft-deploy ALL=(root) NOPASSWD: /usr/local/lib/promformatech/install-infrastructure.py *' > "$pft_sudoers"
+  visudo -cf "$pft_sudoers"
+
+  install -d -o root -g root -m 700 /etc/promformatech
+  install -o root -g root -m 600 promformatech-infra-allowed-signers /etc/promformatech/infra-allowed-signers
+  install -o root -g root -m 755 install-infrastructure.py /usr/local/lib/promformatech/
+  install -o root -g root -m 440 "$pft_sudoers" /etc/sudoers.d/promformatech-deploy
+  install -o root -g root -m 755 deploy-gateway.sh /usr/local/lib/promformatech/
+  sudo -l -U pft-deploy
+)
+```
+
+Сделайте подписанный коммит на Mac через `/usr/bin/git commit`. Команда `/usr/bin/git verify-commit HEAD` проверяет подпись перед пушем. При изменении серверных файлов требуется подпись вершины `main` доверенным ключом. Если файлы уже совпадают, установщик пропускает замену. Существующие секреты `VPS_DEPLOY_PRIVATE_KEY` и `VPS_KNOWN_HOSTS` используются обеими задачами.
+
+### Что устанавливается автоматически
+
+Задача `install-infrastructure` выполняется между `build` и `deploy`. VPS получает текущий коммит `main` напрямую из GitHub, сверяет SHA, проверяет подпись при изменениях и устанавливает файлы из фиксированного списка. В список входят пять shell-скриптов доставки, резервирования и активации, распаковщик Python и пять systemd-юнитов приложения. При изменении юнитов устанавливающий скрипт проверяет их и выполняет `systemctl daemon-reload`. Если применение завершилось ошибкой, он восстанавливает прежние файлы.
+
+Шаблоны Nginx и `app.env.example` используются при подготовке хоста. Действующие `sites-enabled`, HTTPS, `shared/app.env`, ключи и sudoers управляются на VPS. Проверяющий скрипт `install-infrastructure.py` и список доверенных подписей устанавливает администратор.
 
 Первую выкладку запустите вручную командой `pnpm --dir app deploy:vps`. Проверьте публичный сайт, админку и резервную копию. Для следующих ручных выкладок достаточно этой же команды. Если хотите выкладывать автоматически после рабочих пушей в `main`, после проверки добавьте переменную GitHub Actions `VPS_AUTO_DEPLOY=true`.
 
-Workflow выполняется последовательно на `main`; при новом запуске активное обновление не прерывается. Перед отправкой CI проверяет, что SHA релиза по-прежнему совпадает с вершиной `main`. Приёмник сверяет checksum, идентификатор коммита, установленные скрипты и unit-файлы до остановки сайта. Изменения серверной инфраструктуры применяются отдельно. При изменении unit-файлов требуется `systemctl daemon-reload`.
+Workflow выполняется последовательно на `main`. После установки инфраструктуры CI повторно сверяет SHA релиза с вершиной `main`. Приёмник сверяет checksum, установленные скрипты и unit-файлы до остановки сайта.
 
 В GitHub Actions на шаге **Deliver and activate verified release** видны отправленные МБ, процент передачи и отметки VPS о бэкапе, миграциях и готовности приложения. После передачи VPS сверяет контрольную сумму полученного архива. Отдельный шаг **Confirm public HTTPS readiness** проверяет, что `https://promformateh.ru/api/health/ready` отвечает со статусом `ready`.
 

@@ -41,11 +41,24 @@ class DeployGatewayTests(unittest.TestCase):
 
     def test_rejects_shell_commands_and_invalid_revision(self):
         digest = "b" * 64
-        for command in (f"deploy {'a' * 40} 123 1 {digest}; id", "echo hello"):
+        for command in (
+            f"deploy {'a' * 40} 123 1 {digest}; id",
+            f"install-infrastructure {'a' * 40}; id",
+            f"install-infrastructure {'a' * 40} extra",
+            "echo hello",
+        ):
             with self.subTest(command=command):
                 result = self.run_gateway(command)
                 self.assertNotEqual(result.returncode, 0)
                 self.assertNotIn("archive contents", result.stdout)
+
+    def test_install_command_passes_only_sha_to_the_installer(self):
+        revision = "a" * 40
+        result = self.run_gateway(f"install-infrastructure {revision}")
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(result.stdout.splitlines()[:3], [
+            "-n", "/usr/local/lib/promformatech/install-infrastructure.py", revision,
+        ])
 
 
 if __name__ == "__main__":

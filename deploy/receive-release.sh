@@ -35,15 +35,17 @@ echo 'Archive verified on VPS. Extracting release.'
 mkdir "$stage/release"
 python3 /usr/local/lib/promformatech/extract-release.py "$stage/archive.tar.gz" "$stage/release" "$revision"
 
-# Server-owned deployment infrastructure must be reviewed and installed separately.
-for script in maintenance.sh update.sh receive-release.sh deploy-gateway.sh extract-release.py; do
+# Do not activate while the signed infrastructure is being replaced.
+exec 8>/run/lock/promformatech-infrastructure.lock
+flock -s 8
+for script in backup.sh maintenance.sh update.sh receive-release.sh deploy-gateway.sh extract-release.py; do
     cmp -s "$stage/release/deploy/$script" "/usr/local/lib/promformatech/$script" || {
-        echo "Server script differs: $script. Install infrastructure changes manually." >&2; exit 1;
+        echo "Server script differs: $script. Check the install-infrastructure job." >&2; exit 1;
     }
 done
-for unit in "$stage/release"/deploy/systemd/*; do
-    cmp -s "$unit" "/etc/systemd/system/$(basename "$unit")" || {
-        echo "Server unit differs: $(basename "$unit"). Install infrastructure changes manually." >&2; exit 1;
+for unit in promformatech-{backup,web,worker}.service promformatech-{backup,worker}.timer; do
+    cmp -s "$stage/release/deploy/systemd/$unit" "/etc/systemd/system/$unit" || {
+        echo "Server unit differs: $unit. Check the install-infrastructure job." >&2; exit 1;
     }
 done
 

@@ -9,6 +9,7 @@ on:
   push:
     branches: [main]
     paths:
+      - '.github/workflows/release.yml'
       - 'app/src/**'
       - '!app/src/**/*.md'
       - '!app/src/**/*.test.*'
@@ -67,10 +68,11 @@ jobs:
             bash -n "$script"
           done
           deployment=artifacts/release/deploy
-          mkdir -p "$deployment/nginx" "$deployment/systemd"
-          cp ../deploy/*.sh ../deploy/extract-release.py ../deploy/app.env.example "$deployment/"
-          cp ../deploy/nginx/*.conf "$deployment/nginx/"
-          cp ../deploy/systemd/*.service ../deploy/systemd/*.timer "$deployment/systemd/"
+          mkdir -p "$deployment/systemd"
+          cp ../deploy/{backup,deploy-gateway,maintenance,receive-release,update}.sh \
+            ../deploy/extract-release.py "$deployment/"
+          cp ../deploy/systemd/promformatech-{backup,web,worker}.service \
+            ../deploy/systemd/promformatech-{backup,worker}.timer "$deployment/systemd/"
           tar -czf artifacts/promformatech-linux-x64.tar.gz -C artifacts/release .
           cd artifacts
           sha256sum promformatech-linux-x64.tar.gz > promformatech-linux-x64.tar.gz.sha256
@@ -83,12 +85,37 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
-  deploy:
+  install-infrastructure:
     if: >-
       github.ref == 'refs/heads/main' &&
       ((github.event_name == 'push' && vars.VPS_AUTO_DEPLOY == 'true') ||
       (github.event_name == 'workflow_dispatch' && inputs.deploy_to_vps))
     needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Install signed VPS infrastructure
+        shell: bash
+        env:
+          VPS_HOST: ${{ vars.VPS_HOST }}
+          VPS_DEPLOY_PRIVATE_KEY: ${{ secrets.VPS_DEPLOY_PRIVATE_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          set -Eeuo pipefail
+          if [[ ! "$VPS_HOST" =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]*$ || -z "$VPS_DEPLOY_PRIVATE_KEY" || -z "$VPS_KNOWN_HOSTS" ]]; then
+            echo '::error::Configure VPS_HOST, VPS_DEPLOY_PRIVATE_KEY and VPS_KNOWN_HOSTS.'
+            exit 1
+          fi
+          umask 077
+          mkdir -p "$HOME/.ssh"
+          printf '%s\n' "$VPS_DEPLOY_PRIVATE_KEY" > "$HOME/.ssh/pft-deploy"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > "$HOME/.ssh/pft-known-hosts"
+          ssh -n -i "$HOME/.ssh/pft-deploy" -o IdentitiesOnly=yes -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/pft-known-hosts" \
+            -o ConnectTimeout=15 "pft-deploy@$VPS_HOST" "install-infrastructure $GITHUB_SHA"
+
+  deploy:
+    needs: [build, install-infrastructure]
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
