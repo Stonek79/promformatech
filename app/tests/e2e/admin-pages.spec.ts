@@ -22,16 +22,12 @@ test("manager adds a text block and checks saved changes in responsive live prev
 }) => {
 	await page.goto(PAGE.create);
 	await page.getByRole("textbox", { name: /^Название/ }).fill(PAGE.title);
-	await page
-		.getByRole("textbox", { name: "Заголовок на сайте", exact: true })
-		.fill(PAGE.heading);
+	await page.locator('input[name="heading"]').fill(PAGE.heading);
 	await page
 		.getByRole("button", { name: "Добавить блок", exact: true })
 		.click();
 	await page.getByRole("button", { name: "Текст", exact: true }).click();
-	await page
-		.getByRole("textbox", { name: "Заголовок", exact: true })
-		.fill(PAGE.blockHeading);
+	await page.locator('input[name="blocks.0.heading"]').fill(PAGE.blockHeading);
 	await page.locator('[contenteditable="true"]').fill(PAGE.body);
 	await saveDraft(page, PAGE.api);
 	await expect(page).toHaveURL(/\/admin\/collections\/pages\/\d+$/);
@@ -61,9 +57,7 @@ test("manager adds a text block and checks saved changes in responsive live prev
 		);
 		currentDevice = device.name;
 	}
-	await page
-		.getByRole("textbox", { name: "Заголовок на сайте", exact: true })
-		.fill(PAGE.nextHeading);
+	await page.locator('input[name="heading"]').fill(PAGE.nextHeading);
 	await saveDraft(page, api);
 	await expect(preview.getByRole("heading", { level: 1 })).toHaveText(
 		PAGE.nextHeading,

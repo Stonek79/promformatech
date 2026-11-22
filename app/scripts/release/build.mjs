@@ -1,23 +1,40 @@
 import { execFileSync } from "node:child_process";
 import {
 	cp,
+	lstat,
 	mkdir,
-	mkdtemp,
 	readdir,
 	readFile,
 	rm,
 	writeFile,
 } from "node:fs/promises";
-import os from "node:os";
 import path from "node:path";
 import { build } from "esbuild";
+import fileTracer from "next/dist/compiled/@vercel/nft/index.js";
 
 const root = process.cwd();
 const output = path.resolve("artifacts/release");
 const nextDirectory = process.env.NEXT_OUTPUT_DIR || ".next";
 const entries = ["worker", "migrate", "seed", "create-owner"];
+const ops = path.join(output, "ops");
 await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
+await build({
+	entryPoints: entries.map((name) => `src/cms/scripts/${name}.ts`),
+	outdir: ops,
+	outExtension: { ".js": ".mjs" },
+	bundle: true,
+	packages: "external",
+	platform: "node",
+	format: "esm",
+	target: "node22",
+	tsconfig: "tsconfig.json",
+});
+// Resolve CLI dependencies against the install, before copying Next's partial tree.
+const { fileList } = await fileTracer.nodeFileTrace(
+	entries.map((name) => path.join(ops, `${name}.mjs`)),
+	{ base: root, processCwd: root, mixedModules: true },
+);
 await cp(path.join(nextDirectory, "standalone"), output, {
 	recursive: true,
 	verbatimSymlinks: true,
@@ -41,42 +58,16 @@ await cp("seed-assets", path.join(output, "seed-assets"), {
 	recursive: true,
 	verbatimSymlinks: true,
 });
-// The CLI has dependencies that web tracing cannot discover. Install them in CI,
-// never on the target host, and share one production dependency tree with web.
-const dependencies = await mkdtemp(path.join(os.tmpdir(), "pft-dependencies-"));
-try {
-	for (const file of ["package.json", "pnpm-lock.yaml"]) {
-		await cp(file, path.join(dependencies, file));
+// Keep the original pnpm paths and links so web and CLI can share traced files.
+for (const file of fileList) {
+	if (!file.startsWith(`node_modules${path.sep}`)) {
+		continue;
 	}
-	execFileSync(
-		"pnpm",
-		["install", "--prod", "--frozen-lockfile", "--ignore-scripts"],
-		{
-			cwd: dependencies,
-			stdio: "inherit",
-			env: { ...process.env, CI: "true" },
-		},
-	);
-	await rm(path.join(output, "node_modules"), { recursive: true, force: true });
-	await cp(
-		path.join(dependencies, "node_modules"),
-		path.join(output, "node_modules"),
-		{ recursive: true, verbatimSymlinks: true },
-	);
-} finally {
-	await rm(dependencies, { recursive: true, force: true });
+	const source = path.join(root, file);
+	if (!(await lstat(source)).isDirectory()) {
+		await cp(source, path.join(output, file), { verbatimSymlinks: true });
+	}
 }
-await build({
-	entryPoints: entries.map((name) => `src/cms/scripts/${name}.ts`),
-	outdir: path.join(output, "ops"),
-	outExtension: { ".js": ".mjs" },
-	bundle: true,
-	packages: "external",
-	platform: "node",
-	format: "esm",
-	target: "node22",
-	tsconfig: "tsconfig.json",
-});
 const revision = execFileSync("git", ["rev-parse", "HEAD"], {
 	encoding: "utf8",
 }).trim();

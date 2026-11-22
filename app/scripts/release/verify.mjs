@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
-import { cp, mkdtemp, rm } from "node:fs/promises";
+import { cp, mkdtemp, readFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
@@ -18,6 +18,7 @@ await cp(output, release, { recursive: true, verbatimSymlinks: true });
 const env = {
 	...process.env,
 	NODE_ENV: "production",
+	NODE_PATH: "",
 	NEXT_PHASE: "",
 	SMTP_HOST: "",
 	SMTP_FROM: "",
@@ -48,6 +49,35 @@ async function verifyLocalizedCatalog({ locale, heading }, headers) {
 	assert(html.includes(`<html lang="${locale}"`));
 	assert(html.includes(`>${heading}</h1>`));
 	assert(html.includes("Шариковая направляющая колонна A-TRP"));
+}
+
+async function verifyMediaWorker(headers) {
+	const form = new FormData();
+	form.set(
+		"_payload",
+		JSON.stringify({ title: "Проверка релиза", alt: "Тест обработки фото" }),
+	);
+	const bytes = await readFile(path.join(release, "seed-assets/about.jpg"));
+	form.set(
+		"file",
+		new Blob([bytes], { type: "image/jpeg" }),
+		"release-check.jpg",
+	);
+	const upload = await fetch("http://127.0.0.1:3201/api/media?draft=true", {
+		method: "POST",
+		headers,
+		body: form,
+	});
+	assert.equal(upload.status, 201, "Packaged upload failed");
+	const { doc } = await upload.json();
+	assert.equal(doc.processingStatus, "queued");
+	cli("worker", "worker", ["once"]);
+	const media = await fetch(
+		`http://127.0.0.1:3201/api/media/${doc.id}?draft=true`,
+		{ headers },
+	);
+	assert.equal(media.status, 200);
+	assert.equal((await media.json()).processingStatus, "ready");
 }
 
 async function verifyWeb(origin, databaseAvailable = true) {
@@ -117,6 +147,11 @@ async function verifyWeb(origin, databaseAvailable = true) {
 			}),
 		});
 		assert.equal(login.status, 200);
+		if (origin === env.SERVER_URL) {
+			const cookie = login.headers.get("set-cookie")?.split(";")[0];
+			assert(cookie, "Packaged login did not set a session cookie");
+			await verifyMediaWorker({ ...headers, Cookie: cookie });
+		}
 		await Promise.all(
 			localizedCatalogs.map((catalog) =>
 				verifyLocalizedCatalog(catalog, headers),
@@ -138,12 +173,11 @@ try {
 	cli("migrate", "migrator");
 	cli("create-owner");
 	cli("seed");
-	cli("worker", "worker", ["once"]);
 	await verifyWeb(env.SERVER_URL);
 	await verifyWeb("https://second-runtime.example.test");
 	await verifyWeb(env.SERVER_URL, false);
 	console.log(
-		"Relocated release: CLI, native SQLite/Sharp, localized pages, assets, login and two runtime origins passed.",
+		"Relocated release: CLI, native SQLite/Sharp, media worker, localized pages, assets, login and two runtime origins passed.",
 	);
 } finally {
 	await rm(directory, { recursive: true, force: true });
