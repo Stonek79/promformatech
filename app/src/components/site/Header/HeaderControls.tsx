@@ -4,15 +4,13 @@ import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button/Button";
 import { Dialog } from "@/components/ui/Dialog/Dialog";
-import { Input } from "@/components/ui/Field/Field";
 import { Icon } from "@/components/ui/Icon/Icon";
-import { CONTENT_LIMITS, ROUTES } from "@/config/content";
 import { SiteAppearance } from "@/features/appearance/SiteAppearance";
 import type { Locale } from "@/i18n/config";
-import { useLocale, useMessages } from "@/i18n/MessagesProvider";
-import { sitePath } from "@/i18n/site-path";
+import { useMessages } from "@/i18n/MessagesProvider";
 import styles from "./Header.module.css";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { SearchDialog } from "./SearchDialog";
 
 type Props = {
 	readonly navigation: readonly {
@@ -23,61 +21,40 @@ type Props = {
 	}[];
 	readonly searchTitle: string;
 	readonly searchPlaceholder: string;
-	readonly searchButton: string;
+	readonly emptySearch: string;
+	readonly phone?: { readonly label: string; readonly href: string };
 };
 
 export function HeaderControls({
 	navigation,
 	searchTitle,
 	searchPlaceholder,
-	searchButton,
+	emptySearch,
+	phone,
 }: Props) {
 	const { navigation: messages } = useMessages();
-	const locale = useLocale();
 	const [menuOpen, setMenuOpen] = useState(false);
 	return (
 		<div className={styles.controls}>
-			<div className={styles.language}>
-				<LanguageSwitcher />
-			</div>
 			<div className={styles.quickControls}>
-				<Dialog
+				<SearchDialog
 					title={searchTitle}
-					trigger={
-						<Button
-							variant="secondary"
-							icon
-							className={styles.searchTrigger}
-							aria-label={messages.openSearch}
-							title={messages.searchTitle}
-						>
-							<Icon name="search" />
-						</Button>
-					}
-				>
-					<form
-						action={sitePath(ROUTES.search, locale)}
-						className={styles.search}
-					>
-						<label htmlFor="site-search">{searchPlaceholder}</label>
-						<Input
-							id="site-search"
-							name="q"
-							type="search"
-							placeholder={searchPlaceholder}
-							maxLength={CONTENT_LIMITS.searchQuery}
-							required
-						/>
-						<Button type="submit">{searchButton}</Button>
-					</form>
-				</Dialog>
+					placeholder={searchPlaceholder}
+					emptyMessage={emptySearch}
+					triggerClassName={styles.headerButton}
+				/>
 				<div className={styles.mobileMenu}>
 					<Dialog
 						title={messages.menu}
 						open={menuOpen}
 						onOpenChange={setMenuOpen}
 						trigger={
-							<Button variant="ghost" icon aria-label={messages.openMenu}>
+							<Button
+								variant="ghost"
+								icon
+								className={styles.headerButton}
+								aria-label={messages.openMenu}
+							>
 								<Icon name="menu" />
 							</Button>
 						}
@@ -97,10 +74,17 @@ export function HeaderControls({
 								</Link>
 							))}
 						</nav>
+						{phone && (
+							<a className={styles.menuPhone} href={phone.href}>
+								<Icon name="phone" />
+								{phone.label}
+							</a>
+						)}
 					</Dialog>
 				</div>
 			</div>
 			<div className={styles.appearance}>
+				<LanguageSwitcher />
 				<SiteAppearance />
 			</div>
 		</div>

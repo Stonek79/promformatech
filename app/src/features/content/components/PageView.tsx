@@ -45,7 +45,9 @@ export async function PageView({ document, viewer, settings, locale }: Props) {
 		).value;
 	const heading = pageHeading(document);
 	return (
-		<article>
+		<article
+			className={list === PAGE_KINDS.services ? styles.service : undefined}
+		>
 			{!heroHasHeading && (
 				<header className={styles.pageHeader}>
 					<Heading as="h1" lang={heading.lang}>
@@ -58,6 +60,8 @@ export async function PageView({ document, viewer, settings, locale }: Props) {
 					{materials.length ? (
 						<MaterialCards
 							compact={list === PAGE_KINDS.products}
+							prioritizeFirstRow
+							headingLevel="h2"
 							locale={locale}
 							items={materials}
 						/>

@@ -1,15 +1,13 @@
 import Link from "next/link";
 import { Heading, Section } from "@/components/ui/Layout/Layout";
-import { COLLECTIONS, CONTENT_LIMITS } from "@/config/content";
 import styles from "@/features/content/components/pages.module.css";
-import { publishedSearch } from "@/features/content/queries";
 import { readSettings } from "@/features/content/read";
+import { publishedSearch } from "@/features/content/search";
+import { readSearchQuery } from "@/features/content/search-query";
 import { getViewer } from "@/features/content/viewer";
 import { getMessages } from "@/i18n/messages";
 import { interfaceLabels } from "@/i18n/site-copy";
-import { sitePath } from "@/i18n/site-path";
 import { getSiteLocale } from "@/i18n/site-server";
-import { materialPath, pagePath } from "@/lib/urls";
 
 export async function generateMetadata() {
 	const { navigation } = getMessages(await getSiteLocale());
@@ -22,9 +20,7 @@ export default async function SearchPage({
 	readonly searchParams: Promise<{ q?: string | string[] }>;
 }) {
 	const [{ q }, locale] = await Promise.all([searchParams, getSiteLocale()]);
-	const query = (typeof q === "string" ? q : "")
-		.trim()
-		.slice(0, CONTENT_LIMITS.searchQuery);
+	const query = readSearchQuery(q);
 	const viewer = await getViewer(locale);
 	const [settings, matches] = await Promise.all([
 		readSettings(viewer),
@@ -41,19 +37,13 @@ export default async function SearchPage({
 				<p>{labels.emptySearch}</p>
 			) : (
 				<ul className={styles.searchResults}>
-					{matches.map(({ collection, doc, language }) => {
-						const path =
-							collection === COLLECTIONS.pages
-								? pagePath(doc.slug)
-								: materialPath(collection, doc.slug);
-						return (
-							<li key={`${collection}-${doc.id}`} lang={language}>
-								<Link href={sitePath(path, locale)}>
-									<h2>{doc.title}</h2>
-								</Link>
-							</li>
-						);
-					})}
+					{matches.map(({ href, title, language }) => (
+						<li key={href} lang={language}>
+							<Link href={href}>
+								<h2>{title}</h2>
+							</Link>
+						</li>
+					))}
 				</ul>
 			)}
 		</Section>

@@ -30,6 +30,7 @@ type Props = {
 	readonly home?: boolean;
 	readonly locale: Locale;
 	readonly contentLocale?: Locale;
+	readonly staticPhotos?: boolean;
 };
 
 type BannerBlock = Extract<
@@ -74,12 +75,14 @@ function BlockContent({
 	locale,
 	language,
 	preview,
+	staticPhotos,
 }: {
 	readonly block: ArticleBlock;
 	readonly original?: ArticleBlock;
 	readonly locale: Locale;
 	readonly language: Locale;
 	readonly preview: boolean;
+	readonly staticPhotos?: boolean;
 }) {
 	switch (block.blockType) {
 		case BLOCK_TYPES.text: {
@@ -113,6 +116,7 @@ function BlockContent({
 			return (
 				<Gallery
 					items={localizedGallery(language, block.gallery, source?.gallery)}
+					staticPhotos={staticPhotos}
 				/>
 			);
 		}
@@ -179,6 +183,7 @@ export function ContentBlocks({
 	home,
 	locale,
 	contentLocale = DEFAULT_LOCALE,
+	staticPhotos,
 }: Props) {
 	return matchRows(
 		blocks?.filter((block) => block.visible !== false),
@@ -235,6 +240,7 @@ export function ContentBlocks({
 					locale={locale}
 					language={contentLocale}
 					preview={preview}
+					staticPhotos={staticPhotos}
 				/>
 			</Section>
 		);

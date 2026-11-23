@@ -1,7 +1,7 @@
 "use client";
 
 import { Dialog as Primitive } from "@base-ui/react/dialog";
-import type { ReactElement, ReactNode } from "react";
+import type { CSSProperties, ReactElement, ReactNode, RefObject } from "react";
 import { useMessages } from "@/i18n/MessagesProvider";
 import { classes } from "@/lib/classes";
 import { Button } from "../Button/Button";
@@ -16,6 +16,9 @@ type Props = {
 	readonly open?: boolean;
 	readonly onOpenChange?: (open: boolean) => void;
 	readonly className?: string;
+	readonly viewportClassName?: string;
+	readonly initialFocus?: RefObject<HTMLElement | null>;
+	readonly style?: CSSProperties;
 };
 
 export function Dialog({
@@ -26,6 +29,9 @@ export function Dialog({
 	open,
 	onOpenChange,
 	className,
+	viewportClassName,
+	initialFocus,
+	style,
 }: Props) {
 	const { common: messages } = useMessages();
 	return (
@@ -33,8 +39,14 @@ export function Dialog({
 			<Primitive.Trigger render={trigger} />
 			<Primitive.Portal>
 				<Primitive.Backdrop className={styles.backdrop} />
-				<Primitive.Viewport className={styles.viewport}>
-					<Primitive.Popup className={classes(styles.popup, className)}>
+				<Primitive.Viewport
+					className={classes(styles.viewport, viewportClassName)}
+				>
+					<Primitive.Popup
+						className={classes(styles.popup, className)}
+						initialFocus={initialFocus}
+						style={style}
+					>
 						<div className={styles.header}>
 							<Primitive.Title className={styles.title} lang={titleLanguage}>
 								{title}

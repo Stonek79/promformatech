@@ -34,6 +34,17 @@ try {
 		id: retiredPage.id,
 		data: { slug: PAGE_SLUGS.privacy },
 	});
+	const versions = await cms.db.findVersions({
+		collection: COLLECTIONS.pages,
+		where: { parent: { equals: retiredPage.id } },
+	});
+	for (const { id, version } of versions.docs) {
+		await cms.db.updateVersion({
+			collection: COLLECTIONS.pages,
+			id,
+			versionData: { version: { ...version, slug: PAGE_SLUGS.privacy } },
+		});
+	}
 	for (const role of [ROLES.owner, ROLES.manager]) {
 		await cms.create({
 			collection: COLLECTIONS.users,

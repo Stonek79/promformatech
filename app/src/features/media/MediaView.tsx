@@ -14,6 +14,7 @@ type ImageProps = {
 	readonly priority?: boolean;
 	readonly eager?: boolean;
 	readonly cover?: boolean;
+	readonly fill?: boolean;
 	readonly className?: string;
 	readonly sizes?: string;
 };
@@ -24,6 +25,7 @@ export function MediaImage({
 	priority,
 	eager,
 	cover,
+	fill,
 	className,
 	sizes = IMAGE_SIZES.columns,
 }: ImageProps) {
@@ -38,6 +40,8 @@ export function MediaImage({
 			alt={alt ?? asset.alt ?? asset.title}
 			width={asset.width}
 			height={asset.height}
+			fill={fill}
+			cover={cover}
 			priority={priority}
 			eager={eager}
 		/>

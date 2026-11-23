@@ -22,12 +22,25 @@ test("public facade, responsive navigation and protected admin", async ({
 	await expect(
 		page.getByRole("button", { name: "Открыть меню" }),
 	).toBeFocused();
-	await page.getByRole("button", { name: "Открыть поиск" }).click();
-	await page.getByRole("searchbox").fill("Пресс");
-	await page.getByRole("button", { name: "Найти", exact: true }).click();
-	await expect(
-		page.getByRole("link", { name: "Пресс-формы", exact: true }),
-	).toBeVisible();
+	const searchTrigger = page.getByRole("button", { name: "Открыть поиск" });
+	await searchTrigger.press("Enter");
+	const search = page.getByRole("dialog");
+	const input = search.getByRole("searchbox");
+	await expect(input).toBeFocused();
+	await input.fill("ПРЕСС ФОРМЫ");
+	const hit = search.getByRole("link", { name: /Пресс-формы/ });
+	await expect(hit).toBeVisible();
+	await expect(page).toHaveURL("/");
+	await input.fill("ззз несуществующий товар");
+	await expect(hit).toHaveCount(0);
+	await expect(search.getByRole("status")).toContainText("ничего не найдено");
+	await page.keyboard.press("Escape");
+	await expect(searchTrigger).toBeFocused();
+	await searchTrigger.click();
+	await input.fill("автоматизация");
+	await search.getByRole("link", { name: /Автоматизация/ }).click();
+	await expect(search).toHaveCount(0);
+	await expect(page).toHaveURL("/services/automation");
 	const removed = await request.get("/kontaktyi.html", { maxRedirects: 0 });
 	expect(removed.headers().location).toBeUndefined();
 	expect(await removed.text()).toContain("Страница не найдена");

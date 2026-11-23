@@ -5,7 +5,6 @@ import { Icon } from "@/components/ui/Icon/Icon";
 import { Switch } from "@/components/ui/Switch/Switch";
 import {
 	NEXT_TEXT_SIZE,
-	TEXT_SIZE_OPTIONS,
 	type TextSize,
 	THEMES,
 	type ThemePreference,
@@ -56,20 +55,12 @@ export function AppearanceControls({
 				variant="secondary"
 				icon
 				className={styles.sizeButton}
+				data-size={size}
 				aria-label={messages.sizeAction(messages.sizes[size])}
 				title={sizeHint}
 				onClick={() => onSizeChange(nextSize)}
 			>
 				<Icon name="textSize" />
-				<span className={styles.levels} aria-hidden="true">
-					{TEXT_SIZE_OPTIONS.map((option) => (
-						<span
-							key={option}
-							className={styles.level}
-							data-active={option === size}
-						/>
-					))}
-				</span>
 			</Button>
 		</div>
 	);

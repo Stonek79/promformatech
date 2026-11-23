@@ -6,6 +6,7 @@ export const de = {
 	common: {
 		close: "Schließen",
 		brand: "PromFormaTech",
+		brandPrefix: "Prom",
 		skipToContent: "Zum Inhalt",
 		preparing: "Die Website befindet sich im Aufbau",
 		loadingLabel: "Seite wird geladen",
@@ -36,6 +37,8 @@ export const de = {
 		},
 	},
 	navigation: {
+		back: "Zurück",
+		toTop: "Nach oben",
 		openSearch: "Suche öffnen",
 		searchTitle: "Website durchsuchen",
 		search: "Suche",
@@ -72,6 +75,16 @@ export const de = {
 		specifications: "Technische Daten",
 	},
 	search: {
+		loading: "Suche läuft …",
+		failed: "Die Suchergebnisse konnten nicht geladen werden.",
+		all: "Alle Ergebnisse anzeigen",
+		resultsShown: (count: number) => `Angezeigte Treffer: ${count}`,
+		types: {
+			pages: "Seite",
+			products: "Produkt",
+			services: "Leistung",
+			projects: "Projekt",
+		},
 		resultsTitle: (title: string, query: string) =>
 			query ? `${title}: ${query}` : title,
 	},
@@ -81,6 +94,8 @@ export const de = {
 		retry: "Erneut versuchen",
 	},
 	media: {
+		zoomIn: "Foto vergrößern",
+		zoomOut: "Foto einpassen",
 		open: (title: string) => `Öffnen: ${title}`,
 		captions: "Russische Untertitel",
 		unsupportedVideo: "Ihr Browser unterstützt keine Videowiedergabe.",

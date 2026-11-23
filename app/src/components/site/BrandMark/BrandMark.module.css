@@ -1,0 +1,31 @@
+.image,
+.wordmark {
+	padding: var(--pf-logo-inset);
+	border-radius: var(--pf-radius-sm);
+	background: var(--pf-color-logo-surface);
+}
+.image {
+	display: block;
+	inline-size: min(100%, var(--pf-header-wordmark-width));
+	block-size: auto;
+}
+.inverse {
+	background: var(--pf-color-dark);
+}
+.wordmark {
+	display: inline-block;
+	color: var(--pf-color-logo-text);
+	font-family: var(--pf-font-body);
+	font-size: var(--pf-font-size-header-brand);
+	font-weight: var(--pf-font-weight-strong);
+	line-height: var(--pf-line-height-title);
+}
+.wordmark[data-stock] {
+	font-size: var(--pf-font-size-logo-wordmark);
+	white-space: nowrap;
+	overflow-wrap: normal;
+	text-transform: uppercase;
+}
+.accent {
+	color: var(--pf-color-logo-accent);
+}

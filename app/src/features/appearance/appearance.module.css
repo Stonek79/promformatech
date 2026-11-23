@@ -1,7 +1,11 @@
 .controls {
 	display: flex;
 	align-items: center;
-	gap: var(--pf-space-sm);
+	gap: var(--pf-space-xs);
+	--pf-switch-width: var(--pf-header-switch-width);
+	--pf-switch-height: var(--pf-header-switch-height);
+	--pf-switch-thumb: var(--pf-header-switch-thumb);
+	--pf-switch-icon: var(--pf-header-switch-icon);
 }
 .themeSwitch {
 	--sun-display: inline-flex;
@@ -17,13 +21,6 @@
 .moon {
 	display: var(--moon-display);
 }
-:global(html[data-site-theme]) .controls {
-	--pf-switch-width: var(--pf-header-switch-width);
-	--pf-switch-height: var(--pf-header-switch-height);
-	--pf-switch-thumb: var(--pf-header-switch-thumb);
-	--pf-switch-icon: var(--pf-header-switch-icon);
-	gap: var(--pf-space-xs);
-}
 :global(html[data-site-theme]) .themeSwitch {
 	/* The resolved CSS theme is available on the first paint and after navigation. */
 	--switch-visual-position: var(--pf-theme-switch-position);
@@ -31,25 +28,44 @@
 	--moon-display: var(--pf-theme-switch-moon);
 }
 .controls .sizeButton {
-	position: relative;
-	border-radius: var(--pf-radius-control);
-	padding-bottom: var(--pf-space-sm);
-}
-:global(html[data-site-theme]) .sizeButton {
+	--ring-progress: calc(100% / 3);
 	--pf-icon-size: var(--pf-header-control-icon);
+	position: relative;
+	isolation: isolate;
+	border-color: transparent;
+	border-radius: var(--pf-radius-circle);
+	background: transparent;
 }
-.levels {
+.sizeButton::before {
+	content: "";
 	position: absolute;
-	bottom: var(--pf-space-xs);
-	display: flex;
-	gap: var(--pf-size-indicator-gap);
+	z-index: -1;
+	inset: 0;
+	inline-size: var(--pf-header-text-control-diameter);
+	block-size: var(--pf-header-text-control-diameter);
+	margin: auto;
+	border: var(--pf-header-text-ring-width) solid transparent;
+	border-radius: var(--pf-radius-circle);
+	background:
+		linear-gradient(var(--pf-color-surface), var(--pf-color-surface))
+		padding-box,
+		conic-gradient(
+			var(--pf-color-action) var(--ring-progress),
+			var(--pf-color-border) 0
+		)
+		border-box;
 }
-.level {
-	width: var(--pf-size-indicator-width);
-	height: var(--pf-size-indicator-height);
-	border-radius: var(--pf-radius-sm);
-	background: var(--pf-color-border);
+.controls .sizeButton:hover {
+	color: var(--pf-color-action);
 }
-.level[data-active="true"] {
-	background: var(--pf-color-text);
+.sizeButton[data-size="large"] {
+	--ring-progress: calc(200% / 3);
+}
+.sizeButton[data-size="larger"] {
+	--ring-progress: 100%;
+}
+@media (forced-colors: active) {
+	.sizeButton::before {
+		border-color: currentColor;
+	}
 }

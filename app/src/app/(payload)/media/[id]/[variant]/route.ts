@@ -1,7 +1,7 @@
 import { draftMode } from "next/headers";
 import { isStaff } from "@/cms/access";
 import { getCMS } from "@/cms/client";
-import { COLLECTIONS, CONTEXT } from "@/config/content";
+import { COLLECTIONS, CONTEXT, PUBLICATION } from "@/config/content";
 import { HTTP } from "@/config/http";
 import { MEDIA_STATUS } from "@/config/media";
 import {
@@ -15,6 +15,13 @@ import { storagePaths, variantPath } from "@/features/media/storage";
 
 type Args = { readonly params: Promise<{ id: string; variant: string }> };
 
+function notFound() {
+	return new Response(null, {
+		status: HTTP.notFound,
+		headers: { "Cache-Control": "private, no-store" },
+	});
+}
+
 export async function GET(request: Request, { params }: Args) {
 	const { id: rawID, variant } = await params;
 	const id = Number(rawID);
@@ -26,7 +33,7 @@ export async function GET(request: Request, { params }: Args) {
 			variant !== MEDIA_DELIVERY.captions &&
 			!Object.hasOwn(MEDIA_VARIANTS, variant))
 	) {
-		return new Response(null, { status: HTTP.notFound });
+		return notFound();
 	}
 	const cms = await getCMS();
 	const { user } = await cms.auth({ headers: request.headers });
@@ -36,39 +43,42 @@ export async function GET(request: Request, { params }: Args) {
 		(variant === MEDIA_DELIVERY.original ||
 			!(await publishedMediaIDs()).includes(id))
 	) {
-		return new Response(null, { status: HTTP.notFound });
+		return notFound();
 	}
+	const draftRequested =
+		new URL(request.url).searchParams.get("draft") === "true";
+	const draft =
+		staff &&
+		(draftRequested ||
+			variant === MEDIA_DELIVERY.original ||
+			(await draftMode()).isEnabled);
 	try {
 		const media = await cms.findByID({
 			collection: COLLECTIONS.media,
 			id,
-			draft:
-				staff &&
-				((await draftMode()).isEnabled ||
-					new URL(request.url).searchParams.get("draft") === "true" ||
-					variant === MEDIA_DELIVERY.original),
+			draft,
 			depth: 0,
 			overrideAccess: false,
 			user,
 			context: { [CONTEXT.publicContent]: true, [CONTEXT.mediaFile]: true },
 		});
 		if (!media.storageKey) {
-			return new Response(null, { status: HTTP.notFound });
+			return notFound();
 		}
 		if (variant === MEDIA_DELIVERY.original) {
 			return await serveFile(
 				request,
 				storagePaths(media.storageKey).original,
 				media.mimeType || "application/octet-stream",
-				media.filename || "original",
+				{ filename: media.filename || "original" },
 			);
 		}
 		if (media.processingStatus !== MEDIA_STATUS.ready || !media.derivativeKey) {
-			return new Response(null, { status: HTTP.notFound });
+			return notFound();
 		}
 		if (variant === MEDIA_DELIVERY.captions) {
 			if (!media.captionTrack) {
-				return new Response(null, { status: HTTP.notFound });
+				return notFound();
 			}
 			return new Response(
 				request.method === "HEAD" ? null : media.captionTrack,
@@ -82,13 +92,21 @@ export async function GET(request: Request, { params }: Args) {
 			);
 		}
 		const selected = variant as MediaVariant;
+		const mime = MEDIA_VARIANTS[selected].mime;
+		const cacheable =
+			!draft &&
+			!draftRequested &&
+			mime.startsWith("image/") &&
+			media._status === PUBLICATION.published &&
+			(!staff || (await publishedMediaIDs()).includes(id));
 		return await serveFile(
 			request,
 			variantPath(media.storageKey, media.derivativeKey, selected),
-			MEDIA_VARIANTS[selected].mime,
+			mime,
+			{ etag: cacheable ? `"${media.derivativeKey}-${selected}"` : undefined },
 		);
 	} catch {
-		return new Response(null, { status: HTTP.notFound });
+		return notFound();
 	}
 }
 

@@ -8,7 +8,10 @@ export async function serveFile(
 	request: Request,
 	file: string,
 	mime: string,
-	filename?: string,
+	{
+		filename,
+		etag,
+	}: { readonly filename?: string; readonly etag?: string } = {},
 ) {
 	const { size } = await stat(file);
 	const headers = new Headers({
@@ -17,6 +20,19 @@ export async function serveFile(
 		"Cache-Control": "private, no-store",
 		"X-Content-Type-Options": "nosniff",
 	});
+	if (etag) {
+		headers.set("Cache-Control", "private, no-cache");
+		headers.set("ETag", etag);
+		const cached = request.headers.get("if-none-match");
+		if (
+			cached?.split(",").some((value) => {
+				const tag = value.trim();
+				return tag === "*" || tag.replace(/^W\//, "") === etag;
+			})
+		) {
+			return new Response(null, { status: HTTP.notModified, headers });
+		}
+	}
 	if (filename) {
 		headers.set(
 			"Content-Disposition",

@@ -1,18 +1,42 @@
-import type { ServerProps } from "payload";
+import type { ServerProps, Where } from "payload";
 import { adminCollectionURL, adminGlobalURL, CMS_ACTIONS } from "@/config/cms";
 import { COLLECTIONS, GLOBALS, PAGE_SLUGS, ROUTES } from "@/config/content";
 import { ADMIN_HELP, adminHelpURL } from "@/config/help";
 import { MEDIA_STATUS } from "@/config/media";
+import { getMessages } from "@/i18n/messages";
 import { isStaff } from "../access";
 import styles from "./admin.module.css";
 
-type DashboardProps = Readonly<Pick<ServerProps, "payload" | "user">>;
+export type DashboardProps = Readonly<Pick<ServerProps, "payload" | "user">>;
+
+const mediaList = adminCollectionURL(COLLECTIONS.media);
+const pendingStatuses = [MEDIA_STATUS.queued, MEDIA_STATUS.processing];
+const messages = getMessages().cms.dashboard;
+
+function filteredMediaURL(statuses: readonly string[]) {
+	const query = new URLSearchParams();
+	for (const [index, status] of statuses.entries()) {
+		query.set(`where[or][${index}][processingStatus][equals]`, status);
+	}
+	return `${mediaList}?${query}`;
+}
 
 export async function Dashboard({ payload, user }: DashboardProps) {
 	if (!isStaff(user)) {
 		return null;
 	}
-	const [home, media] = await Promise.all([
+	const countFiles = (where: Where) =>
+		payload.find({
+			collection: COLLECTIONS.media,
+			where,
+			draft: true,
+			depth: 0,
+			limit: 1,
+			select: { processingStatus: true },
+			overrideAccess: false,
+			user,
+		});
+	const [home, pending, failed] = await Promise.all([
 		payload.find({
 			collection: COLLECTIONS.pages,
 			where: { slug: { equals: PAGE_SLUGS.home } },
@@ -22,25 +46,13 @@ export async function Dashboard({ payload, user }: DashboardProps) {
 			overrideAccess: false,
 			user,
 		}),
-		payload.count({
-			collection: COLLECTIONS.media,
-			where: {
-				processingStatus: {
-					in: [
-						MEDIA_STATUS.queued,
-						MEDIA_STATUS.processing,
-						MEDIA_STATUS.error,
-					],
-				},
-			},
-			overrideAccess: false,
-			user,
-		}),
+		countFiles({ processingStatus: { in: pendingStatuses } }),
+		countFiles({ processingStatus: { equals: MEDIA_STATUS.error } }),
 	]);
 	const homeID = home.docs[0]?.id;
 	return (
 		<section className={styles.dashboard}>
-			<h2>Управление сайтом</h2>
+			<h1>Управление сайтом</h1>
 			<p>
 				Первый раз здесь? <a href={adminHelpURL()}>{ADMIN_HELP.title}</a> —
 				пошаговые инструкции по всем разделам.
@@ -65,15 +77,29 @@ export async function Dashboard({ payload, user }: DashboardProps) {
 					Изменить главную
 				</a>
 				<a href={adminGlobalURL(GLOBALS.site)}>Общие данные сайта</a>
+				<a href={mediaList}>{messages.media}</a>
 				<a href={ROUTES.home} target="_blank" rel="noreferrer">
 					Открыть сайт ↗
 				</a>
 			</nav>
-			<div className={styles.actions}>
-				<a href={adminCollectionURL(COLLECTIONS.media)}>
-					Файлов в обработке или с ошибкой: {media.totalDocs}
-				</a>
-			</div>
+			{(pending.totalDocs > 0 || failed.totalDocs > 0) && (
+				<ul className={styles.mediaStatus}>
+					{pending.totalDocs > 0 && (
+						<li>
+							<a href={filteredMediaURL(pendingStatuses)}>
+								{messages.processing(pending.totalDocs)}
+							</a>
+						</li>
+					)}
+					{failed.totalDocs > 0 && (
+						<li>
+							<a href={filteredMediaURL([MEDIA_STATUS.error])}>
+								{messages.failed(failed.totalDocs)}
+							</a>
+						</li>
+					)}
+				</ul>
+			)}
 		</section>
 	);
 }

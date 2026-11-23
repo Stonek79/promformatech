@@ -146,21 +146,25 @@
 	outline-offset: var(--pf-border-width);
 }
 .serviceCard {
-	position: relative;
-	color: var(--pf-color-button-text);
-	background: var(--pf-color-button);
+	border-radius: var(--pf-radius-control);
+	overflow: hidden;
 }
 .serviceCard .cardImage {
-	background: transparent;
+	aspect-ratio: var(--pf-service-photo-ratio);
 }
 .serviceCard .cardBody {
-	order: -1;
 	padding: var(--pf-space-md);
-	text-align: center;
 }
-.serviceCard .cardImage img {
-	height: 100%;
-	object-fit: contain;
+.serviceCard p {
+	margin-block-start: var(--pf-space-xs);
+	color: var(--pf-color-muted);
+}
+.serviceCard a {
+	color: var(--pf-color-action);
+	text-decoration-thickness: var(--pf-border-width);
+}
+.serviceCard a:focus-visible {
+	outline-offset: var(--pf-border-width);
 }
 .steps {
 	display: grid;

@@ -24,6 +24,17 @@ test("upload processing, originals, published file access and revocation", async
 		expect(upload.status()).toBe(201);
 		const { doc: media } = await upload.json();
 		expect((await guest.get(`/media/${media.id}/image`)).status()).toBe(404);
+		for (const resource of [
+			"pages",
+			"products",
+			"projects",
+			"services",
+			"globals/site-settings",
+		]) {
+			const url = `/api/${resource}`;
+			expect((await guest.get(url)).status(), url).toBe(403);
+			expect((await request.get(url)).ok(), url).toBe(true);
+		}
 		let processingStatus: string | undefined;
 		for (let attempt = 0; attempt < MAX_MEDIA_JOB_RUNS; attempt++) {
 			runWorker();
@@ -37,6 +48,7 @@ test("upload processing, originals, published file access and revocation", async
 		expect(processingStatus).toBe(MEDIA_STATUS.ready);
 		const original = await request.get(`/media/${media.id}/original`);
 		expect(await original.body()).toEqual(bytes);
+		expect(original.headers()["cache-control"]).toContain("no-store");
 		expect((await guest.get(`/media/${media.id}/original`)).status()).toBe(404);
 		const page = await request.post("/api/pages", {
 			data: {
@@ -52,6 +64,18 @@ test("upload processing, originals, published file access and revocation", async
 		await expect
 			.poll(async () => (await guest.get(`/media/${media.id}/image`)).status())
 			.toBe(200);
+		const imageURL = `/media/${media.id}/image`;
+		const published = await guest.get(imageURL);
+		const etag = published.headers().etag;
+		expect(etag).toBeTruthy();
+		expect(published.headers()["cache-control"]).toBe("private, no-cache");
+		const cached = await guest.get(imageURL, {
+			headers: { "If-None-Match": etag },
+		});
+		expect(cached.status()).toBe(304);
+		const preview = await request.get(`${imageURL}?draft=true`);
+		expect(preview.headers()["cache-control"]).toContain("no-store");
+		expect(preview.headers().etag).toBeUndefined();
 		const partial = await guest.get(`/media/${media.id}/image`, {
 			headers: { Range: "bytes=0-9" },
 		});
@@ -72,7 +96,11 @@ test("upload processing, originals, published file access and revocation", async
 			).ok(),
 		).toBe(true);
 		await expect
-			.poll(async () => (await guest.get(`/media/${media.id}/image`)).status())
+			.poll(async () =>
+				(
+					await guest.get(imageURL, { headers: { "If-None-Match": etag } })
+				).status(),
+			)
 			.toBe(404);
 	} finally {
 		await guest.dispose();

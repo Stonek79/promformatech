@@ -17,6 +17,55 @@ const de = getMessages(LOCALES.de);
 const MOSCOW_EN = "3 Marshala Sokolovskogo Street, 4th floor, Moscow";
 const MOSCOW_DE = "Marschala-Sokolowskogo-Straße 3, 4. Stock, Moskau";
 
+test("home keeps Russian steps after switching to an untranslated language", async ({
+	page,
+}) => {
+	await page.setViewportSize(MOBILE);
+	await page.goto(ROUTES.home);
+	const steps = page.locator("main section").filter({
+		has: page.getByRole("heading", {
+			name: "Этапы сотрудничества",
+			exact: true,
+		}),
+	});
+	const russianTitles = steps.locator('li h3[lang="ru"]');
+	await expect(russianTitles).toHaveCount(6);
+	for (const [current, next] of [
+		[LOCALES.ru, LOCALES.en],
+		[LOCALES.en, LOCALES.de],
+	] as const) {
+		await page
+			.getByRole("button", {
+				name: getMessages(current).navigation.changeLanguage(
+					SITE_LANGUAGES[current].name,
+				),
+			})
+			.click();
+		await page
+			.getByRole("link", { name: SITE_LANGUAGES[next].name, exact: true })
+			.click();
+		await expect(page).toHaveURL(sitePath(ROUTES.home, next));
+		const wordmarks = page.locator('[data-stock="true"]');
+		await expect(wordmarks).toHaveCount(2);
+		for (const wordmark of await wordmarks.all()) {
+			await expect(wordmark).toHaveText(getMessages(next).common.brand);
+			await expect(wordmark).toHaveCSS("white-space", "nowrap");
+			await expect(wordmark.locator("span")).toHaveCSS(
+				"color",
+				"rgb(98, 147, 213)",
+			);
+		}
+		await expect(russianTitles).toHaveCount(6);
+		await expect(steps.locator('li p[lang="ru"]')).toHaveCount(6);
+		await expect(steps.getByText("5–10 дней", { exact: true })).toHaveAttribute(
+			"lang",
+			LOCALES.ru,
+		);
+		await page.reload();
+		await expect(russianTitles).toHaveCount(6);
+	}
+});
+
 test("contacts use the whole map as a link and reveal its address", async ({
 	page,
 	context,
@@ -213,7 +262,8 @@ test("German navigation and search fit the screen and preserve the query", async
 	);
 	const query = "Ölführungsprüfung";
 	await input.fill(query);
-	await search.getByRole("button", { name: de.labels.searchButton }).click();
+	await expect(search.getByRole("status")).toHaveText(de.labels.emptySearch);
+	await input.press("Enter");
 	await expect(page).toHaveURL(
 		`${sitePath(ROUTES.search, LOCALES.de)}?q=${encodeURIComponent(query)}`,
 	);

@@ -51,6 +51,39 @@ test.afterAll(async ({ request }) => {
 	}
 });
 
+test("service illustrations are static and the title opens the service", async ({
+	page,
+}) => {
+	const path = `${ROUTES.services}/automation`;
+	const title = "Автоматизация";
+	await page.setViewportSize({ width: 320, height: HEIGHT });
+	await page.goto(ROUTES.services);
+	await setTextSize(page, TEXT_SIZES.larger);
+	const card = page
+		.getByRole("article")
+		.filter({
+			has: page.getByRole("heading", { name: title, exact: true, level: 2 }),
+		})
+		.last();
+	const image = card.locator("img").first();
+	await expect(image).toBeVisible();
+	await image.click();
+	await expect(page).toHaveURL(ROUTES.services);
+	await expect(card.locator("p")).toBeVisible();
+	await checkPublicLayout(page);
+	await card.getByRole("link", { name: title, exact: true }).click();
+	await expect(page).toHaveURL(path);
+	await settlePublicPage(page);
+	const illustration = page.locator("main article figure img").first();
+	await expect(illustration).toBeVisible();
+	await illustration.click();
+	await expect(page.getByRole("dialog")).toHaveCount(0);
+	await expect(page).toHaveURL(path);
+	await checkPublicLayout(page);
+	await page.setViewportSize({ width: 1440, height: HEIGHT });
+	await checkPublicLayout(page);
+});
+
 for (const { width, theme, size } of PAGE_LAYOUTS) {
 	test(`public pages ${width} ${theme} ${size}`, async ({ page }) => {
 		await page.setViewportSize({ width, height: HEIGHT });
@@ -78,7 +111,10 @@ for (const { viewport, theme } of DIALOG_LAYOUTS) {
 		await page.goto(LAYOUT_PROJECT.path);
 		await setTheme(page, theme);
 		await setTextSize(page, TEXT_SIZES.larger);
-		await page.getByRole("button", { name: messages.media.open("") }).click();
+		await page
+			.getByRole("figure", { name: LAYOUT_PROJECT.caption, exact: true })
+			.getByRole("button", { name: messages.media.open("") })
+			.click();
 		const dialog = page.getByRole("dialog");
 		await expect(dialog).toBeVisible();
 		await checkPublicLayout(page);
@@ -95,8 +131,13 @@ for (const { viewport, theme } of DIALOG_LAYOUTS) {
 			.click();
 		await expect(dialog).toBeVisible();
 		await checkPublicLayout(page);
-		await dialog.getByRole("searchbox").fill("Пресс-формы");
-		await dialog.locator('button[type="submit"]').click();
+		const search = dialog.getByRole("searchbox");
+		await search.fill("Пресс-формы");
+		await expect(
+			dialog.getByRole("link", { name: /Пресс-формы/ }),
+		).toBeVisible();
+		await checkPublicLayout(page);
+		await search.press("Enter");
 		await expect(page).toHaveURL(/\/search\?q=/);
 		await settlePublicPage(page);
 		await checkPublicLayout(page);
@@ -111,8 +152,11 @@ for (const { viewport, theme } of DIALOG_LAYOUTS) {
 			await checkPublicLayout(page);
 			await dialog.locator(`a[href="${ROUTES.contact}"]`).click();
 			await expect(dialog).toHaveCount(0);
+			await expect(page).toHaveURL(ROUTES.contact);
+		} else {
+			await page.goto(ROUTES.contact);
 		}
-		await page.goto(ROUTES.contact);
+		await settlePublicPage(page);
 		await expect(page.locator("main form")).toHaveCount(0);
 		await expect(
 			page.getByRole("link", { name: /Политика обработки/ }),

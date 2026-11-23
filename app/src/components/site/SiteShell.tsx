@@ -8,6 +8,8 @@ import { serverURL } from "@/lib/urls";
 import { Footer } from "./Footer/Footer";
 import { Header } from "./Header/Header";
 import { PreviewBanner } from "./PreviewBanner/PreviewBanner";
+import { BackNavigation } from "./SiteNavigation/BackNavigation";
+import { ScrollToTop } from "./SiteNavigation/ScrollToTop";
 
 export async function SiteShell({
 	children,
@@ -34,10 +36,14 @@ export async function SiteShell({
 				<PreviewBanner editURL={viewer.editURL} serverURL={serverURL()} />
 			)}
 			<Header settings={settings} locale={locale} />
-			<main id="main-content">
-				<Container>{children}</Container>
+			<main id="main-content" tabIndex={-1}>
+				<Container>
+					<BackNavigation />
+					{children}
+				</Container>
 			</main>
 			<Footer settings={settings} locale={locale} />
+			<ScrollToTop />
 		</>
 	);
 }

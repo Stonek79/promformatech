@@ -1,12 +1,10 @@
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
-import type { MigrateDownArgs, MigrateUpArgs } from "@payloadcms/db-sqlite";
 import lockfile from "proper-lockfile";
 import { getCMS } from "@/cms/client";
 import { getRuntimeConfig, PROCESS_ROLE } from "@/config/runtime";
-import { verifyLedger } from "@/features/database/ledger";
+import { migrateDatabase } from "@/features/database/migrate";
 import { databasePath } from "@/features/database/path";
-import { migrations } from "@/migrations";
 
 const runtime = getRuntimeConfig();
 if (runtime.build || runtime.role !== PROCESS_ROLE.migrator) {
@@ -20,16 +18,7 @@ const release = await lockfile.lock(file, { realpath: false, retries: 0 });
 try {
 	const cms = await getCMS();
 	try {
-		await verifyLedger(cms, false);
-		await cms.db.migrate({
-			migrations: migrations.map((migration) => ({
-				...migration,
-				// Payload's base adapter erases the provider-specific migration arguments.
-				up: (args: unknown) => migration.up(args as MigrateUpArgs),
-				down: (args: unknown) => migration.down(args as MigrateDownArgs),
-			})),
-		});
-		await verifyLedger(cms);
+		await migrateDatabase(cms);
 	} finally {
 		await cms.destroy();
 	}

@@ -6,7 +6,7 @@ import {
 	PUBLICATION,
 } from "@/config/content";
 import { parseLocale } from "@/i18n/config";
-import { isStaff, staffOnly } from "../access";
+import { isStaff, siteContentReader, staffOnly } from "../access";
 import { mediaReferencesField } from "../fields/common";
 import { helpDescription } from "../help/config";
 import {
@@ -40,7 +40,7 @@ export const SiteSettings: GlobalConfig = {
 		},
 	},
 	access: {
-		read: () => true,
+		read: siteContentReader,
 		update: staffOnly,
 		readVersions: ({ req }) => isStaff(req.user),
 	},

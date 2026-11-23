@@ -9,16 +9,18 @@
 	inset: 0;
 	z-index: var(--pf-layer-dialog);
 	display: grid;
+	grid-template-columns: minmax(0, 1fr);
 	place-items: center;
-	padding: var(--pf-space-page);
+	padding: var(--dialog-viewport-padding, var(--pf-space-page));
 	overflow-y: auto;
 }
 .popup {
-	width: 100%;
-	max-width: var(--pf-dialog-width);
+	inline-size: var(--dialog-width, 100%);
+	min-inline-size: 0;
+	max-inline-size: var(--dialog-max-width, var(--pf-dialog-width));
 	max-height: var(--pf-dialog-height);
 	overflow-y: auto;
-	padding: var(--pf-space-lg);
+	padding: var(--dialog-padding, var(--pf-space-lg));
 	color: var(--pf-color-text);
 	background: var(--pf-color-background);
 	box-shadow: var(--pf-shadow-dialog);
@@ -27,11 +29,11 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: var(--pf-space-md);
-	margin-bottom: var(--pf-space-lg);
+	gap: var(--dialog-header-gap, var(--pf-space-md));
+	margin-block-end: var(--dialog-header-space, var(--pf-space-lg));
 }
 .title {
 	margin: 0;
-	font-size: var(--pf-font-size-card);
+	font-size: var(--dialog-title-size, var(--pf-font-size-card));
 	line-height: var(--pf-line-height-title);
 }

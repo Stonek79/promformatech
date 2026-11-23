@@ -9,6 +9,7 @@ const WATCH_PARENT = new URL("./lib/watch-dev-parent.mjs", import.meta.url);
 const environment = {
 	...process.env,
 	NODE_ENV: "development",
+	SQLITE_SCHEMA_PUSH: RUNTIME.disabledSchemaPush,
 };
 const children = new Set();
 let stopping = false;
@@ -105,7 +106,6 @@ async function run() {
 			],
 			{
 				detached: true,
-				env: { SQLITE_SCHEMA_PUSH: RUNTIME.disabledSchemaPush },
 			},
 		),
 		launch("payload", ["run", WORKER_SCRIPT], {

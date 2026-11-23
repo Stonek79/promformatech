@@ -23,8 +23,13 @@ export function isOwner(user: unknown): user is StaffUser & { role: "owner" } {
 
 export const staffOnly: Access = ({ req }) => isStaff(req.user);
 export const ownerOnly: Access = ({ req }) => isOwner(req.user);
+export const siteContentReader: Access = ({ req }) =>
+	req.payloadAPI === "local" || isStaff(req.user);
 export const publishedOrStaff: Access = ({ req }) =>
-	isStaff(req.user) || { _status: { equals: PUBLICATION.published } };
+	isStaff(req.user) ||
+	(req.payloadAPI === "local" && {
+		_status: { equals: PUBLICATION.published },
+	});
 export const mediaReader: Access = ({ req }) =>
 	isStaff(req.user) ||
 	(req.context[CONTEXT.publicContent] === true

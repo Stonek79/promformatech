@@ -3,6 +3,11 @@ html {
 	font-size: var(--pf-font-root-site);
 	color-scheme: light;
 	scroll-behavior: smooth;
+	scroll-padding-block-start: calc(
+		2 *
+		var(--pf-touch-target) +
+		var(--pf-space-md)
+	);
 }
 *,
 *::before,
@@ -59,7 +64,7 @@ video {
 	max-width: 100%;
 }
 .skip-link {
-	position: absolute;
+	position: fixed;
 	inset-inline-start: var(--pf-space-page);
 	top: var(--pf-space-sm);
 	z-index: var(--pf-layer-preview);

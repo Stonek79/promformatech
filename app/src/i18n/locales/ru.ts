@@ -4,6 +4,7 @@ export const ru = {
 	common: {
 		close: "Закрыть",
 		brand: "ПромФормаТех",
+		brandPrefix: "Пром",
 		skipToContent: "Перейти к содержимому",
 		preparing: "Сайт готовится к запуску",
 		loadingLabel: "Загрузка страницы",
@@ -33,6 +34,8 @@ export const ru = {
 		},
 	},
 	navigation: {
+		back: "Назад",
+		toTop: "Наверх",
 		openSearch: "Открыть поиск",
 		searchTitle: "Поиск по сайту",
 		search: "Поиск",
@@ -70,6 +73,16 @@ export const ru = {
 		specifications: "Характеристики",
 	},
 	search: {
+		loading: "Ищем…",
+		failed: "Не удалось загрузить результаты.",
+		all: "Все результаты",
+		resultsShown: (count: number) => `Совпадений в списке: ${count}`,
+		types: {
+			pages: "Страница",
+			products: "Продукция",
+			services: "Услуга",
+			projects: "Проект",
+		},
 		resultsTitle: (title: string, query: string) =>
 			query ? `${title}: ${query}` : title,
 	},
@@ -79,6 +92,8 @@ export const ru = {
 		retry: "Повторить",
 	},
 	media: {
+		zoomIn: "Увеличить фото",
+		zoomOut: "Вместить фото",
 		open: (title: string) => `Открыть: ${title}`,
 		captions: "Русские субтитры",
 		unsupportedVideo: "Ваш браузер не поддерживает просмотр видео.",
@@ -95,6 +110,12 @@ export const ru = {
 		home: "На главную",
 	},
 	cms: {
+		dashboard: {
+			panel: "Панель",
+			media: "Фото и видео",
+			processing: (count: number) => `Файлы в очереди и обработке (${count})`,
+			failed: (count: number) => `Файлы с ошибкой обработки (${count})`,
+		},
 		mediaNaming: {
 			fallback: (timestamp: string) => `Файл от ${timestamp}`,
 			fileNumber: (id: number) => `Файл №${id}`,

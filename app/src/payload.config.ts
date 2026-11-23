@@ -33,6 +33,7 @@ const runtime = getRuntimeConfig();
 export default buildConfig({
 	admin: {
 		avatar: "default",
+		dateFormat: "H:mm dd.MM.yyyy",
 		user: Users.slug,
 		importMap: {
 			baseDir: directory,
@@ -45,6 +46,7 @@ export default buildConfig({
 			actions: ["/cms/components/AppearanceAction#AppearanceAction"],
 			beforeNavLinks: ["/cms/help/HelpNavLink#HelpNavLink"],
 			views: {
+				dashboard: { Component: "/cms/components/DashboardView#DashboardView" },
 				help: {
 					Component: "/cms/help/HelpView#HelpView",
 					path: ADMIN_HELP.path,
@@ -52,8 +54,10 @@ export default buildConfig({
 					meta: { title: ADMIN_HELP.title },
 				},
 			},
-			beforeDashboard: ["/cms/components/Dashboard#Dashboard"],
-			graphics: { Logo: "/cms/components/CMSLogo#CMSLogo" },
+			graphics: {
+				Icon: "/cms/components/CMSLogo#CMSIcon",
+				Logo: "/cms/components/CMSLogo#CMSLogo",
+			},
 		},
 		meta: { titleSuffix: "— ПромФормаТех" },
 	},

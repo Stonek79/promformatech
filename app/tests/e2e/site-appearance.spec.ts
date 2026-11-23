@@ -3,7 +3,6 @@ import { ROUTES } from "../../src/config/content";
 import { expect, test } from "./support/admin";
 import {
 	checkSizeControl,
-	setTextSize,
 	setTheme,
 	sizeButton,
 	themeSwitch,
@@ -11,6 +10,10 @@ import {
 
 const DARK_BACKGROUND = "rgb(17, 25, 35)";
 const LIGHT_BACKGROUND = "rgb(255, 255, 255)";
+const DARK_FOOTER = "rgb(32, 45, 61)";
+const LIGHT_FOOTER = "rgb(242, 243, 245)";
+const DARK_TEXT = "rgb(237, 242, 249)";
+const LIGHT_TEXT = "rgb(22, 25, 30)";
 const NARROW_VIEWPORT = { width: 320, height: 900 };
 
 test.describe("before JavaScript runs", () => {
@@ -23,6 +26,10 @@ test.describe("before JavaScript runs", () => {
 		await expect(page.locator("body")).toHaveCSS(
 			"background-color",
 			DARK_BACKGROUND,
+		);
+		await expect(page.getByRole("contentinfo")).toHaveCSS(
+			"background-color",
+			DARK_FOOTER,
 		);
 		const thumb = themeSwitch(page).locator(":scope > span > span");
 		const offset = await thumb.evaluate(
@@ -38,12 +45,32 @@ test("site appearance follows OS and preserves explicit preferences", async ({
 }) => {
 	await page.emulateMedia({ colorScheme: "light" });
 	await page.goto(ROUTES.home);
+	const footer = page.getByRole("contentinfo");
+	const footerLogo = footer.getByRole("img");
+	const headerLogo = page.getByRole("banner").getByRole("img");
 	await expect(themeSwitch(page)).toHaveAttribute("aria-checked", "false");
+	await expect(footer).toHaveCSS("background-color", LIGHT_FOOTER);
+	await expect(footer).toHaveCSS("color", LIGHT_TEXT);
+	await expect(footerLogo).toHaveAttribute(
+		"src",
+		(await headerLogo.getAttribute("src")) ?? "",
+	);
+	await expect(footerLogo).toHaveCSS("background-color", LIGHT_BACKGROUND);
 	await page.emulateMedia({ colorScheme: "dark" });
 	await expect(themeSwitch(page)).toHaveAttribute("aria-checked", "true");
+	await expect(footer).toHaveCSS("background-color", DARK_FOOTER);
+	await expect(footer).toHaveCSS("color", DARK_TEXT);
 	await setTheme(page, THEMES.light);
+	await expect(footer).toHaveCSS("background-color", LIGHT_FOOTER);
 	await setTheme(page, THEMES.dark);
-	await setTextSize(page, TEXT_SIZES.larger);
+	await expect(footer).toHaveCSS("background-color", DARK_FOOTER);
+	await expect(footerLogo).toHaveCSS("background-color", LIGHT_BACKGROUND);
+	await sizeButton(page).press("Enter");
+	await expect(page.locator("html")).toHaveAttribute(
+		APPEARANCE.sizeAttribute,
+		TEXT_SIZES.large,
+	);
+	await sizeButton(page).press("Enter");
 	await expect(page.locator("html")).toHaveAttribute(
 		APPEARANCE.themeAttribute,
 		THEMES.dark,
@@ -66,6 +93,7 @@ test("site appearance follows OS and preserves explicit preferences", async ({
 		"background-color",
 		DARK_BACKGROUND,
 	);
+	await expect(footer).toHaveCSS("background-color", DARK_FOOTER);
 	await page.setViewportSize(NARROW_VIEWPORT);
 	await checkSizeControl(page, TEXT_SIZES.larger);
 	const search = await page

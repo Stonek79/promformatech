@@ -13,7 +13,7 @@ import {
 	materialListOptions,
 	publishedMaterial,
 	publishedMaterials,
-	publishedPage,
+	publishedPageLocales,
 	publishedSettings,
 } from "./queries";
 import { readLocalizedSettings } from "./site-settings";
@@ -44,9 +44,7 @@ export async function readSettings(viewer: Viewer) {
 
 export const readPage = cache(async (slug: string, viewer: Viewer) => {
 	if (!viewer.preview) {
-		return readPageLocales(viewer.locale, (locale) =>
-			publishedPage(slug, locale),
-		);
+		return publishedPageLocales(slug, viewer.locale);
 	}
 	const cms = await getCMS();
 	return readPageLocales(viewer.locale, async (locale) => {

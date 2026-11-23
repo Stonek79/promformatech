@@ -26,11 +26,12 @@ import { OriginalDownload as OriginalDownload_47b108db1c397167e3764aa97054ccf9 }
 import { MediaProcessingStatus as MediaProcessingStatus_791a566ef10ca8c4f2308aecdbb7ae4a } from '../../../cms/components/MediaProcessingStatus'
 import { RetryMedia as RetryMedia_aad19fbd69c5492af55b57000d52fde6 } from '../../../cms/components/RetryMedia'
 import { EnvironmentStatus as EnvironmentStatus_b9c770ac69a9350941f295f5dc6f54ac } from '../../../cms/components/EnvironmentStatus'
+import { CMSIcon as CMSIcon_2d492d46e128fcfd71b1be1b2d6c23a5 } from '../../../cms/components/CMSLogo'
 import { CMSLogo as CMSLogo_2d492d46e128fcfd71b1be1b2d6c23a5 } from '../../../cms/components/CMSLogo'
 import { AppearanceAction as AppearanceAction_111cad57c5b11e2125d64d2f12b22107 } from '../../../cms/components/AppearanceAction'
-import { Dashboard as Dashboard_758cc56c4b18c5339e55ed707c830b18 } from '../../../cms/components/Dashboard'
 import { HelpNavLink as HelpNavLink_b2cf63aae7186b3fb5480d6dc646e49d } from '../../../cms/help/HelpNavLink'
 import { AdminMessagesProvider as AdminMessagesProvider_a25cbb333b2e032f6494ab2414dfe885 } from '../../../cms/components/AdminMessagesProvider'
+import { DashboardView as DashboardView_e4ecba7d40734db522ea55b74ec7c899 } from '../../../cms/components/DashboardView'
 import { HelpView as HelpView_5acc8485435a3b38ab16ee5c5241f733 } from '../../../cms/help/HelpView'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
@@ -64,11 +65,12 @@ export const importMap = {
   "/cms/components/MediaProcessingStatus#MediaProcessingStatus": MediaProcessingStatus_791a566ef10ca8c4f2308aecdbb7ae4a,
   "/cms/components/RetryMedia#RetryMedia": RetryMedia_aad19fbd69c5492af55b57000d52fde6,
   "/cms/components/EnvironmentStatus#EnvironmentStatus": EnvironmentStatus_b9c770ac69a9350941f295f5dc6f54ac,
+  "/cms/components/CMSLogo#CMSIcon": CMSIcon_2d492d46e128fcfd71b1be1b2d6c23a5,
   "/cms/components/CMSLogo#CMSLogo": CMSLogo_2d492d46e128fcfd71b1be1b2d6c23a5,
   "/cms/components/AppearanceAction#AppearanceAction": AppearanceAction_111cad57c5b11e2125d64d2f12b22107,
-  "/cms/components/Dashboard#Dashboard": Dashboard_758cc56c4b18c5339e55ed707c830b18,
   "/cms/help/HelpNavLink#HelpNavLink": HelpNavLink_b2cf63aae7186b3fb5480d6dc646e49d,
   "/cms/components/AdminMessagesProvider#AdminMessagesProvider": AdminMessagesProvider_a25cbb333b2e032f6494ab2414dfe885,
+  "/cms/components/DashboardView#DashboardView": DashboardView_e4ecba7d40734db522ea55b74ec7c899,
   "/cms/help/HelpView#HelpView": HelpView_5acc8485435a3b38ab16ee5c5241f733,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

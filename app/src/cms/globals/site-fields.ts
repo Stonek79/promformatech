@@ -39,8 +39,8 @@ export const brandFields: Field[] = [
 		required: true,
 	},
 	text("tagline", "Краткое описание компании"),
-	mediaField("logo", "Логотип в шапке"),
-	mediaField("footerLogo", "Логотип в подвале"),
+	mediaField("logo", "Логотип сайта"),
+	mediaField("footerLogo", "Резервный логотип для тёмного фона"),
 ];
 
 export const contactFields: Field[] = [

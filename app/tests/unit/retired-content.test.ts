@@ -24,8 +24,10 @@ describe("retired feedback content in existing CMS data", () => {
 		},
 	);
 
-	it("also enforces publication when a visitor queries pages", async () => {
-		const result = await Reflect.apply(readablePages, undefined, [{ req: {} }]);
+	it("enforces publication when the public site queries pages", async () => {
+		const result = await Reflect.apply(readablePages, undefined, [
+			{ req: { payloadAPI: "local" } },
+		]);
 		expect(result).toEqual({
 			and: [ACTIVE_PAGES, { _status: { equals: PUBLICATION.published } }],
 		});

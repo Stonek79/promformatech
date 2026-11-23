@@ -3,7 +3,6 @@ import { BrandMark } from "@/components/site/BrandMark/BrandMark";
 import { Icon } from "@/components/ui/Icon/Icon";
 import { Container, Heading } from "@/components/ui/Layout/Layout";
 import { ANCHORS } from "@/config/content";
-import { IMAGE_SIZES } from "@/config/image";
 import { contactMap } from "@/features/content/contact-map";
 import type { SiteSettingsView } from "@/features/content/site-settings";
 import type { Locale } from "@/i18n/config";
@@ -63,10 +62,9 @@ export function Footer({
 					<div className={styles.logo}>
 						<BrandMark
 							company={settings.companyName}
-							logo={settings.footerLogo}
+							logo={settings.logo}
+							fallbackLogo={settings.footerLogo}
 							locale={locale}
-							sizes={IMAGE_SIZES.headerLogo}
-							className={styles.wordmark}
 						/>
 					</div>
 				</div>

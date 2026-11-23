@@ -9,8 +9,11 @@ describe("admin dashboard server props", () => {
 		async (role) => {
 			const user = { id: 1, role };
 			const payload = {
-				find: vi.fn().mockResolvedValue({ docs: [{ id: 42 }] }),
-				count: vi.fn().mockResolvedValue({ totalDocs: 3 }),
+				find: vi
+					.fn()
+					.mockResolvedValueOnce({ docs: [{ id: 42 }] })
+					.mockResolvedValueOnce({ totalDocs: 3 })
+					.mockResolvedValueOnce({ totalDocs: 1 }),
 			};
 			const component = await Reflect.apply(Dashboard, undefined, [
 				{ payload, user },
@@ -19,7 +22,8 @@ describe("admin dashboard server props", () => {
 
 			expect(html).toContain("Управление сайтом");
 			expect(html).toContain("/admin/collections/pages/42");
-			expect(html).toContain("Файлов в обработке или с ошибкой: 3");
+			expect(html).toContain("Файлы в очереди и обработке (3)");
+			expect(html).toContain("Файлы с ошибкой обработки (1)");
 			expect(payload.find).toHaveBeenCalledWith(
 				expect.objectContaining({
 					collection: COLLECTIONS.pages,
@@ -28,21 +32,20 @@ describe("admin dashboard server props", () => {
 					user,
 				}),
 			);
-			expect(payload.count).toHaveBeenCalledTimes(1);
-			for (const [options] of payload.count.mock.calls) {
+			expect(payload.find).toHaveBeenCalledTimes(3);
+			for (const [options] of payload.find.mock.calls) {
 				expect(options).toEqual(
-					expect.objectContaining({ overrideAccess: false, user }),
+					expect.objectContaining({ draft: true, overrideAccess: false, user }),
 				);
 			}
 		},
 	);
 
 	it("does not query content without a staff user", async () => {
-		const payload = { find: vi.fn(), count: vi.fn() };
+		const payload = { find: vi.fn() };
 		const component = await Reflect.apply(Dashboard, undefined, [{ payload }]);
 
 		expect(component).toBeNull();
 		expect(payload.find).not.toHaveBeenCalled();
-		expect(payload.count).not.toHaveBeenCalled();
 	});
 });

@@ -1,5 +1,5 @@
 import type { BLOCK_TYPES } from "@/config/blocks";
-import type { Locale } from "@/i18n/config";
+import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
 import { classes } from "@/lib/classes";
 import type { ArticleBlock } from "../article-blocks";
 import { localizedText, matchRows } from "../localized-fields";
@@ -21,26 +21,28 @@ export function Steps({
 	>;
 	readonly language: Locale;
 }) {
+	const items = block.items?.length ? block.items : original?.items;
+	const itemLanguage = block.items?.length ? language : DEFAULT_LOCALE;
+	const steps = matchRows(items, original?.items, (step, source) => ({
+		id: step.id,
+		title: localizedText(itemLanguage, step.title, source?.title),
+		text: localizedText(itemLanguage, step.text, source?.text),
+		duration: localizedText(itemLanguage, step.duration, source?.duration),
+	})).filter(
+		({ title, text, duration }) => title.value || text.value || duration.value,
+	);
+	if (!steps.length) {
+		return null;
+	}
 	return (
 		<ol className={styles.steps}>
-			{matchRows(block.items, original?.items, (step, source) => {
-				const title = localizedText(language, step.title, source?.title);
-				const text = localizedText(language, step.text, source?.text);
-				const duration = localizedText(
-					language,
-					step.duration,
-					source?.duration,
-				);
-				return (
-					<li key={step.id}>
-						{title.value && <h3 lang={title.lang}>{title.value}</h3>}
-						{text.value && <p lang={text.lang}>{text.value}</p>}
-						{duration.value && (
-							<span lang={duration.lang}>{duration.value}</span>
-						)}
-					</li>
-				);
-			})}
+			{steps.map(({ id, title, text, duration }) => (
+				<li key={id}>
+					{title.value && <h3 lang={title.lang}>{title.value}</h3>}
+					{text.value && <p lang={text.lang}>{text.value}</p>}
+					{duration.value && <span lang={duration.lang}>{duration.value}</span>}
+				</li>
+			))}
 		</ol>
 	);
 }

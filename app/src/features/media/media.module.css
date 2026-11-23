@@ -5,7 +5,6 @@
 }
 .cover {
 	height: 100%;
-	object-fit: cover;
 }
 .video {
 	display: block;
@@ -50,7 +49,73 @@
 	background: var(--pf-color-overlay);
 	font-size: var(--pf-font-size-title);
 }
+.photoDialogViewport {
+	--dialog-viewport-padding: var(--pf-space-xs);
+}
+.photoDialog {
+	--dialog-padding: var(--pf-space-xs);
+	--dialog-header-gap: var(--pf-space-xs);
+	--dialog-header-space: var(--pf-space-xs);
+	--dialog-title-size: var(--pf-font-size-small);
+	--dialog-max-width: min(100%, var(--pf-photo-dialog-width));
+	--dialog-width: max(
+		var(--pf-photo-dialog-min-width),
+		calc(
+			var(--photo-ratio, 1) *
+			var(--pf-photo-dialog-image-height) +
+			2 *
+			var(--dialog-padding)
+		)
+	);
+	border-radius: var(--pf-radius-control);
+}
+.photoFrame {
+	position: relative;
+}
+.photoViewport {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	max-block-size: var(--pf-photo-dialog-image-height);
+	overflow: auto;
+	overscroll-behavior: contain;
+}
+.photoViewport img {
+	inline-size: auto;
+	block-size: auto;
+	max-block-size: var(--pf-photo-dialog-image-height);
+	margin-inline: auto;
+	object-fit: contain;
+}
+.photoViewport[data-zoomed="true"] img {
+	max-inline-size: none;
+	max-block-size: none;
+	margin-inline: 0;
+	zoom: var(--pf-photo-zoom-factor);
+}
+.photoFrame .zoomButton {
+	position: absolute;
+	inset-block-start: var(--pf-space-xs);
+	inset-inline-end: var(--pf-space-xs);
+	border-radius: var(--pf-radius-circle);
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity var(--pf-motion-duration) var(--pf-motion-easing);
+}
+.zoomButton[data-visible="true"],
+.zoomButton:focus-visible {
+	opacity: 1;
+	pointer-events: auto;
+}
+.photoCaption {
+	margin-block: var(--pf-space-xs) 0;
+}
 @media (--phone) {
+	.photoDialogViewport {
+		--dialog-viewport-padding: var(--pf-space-page);
+	}
+	.photoDialog {
+		--dialog-padding: var(--pf-space-sm);
+	}
 	.gallery {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}

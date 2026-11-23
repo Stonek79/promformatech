@@ -2,7 +2,7 @@ import Link from "next/link";
 import { COLLECTIONS } from "@/config/content";
 import { IMAGE_SIZES } from "@/config/image";
 import { MediaImage } from "@/features/media/MediaView";
-import { mediaView } from "@/features/media/view-model";
+import { isReadyImage, mediaView } from "@/features/media/view-model";
 import type { Locale } from "@/i18n/config";
 import { sitePath } from "@/i18n/site-path";
 import { classes } from "@/lib/classes";
@@ -11,48 +11,76 @@ import type { MaterialCard } from "../material-locales";
 import styles from "./content.module.css";
 
 const MAX_PRODUCT_COLUMNS = 4;
+const MAX_STANDARD_COLUMNS = 3;
 
 export function MaterialCards({
 	items,
 	compact = false,
+	prioritizeFirstRow = false,
+	headingLevel = "h3",
 	locale,
 }: {
 	readonly items: readonly MaterialCard[];
 	readonly compact?: boolean;
+	readonly prioritizeFirstRow?: boolean;
+	readonly headingLevel?: "h2" | "h3";
 	readonly locale: Locale;
 }) {
-	const Title = compact ? "h2" : "h3";
+	const Title = headingLevel;
+	const columns = compact ? MAX_PRODUCT_COLUMNS : MAX_STANDARD_COLUMNS;
 	return (
 		<div className={classes(styles.cards, compact && styles.productCards)}>
-			{items.map((material, index) => (
-				<Link
-					key={`${material.collection}-${material.id}`}
-					href={sitePath(
-						materialPath(material.collection, material.slug),
-						locale,
-					)}
-					className={classes(
-						styles.card,
-						material.collection === COLLECTIONS.services && styles.serviceCard,
-					)}
-				>
+			{items.map((material, index) => {
+				const key = `${material.collection}-${material.id}`;
+				const href = sitePath(
+					materialPath(material.collection, material.slug),
+					locale,
+				);
+				const service = material.collection === COLLECTIONS.services;
+				const asset = mediaView(material.featuredImage);
+				const image = (!service || isReadyImage(asset)) && (
 					<div className={styles.cardImage}>
 						<MediaImage
 							sizes={compact ? IMAGE_SIZES.productCard : IMAGE_SIZES.card}
-							asset={mediaView(material.featuredImage)}
-							cover={material.collection !== COLLECTIONS.services}
-							priority={compact && index === 0}
-							eager={compact && index < MAX_PRODUCT_COLUMNS}
+							asset={asset}
+							alt={service ? "" : undefined}
+							cover
+							priority={prioritizeFirstRow && index === 0}
+							eager={prioritizeFirstRow && index < columns}
 						/>
 					</div>
-					<div className={styles.cardBody}>
-						<Title lang={material.title.lang}>{material.title.value}</Title>
-						{material.collection !== COLLECTIONS.services && (
-							<p lang={material.summary.lang}>{material.summary.value}</p>
-						)}
-					</div>
-				</Link>
-			))}
+				);
+				const summary = (
+					<p lang={material.summary.lang}>{material.summary.value}</p>
+				);
+				if (service) {
+					return (
+						<article
+							key={key}
+							className={classes(styles.card, styles.serviceCard)}
+						>
+							{image}
+							<div className={styles.cardBody}>
+								<Title lang={material.title.lang}>
+									<Link data-return-card href={href}>
+										{material.title.value}
+									</Link>
+								</Title>
+								{material.summary.value && summary}
+							</div>
+						</article>
+					);
+				}
+				return (
+					<Link key={key} data-return-card href={href} className={styles.card}>
+						{image}
+						<div className={styles.cardBody}>
+							<Title lang={material.title.lang}>{material.title.value}</Title>
+							{summary}
+						</div>
+					</Link>
+				);
+			})}
 		</div>
 	);
 }

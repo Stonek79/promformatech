@@ -1,0 +1,35 @@
+.back {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--pf-space-xs);
+	min-block-size: var(--pf-touch-target);
+	color: var(--pf-color-action);
+	font-size: var(--pf-font-size-small);
+	text-decoration: none;
+}
+
+.back:hover {
+	text-decoration: underline;
+}
+
+.toTop {
+	position: fixed;
+	z-index: var(--pf-layer-header);
+	inset-inline-end: max(var(--pf-space-page), env(safe-area-inset-right));
+	inset-block-end: max(var(--pf-space-md), env(safe-area-inset-bottom));
+	border-radius: var(--pf-radius-control);
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity var(--pf-motion-duration) var(--pf-motion-easing);
+}
+
+.toTop[hidden] {
+	display: none;
+}
+
+.toTop[data-active="true"],
+.toTop:hover,
+.toTop:focus-visible {
+	opacity: 1;
+	pointer-events: auto;
+}

@@ -1,7 +1,7 @@
 .footer {
 	padding-block: var(--pf-space-xl);
-	color: var(--pf-color-inverse);
-	background: var(--pf-color-dark);
+	color: var(--pf-color-text);
+	background: var(--pf-color-surface);
 }
 .main {
 	display: flex;
@@ -27,7 +27,7 @@
 	text-decoration: none;
 }
 .address svg {
-	color: var(--pf-color-brand);
+	color: var(--pf-color-action);
 }
 .contactLine {
 	min-inline-size: 0;
@@ -41,22 +41,13 @@
 .logo {
 	max-width: min(100%, var(--pf-header-wordmark-width));
 }
-.logo img {
-	width: min(100%, var(--pf-header-wordmark-width));
-	height: auto;
-}
-.wordmark {
-	font-family: var(--pf-font-body);
-	font-size: var(--pf-font-size-header-brand);
-	font-weight: var(--pf-font-weight-strong);
-}
 .bottom {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: space-between;
 	gap: var(--pf-space-md);
 	padding-top: var(--pf-space-lg);
-	border-top: var(--pf-border-width) solid var(--pf-color-brand);
+	border-top: var(--pf-border-width) solid var(--pf-color-border);
 	font-size: var(--pf-font-size-small);
 }
 .bottom p {

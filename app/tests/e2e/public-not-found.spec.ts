@@ -1,8 +1,10 @@
 import { expect, test } from "@playwright/test";
 import { TEXT_SIZES, THEMES } from "../../src/config/appearance";
 import { ROUTES } from "../../src/config/content";
+import { LOCALES, SITE_LANGUAGE_QUERY } from "../../src/i18n/config";
 import { getMessages } from "../../src/i18n/messages";
 import { setTextSize, setTheme } from "./support/appearance";
+import { login } from "./support/auth";
 import { checkPublicLayout, settlePublicPage } from "./support/public-layout";
 
 const MISSING_PAGE = "/missing-layout-test-page";
@@ -13,20 +15,36 @@ const HEIGHT = 900;
 const MISSING_PATHS = [MISSING_PAGE, ROUTES.privacy];
 const messages = getMessages().notFound;
 
-test("a previously published policy stays out of public API, search and sitemap", async ({
+test("a retired policy stays out of the public site and the manager’s page list", async ({
 	page,
 	request,
 }) => {
-	const result = await request.get(
-		`/api/pages?where[slug][equals]=${ROUTES.privacy.slice(1)}`,
-	);
-	expect(result.ok()).toBe(true);
-	expect((await result.json()).totalDocs).toBe(0);
+	const query = `/api/pages?where[slug][equals]=${ROUTES.privacy.slice(1)}`;
+	expect((await request.get(query)).status()).toBe(403);
 	expect(await (await request.get(ROUTES.sitemap)).text()).not.toContain(
 		ROUTES.privacy,
 	);
-	await page.goto(`${ROUTES.search}?q=${encodeURIComponent("Политика")}`);
+	const search = new URLSearchParams({ q: "Политика" });
+	await page.goto(`${ROUTES.search}?${search}`);
 	await expect(page.locator(`main a[href="${ROUTES.privacy}"]`)).toHaveCount(0);
+	const suggestions = await request.get(
+		`${ROUTES.searchSuggestions}?${search}`,
+	);
+	expect(suggestions.ok()).toBe(true);
+	expect(await suggestions.text()).not.toContain(ROUTES.privacy);
+	await login(page.request);
+	const result = await page.request.get(query);
+	expect(result.ok()).toBe(true);
+	expect((await result.json()).totalDocs).toBe(0);
+	await page.goto(
+		`/admin/collections/pages?${SITE_LANGUAGE_QUERY}=${LOCALES.ru}`,
+	);
+	await expect(
+		page.getByRole("link", { name: "Контакты", exact: true }),
+	).toBeVisible();
+	await expect(
+		page.getByRole("link", { name: "Политика обработки данных" }),
+	).toHaveCount(0);
 });
 
 const VIEWPORTS = [
@@ -72,7 +90,7 @@ for (const { width, theme } of VIEWPORTS) {
 			);
 			await checkPublicLayout(page);
 		}
-		await page.locator(`main a[href="${ROUTES.home}"]`).click();
+		await page.getByRole("link", { name: messages.home, exact: true }).click();
 		await expect(page).toHaveURL(ROUTES.home);
 		expect(errors).toEqual([]);
 	});

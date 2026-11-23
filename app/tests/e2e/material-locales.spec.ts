@@ -170,12 +170,24 @@ test("service translations remain private and can publish with the Russian summa
 	);
 	await visitor.goto(sitePath(ROUTES.home, LOCALES.de));
 	const related = visitor.locator(
-		`main a[href="${publicPath(SERVICE, LOCALES.de)}"] h3`,
+		`main h3 a[href="${publicPath(SERVICE, LOCALES.de)}"]`,
 	);
 	await expect(related).toHaveText(SERVICE.sourceTitle);
+	const draftSearch = new URLSearchParams({
+		q: SERVICE.de,
+		[SITE_LANGUAGE_QUERY]: LOCALES.de,
+	});
+	const suggestions = `${ROUTES.searchSuggestions}?${draftSearch}`;
+	expect(await (await visitor.request.get(suggestions)).json()).toEqual({
+		results: [],
+		hasMore: false,
+	});
 	await publish(page, endpoint(editor));
 	await visitor.reload();
 	await expect(related).toHaveText(SERVICE.de);
+	expect(await (await visitor.request.get(suggestions)).json()).toMatchObject({
+		results: [{ title: SERVICE.de, href: publicPath(SERVICE, LOCALES.de) }],
+	});
 
 	const russianQuery = new URLSearchParams({ q: SERVICE.sourceTitle });
 	await visitor.goto(`${sitePath(ROUTES.search, LOCALES.de)}?${russianQuery}`);

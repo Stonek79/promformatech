@@ -1,0 +1,98 @@
+.viewport {
+	align-items: start;
+	padding-block-start: max(var(--pf-space-page), 12svh);
+}
+.popup {
+	--dialog-max-width: var(--pf-search-width);
+	--dialog-padding: var(--pf-space-sm);
+	--dialog-header-gap: var(--pf-space-xs);
+	--dialog-header-space: var(--pf-space-xs);
+	--dialog-title-size: var(--pf-font-size-search);
+	max-block-size: min(var(--pf-dialog-height), 76dvh);
+	border: var(--pf-border-width) solid var(--pf-color-border);
+	border-radius: var(--pf-radius-control);
+	overscroll-behavior: contain;
+	font-size: var(--pf-font-size-search);
+	line-height: var(--pf-line-height-compact);
+}
+.field {
+	position: relative;
+	display: flex;
+	align-items: center;
+	--pf-icon-size: var(--pf-search-icon);
+}
+.field > svg {
+	position: absolute;
+	inset-inline-start: var(--pf-space-sm);
+	z-index: 1;
+	color: var(--pf-color-muted);
+	pointer-events: none;
+}
+.field .input {
+	min-block-size: var(--pf-touch-target);
+	padding-block: var(--pf-space-xs);
+	padding-inline-start: calc(var(--pf-search-icon) + 2 * var(--pf-space-sm));
+	padding-inline-end: var(--pf-space-sm);
+	background: var(--pf-color-surface);
+	border-radius: var(--pf-radius-control);
+	font-size: inherit;
+}
+.status {
+	margin: var(--pf-space-sm) 0 0;
+	color: var(--pf-color-muted);
+}
+.status:empty {
+	margin: 0;
+}
+.status[data-hidden="true"] {
+	position: absolute;
+	inline-size: 1px;
+	block-size: 1px;
+	margin: 0;
+	overflow: clip;
+	clip-path: inset(50%);
+}
+.results {
+	display: grid;
+	gap: var(--pf-border-width);
+	margin: var(--pf-space-xs) 0 0;
+	padding: 0;
+	list-style: none;
+}
+.results a,
+.all {
+	display: flex;
+	align-items: center;
+	gap: var(--pf-space-sm);
+	min-block-size: var(--pf-touch-target);
+	padding: var(--pf-space-xs) var(--pf-space-sm);
+	border-radius: var(--pf-radius-sm);
+	text-decoration: none;
+}
+.results a {
+	justify-content: space-between;
+	color: inherit;
+	--pf-icon-size: var(--pf-search-icon);
+}
+.results a:hover,
+.results a:focus-visible,
+.all:hover,
+.all:focus-visible {
+	background: var(--pf-color-surface);
+}
+.results a > span {
+	display: grid;
+	min-inline-size: 0;
+	overflow-wrap: anywhere;
+}
+.results strong {
+	font-weight: var(--pf-font-weight-strong);
+}
+.results small,
+.results a > svg {
+	color: var(--pf-color-muted);
+}
+.all {
+	color: var(--pf-color-action);
+	font-weight: var(--pf-font-weight-strong);
+}

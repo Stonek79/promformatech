@@ -69,6 +69,7 @@ export const ROUTES = {
 	preview: "/preview",
 	exitPreview: "/api/preview/exit",
 	search: "/search",
+	searchSuggestions: "/api/site-search",
 	contact: `/${PAGE_SLUGS.contacts}`,
 	privacy: `/${PAGE_SLUGS.privacy}`,
 } as const;

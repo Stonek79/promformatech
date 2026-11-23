@@ -44,14 +44,20 @@
 		var(--pf-text-scale)
 	);
 	--pf-font-size-product-card-title: calc(
-		clamp(1.0625rem, 1rem + 0.3125vw, 1.2rem) *
+		clamp(1rem, 0.925rem + 0.38vw, 1.2rem) *
 		var(--pf-text-scale)
 	);
 	--pf-font-size-product-card-summary: calc(1rem * var(--pf-text-scale));
+	--pf-font-size-product-title: calc(
+		clamp(1.125rem, 0.95rem + 0.95vw, 1.875rem) *
+		var(--pf-text-scale)
+	);
 	--pf-font-size-header-control: 0.8125rem;
+	--pf-font-size-search: calc(1rem * var(--pf-text-scale));
 	--pf-font-size-attribution: 0.75rem;
 	--pf-font-size-header-phone: 0.9375rem;
 	--pf-font-size-header-brand: clamp(0.875rem, 0.625rem + 1vw, 1.25rem);
+	--pf-font-size-logo-wordmark: clamp(0.6875rem, 0.475rem + 1.05vw, 1.125rem);
 	--pf-line-height-body: 1.7;
 	--pf-line-height-compact: 1.45;
 	--pf-line-height-title: 1.25;
@@ -65,6 +71,12 @@
 	--pf-space-page: clamp(1rem, 0.75rem + 0.5vw, 1.5rem);
 	--pf-container-width: 100rem;
 	--pf-product-card-max-width: 28.125rem;
+	--pf-product-specifications-width: 32rem;
+	--pf-product-photo-width: 52rem;
+	--pf-product-photo-viewport-width: 56svh;
+	--pf-product-photo-ratio: 4 / 3;
+	--pf-service-photo-ratio: 16 / 9;
+	--pf-service-photo-width: 26rem;
 	--pf-reading-width: 65rem;
 	--pf-map-preview-min-height: clamp(13rem, 22vw, 20rem);
 	--pf-map-preview-aspect-ratio: 16 / 10;
@@ -72,6 +84,8 @@
 	--pf-form-field-min-width: 18em;
 	--pf-control-height: 3rem;
 	--pf-touch-target: 2.75rem;
+	--pf-search-width: 34rem;
+	--pf-search-icon: 1.125rem;
 	--pf-icon-size: 1.5rem;
 	--pf-icon-stroke-width: 1.8;
 	--pf-textarea-height: 8rem;
@@ -86,6 +100,9 @@
 	--pf-header-switch-height: 1.625rem;
 	--pf-header-switch-thumb: 1.125rem;
 	--pf-header-switch-icon: 0.8125rem;
+	--pf-header-text-control-diameter: 1.875rem;
+	--pf-header-text-ring-width: 2px;
+	--pf-logo-inset: 0.25rem;
 	--pf-theme-switch-position: 0;
 	--pf-theme-switch-sun: inline-flex;
 	--pf-theme-switch-moon: none;
@@ -99,6 +116,13 @@
 	--pf-shadow-hero-text: 0 1px 4px rgb(0 0 0 / 80%);
 	--pf-dialog-width: 48rem;
 	--pf-dialog-height: 90dvh;
+	--pf-photo-dialog-image-height: min(
+		78dvh,
+		calc(var(--pf-dialog-height) - 4rem)
+	);
+	--pf-photo-dialog-width: 64rem;
+	--pf-photo-dialog-min-width: 16rem;
+	--pf-photo-zoom-factor: 1.5;
 	--pf-language-menu-min: 10rem;
 	--pf-border-width: 1px;
 	--pf-border-accent: 3px;
@@ -109,6 +133,8 @@
 	--pf-color-button: #326aa5;
 	--pf-color-button-hover: #254f7c;
 	--pf-color-logo-surface: #ffffff;
+	--pf-color-logo-accent: #6293d5;
+	--pf-color-logo-text: #16191e;
 	--pf-skeleton-line-height: 1rem;
 	--pf-skeleton-title-width: 65%;
 	--pf-skeleton-text-width: 85%;

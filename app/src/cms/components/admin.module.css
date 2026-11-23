@@ -6,7 +6,7 @@
 	color: var(--pf-color-text);
 	background: var(--pf-color-background);
 }
-.dashboard h2,
+.dashboard h1,
 .dashboard h3 {
 	margin: 0 0 var(--pf-space-sm);
 }
@@ -14,7 +14,18 @@
 	display: flex;
 	flex-wrap: wrap;
 	gap: var(--pf-space-md);
-	margin-block: var(--pf-space-lg);
+	margin-block: var(--pf-space-md);
+}
+.mediaStatus {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--pf-space-xs) var(--pf-space-md);
+	margin-block: var(--pf-space-sm) 0;
+	padding: 0;
+	list-style: none;
+}
+.mediaStatus a {
+	color: var(--pf-color-action);
 }
 .actions a {
 	display: inline-flex;
@@ -44,4 +55,11 @@
 }
 .logo span {
 	color: var(--pf-color-brand);
+}
+.mark {
+	display: block;
+	inline-size: 100%;
+	block-size: auto;
+	border-radius: var(--pf-radius-circle);
+	outline: var(--pf-border-width) solid var(--pf-color-action);
 }

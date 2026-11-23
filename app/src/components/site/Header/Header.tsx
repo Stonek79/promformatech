@@ -2,7 +2,6 @@ import Link from "next/link";
 import { BrandMark } from "@/components/site/BrandMark/BrandMark";
 import { Container } from "@/components/ui/Layout/Layout";
 import { ROUTES } from "@/config/content";
-import { IMAGE_SIZES } from "@/config/image";
 import type { SiteSettingsView } from "@/features/content/site-settings";
 import type { Locale } from "@/i18n/config";
 import { getMessages } from "@/i18n/messages";
@@ -28,6 +27,9 @@ export function Header({
 	const navigation = settings.navigation
 		.filter((item) => item.visible !== false)
 		.flatMap((item) => navigationLink(item, locale));
+	const phone = settings.phone
+		? { label: settings.phone, href: phoneHref(settings.phone) }
+		: undefined;
 	return (
 		<header className={styles.header}>
 			<Container>
@@ -42,21 +44,19 @@ export function Header({
 						<BrandMark
 							company={settings.companyName}
 							logo={settings.logo}
+							fallbackLogo={settings.footerLogo}
 							locale={locale}
-							sizes={IMAGE_SIZES.headerLogo}
-							className={styles.wordmark}
 							priority
 						/>
 					</Link>
 					<div className={styles.contacts}>
-						{settings.phone && (
-							<a href={phoneHref(settings.phone)}>{settings.phone}</a>
-						)}
+						{phone && <a href={phone.href}>{phone.label}</a>}
 						<HeaderControls
 							navigation={navigation}
 							searchTitle={labels.searchTitle}
 							searchPlaceholder={labels.searchPlaceholder}
-							searchButton={labels.searchButton}
+							emptySearch={labels.emptySearch}
+							phone={phone}
 						/>
 					</div>
 				</div>

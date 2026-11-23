@@ -6,6 +6,7 @@ export const en = {
 	common: {
 		close: "Close",
 		brand: "PromFormaTech",
+		brandPrefix: "Prom",
 		skipToContent: "Skip to content",
 		preparing: "The site is getting ready to launch",
 		loadingLabel: "Loading page",
@@ -35,6 +36,8 @@ export const en = {
 		},
 	},
 	navigation: {
+		back: "Back",
+		toTop: "Back to top",
 		openSearch: "Open search",
 		searchTitle: "Site search",
 		search: "Search",
@@ -70,6 +73,16 @@ export const en = {
 		specifications: "Specifications",
 	},
 	search: {
+		loading: "Searching…",
+		failed: "Couldn’t load search results.",
+		all: "View all results",
+		resultsShown: (count: number) => `Matches shown: ${count}`,
+		types: {
+			pages: "Page",
+			products: "Product",
+			services: "Service",
+			projects: "Project",
+		},
 		resultsTitle: (title: string, query: string) =>
 			query ? `${title}: ${query}` : title,
 	},
@@ -79,6 +92,8 @@ export const en = {
 		retry: "Try again",
 	},
 	media: {
+		zoomIn: "Zoom in",
+		zoomOut: "Fit photo",
 		open: (title: string) => `Open: ${title}`,
 		captions: "Russian captions",
 		unsupportedVideo: "Your browser does not support video playback.",

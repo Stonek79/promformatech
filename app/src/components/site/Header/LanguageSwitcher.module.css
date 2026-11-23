@@ -1,9 +1,9 @@
 .trigger[aria-label] {
 	--pf-icon-size: var(--pf-header-control-icon);
-	inline-size: var(--pf-header-language-width);
+	min-inline-size: var(--pf-header-language-width);
 	min-height: var(--pf-touch-target);
 	gap: var(--pf-space-xs);
-	padding: var(--pf-space-xs) 0;
+	padding: var(--pf-space-xs);
 	border-radius: var(--pf-radius-control);
 	font-size: var(--pf-font-size-header-control);
 	line-height: var(--pf-line-height-title);
