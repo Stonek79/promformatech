@@ -86,6 +86,9 @@
 	--pf-touch-target: 2.75rem;
 	--pf-search-width: 34rem;
 	--pf-search-icon: 1.125rem;
+	--pf-favorite-thumbnail-width: 8rem;
+	--pf-comparison-product-width: 11rem;
+	--pf-comparison-label-width: clamp(7rem, 20vw, 11rem);
 	--pf-icon-size: 1.5rem;
 	--pf-icon-stroke-width: 1.8;
 	--pf-textarea-height: 8rem;
@@ -122,7 +125,6 @@
 	);
 	--pf-photo-dialog-width: 64rem;
 	--pf-photo-dialog-min-width: 16rem;
-	--pf-photo-zoom-factor: 1.5;
 	--pf-language-menu-min: 10rem;
 	--pf-border-width: 1px;
 	--pf-border-accent: 3px;

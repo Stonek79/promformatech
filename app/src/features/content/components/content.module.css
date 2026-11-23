@@ -94,6 +94,11 @@
 	color: inherit;
 	background: var(--pf-color-surface);
 }
+.favoriteCard {
+	position: relative;
+	display: grid;
+	min-inline-size: 0;
+}
 .cardImage {
 	overflow: hidden;
 	aspect-ratio: 4 / 3;
@@ -130,7 +135,7 @@
 	color: var(--pf-color-muted);
 }
 @supports (grid-template-rows: subgrid) {
-	.productCards .card {
+	.productCards :is(.favoriteCard, .card) {
 		display: grid;
 		grid-template-rows: subgrid;
 		grid-row: span 3;

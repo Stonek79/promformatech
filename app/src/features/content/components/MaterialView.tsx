@@ -2,6 +2,7 @@ import { Icon } from "@/components/ui/Icon/Icon";
 import { Heading, Section } from "@/components/ui/Layout/Layout";
 import { COLLECTIONS, type ShowcaseCollection } from "@/config/content";
 import { IMAGE_SIZES } from "@/config/image";
+import { FavoriteToggle } from "@/features/favorites/FavoriteToggle";
 import { Gallery } from "@/features/media/Gallery";
 import { MediaImage } from "@/features/media/MediaView";
 import { PhotoDialog } from "@/features/media/PhotoDialog";
@@ -188,7 +189,9 @@ export function MaterialView({
 		<article
 			className={classes(product && styles.product, service && styles.service)}
 		>
-			<header className={styles.pageHeader}>
+			<header
+				className={classes(styles.pageHeader, product && styles.productHeader)}
+			>
 				<Heading
 					as="h1"
 					lang={title.lang}
@@ -196,6 +199,13 @@ export function MaterialView({
 				>
 					{title.value}
 				</Heading>
+				{product && (
+					<FavoriteToggle
+						id={material.id}
+						title={title.value ?? material.slug}
+						position="detail"
+					/>
+				)}
 			</header>
 			{(hasIntroduction || !!specifications?.length) && (
 				<Section

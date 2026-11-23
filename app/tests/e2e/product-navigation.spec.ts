@@ -4,6 +4,79 @@ import { ROUTES } from "../../src/config/content";
 import { setTextSize, setTheme } from "./support/appearance";
 import { checkPublicLayout, settlePublicPage } from "./support/public-layout";
 
+test("zoomed portrait scrolls and can be dragged on both axes", async ({
+	page,
+	browserName,
+}) => {
+	await page.setViewportSize({ width: 1440, height: 900 });
+	await page.goto(`${ROUTES.products}/porous-filter-tubes`);
+	await page
+		.getByRole("button", { name: /^Открыть:/ })
+		.first()
+		.click();
+	const dialog = page.getByRole("dialog");
+	const viewport = dialog.getByRole("region");
+	const increase = dialog.getByRole("button", { name: "Увеличить фото" });
+	const decrease = dialog.getByRole("button", { name: "Уменьшить фото" });
+	const dragDistance = 70;
+	await expect(decrease).toBeDisabled();
+	await increase.click();
+	await expect(dialog.getByRole("button", { name: /125%/ })).toBeVisible();
+	await increase.click();
+	await expect(dialog.getByRole("button", { name: /150%/ })).toBeVisible();
+	await expect
+		.poll(() =>
+			viewport.evaluate((element) =>
+				Math.min(
+					element.scrollWidth - element.clientWidth,
+					element.scrollHeight - element.clientHeight,
+				),
+			),
+		)
+		.toBeGreaterThan(dragDistance);
+	await expect
+		.poll(() =>
+			viewport.evaluate((element) =>
+				element.style.getPropertyValue("--photo-scale"),
+			),
+		)
+		.toBe("1.5");
+	await viewport.evaluate((element) => element.scrollTo(0, 0));
+	const box = await viewport.boundingBox();
+	if (!box) {
+		throw new Error("The photo viewport is missing");
+	}
+	const center = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+	await page.mouse.move(center.x, center.y);
+	if (browserName === "chromium") {
+		await page.mouse.wheel(dragDistance, 0);
+		await expect
+			.poll(() => viewport.evaluate((element) => element.scrollLeft))
+			.toBeGreaterThan(0);
+		await viewport.evaluate((element) => element.scrollTo(0, 0));
+	}
+	await page.mouse.down();
+	await page.mouse.move(center.x - dragDistance, center.y - dragDistance);
+	await page.mouse.up();
+	await expect
+		.poll(() =>
+			viewport.evaluate((element) =>
+				Math.min(element.scrollLeft, element.scrollTop),
+			),
+		)
+		.toBeGreaterThan(0);
+	await expect(viewport).toHaveAttribute("data-dragging", "false");
+	await decrease.click();
+	await expect(dialog.getByRole("button", { name: /125%/ })).toBeVisible();
+	await dialog.getByRole("button", { name: /125%/ }).click();
+	await expect(decrease).toBeDisabled();
+	await expect
+		.poll(() =>
+			viewport.evaluate((element) => element.scrollWidth - element.clientWidth),
+		)
+		.toBe(0);
+});
+
 test("A-TRP fits its photo and specifications side by side on wide screens", async ({
 	page,
 }) => {

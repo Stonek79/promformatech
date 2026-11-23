@@ -8,6 +8,12 @@
 .pageHeader .productTitle {
 	font-size: var(--pf-font-size-product-title);
 }
+.productHeader {
+	display: flex;
+	align-items: start;
+	justify-content: space-between;
+	gap: var(--pf-space-sm);
+}
 .product {
 	--product-preview-width: min(
 		var(--pf-product-photo-width),

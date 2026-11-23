@@ -88,6 +88,26 @@ export const de = {
 		resultsTitle: (title: string, query: string) =>
 			query ? `${title}: ${query}` : title,
 	},
+	favorites: {
+		description: "Beschreibung",
+		title: "Merkliste",
+		toggle: (title: string) => `Merkliste — ${title}`,
+		add: "Auf die Merkliste",
+		saved: "Auf der Merkliste",
+		empty: "Speichern Sie Produkte mit dem Herzsymbol in Ihrer Merkliste.",
+		catalog: "Zum Produktkatalog",
+		select: "Zum Vergleich auswählen",
+		compare: "Vergleichen",
+		comparison: "Produktvergleich",
+		hint: (min: number, max: number) =>
+			`Wählen Sie ${min} bis ${max} Produkte aus.`,
+		loading: "Produkte werden geladen …",
+		error: "Die Merkliste konnte nicht geladen werden.",
+		unavailable: "Dieses Produkt ist nicht mehr verfügbar",
+		remove: "Aus der Merkliste entfernen",
+		spec: "Merkmal",
+		scrollHint: "Die Tabelle lässt sich seitlich scrollen.",
+	},
 	error: {
 		title: "Die Seite konnte nicht geladen werden",
 		description: "Bitte versuchen Sie es in Kürze erneut.",
@@ -95,7 +115,8 @@ export const de = {
 	},
 	media: {
 		zoomIn: "Foto vergrößern",
-		zoomOut: "Foto einpassen",
+		zoomOut: "Verkleinern",
+		zoomReset: "Zoom zurücksetzen",
 		open: (title: string) => `Öffnen: ${title}`,
 		captions: "Russische Untertitel",
 		unsupportedVideo: "Ihr Browser unterstützt keine Videowiedergabe.",

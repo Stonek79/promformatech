@@ -1,0 +1,212 @@
+.headerLink {
+	position: relative;
+	display: inline-grid;
+	place-items: center;
+	flex: none;
+	inline-size: var(--pf-touch-target);
+	block-size: var(--pf-touch-target);
+	border-radius: var(--pf-radius-control);
+	color: var(--pf-color-action);
+	text-decoration: none;
+}
+.headerLink:hover {
+	background: var(--pf-color-surface);
+}
+.headerText {
+	display: none;
+}
+@media (--desktop) {
+	.headerLink {
+		display: flex;
+		gap: var(--pf-space-xs);
+		inline-size: auto;
+		padding-inline: var(--pf-space-sm);
+		font-size: var(--pf-font-size-header-control);
+	}
+	.headerText {
+		display: inline;
+	}
+}
+.count {
+	position: absolute;
+	inset-block-start: 0;
+	inset-inline-end: 0;
+	min-inline-size: var(--pf-icon-size);
+	padding-inline: var(--pf-space-xs);
+	border-radius: var(--pf-radius-control);
+	background: var(--pf-color-button);
+	color: var(--pf-color-button-text);
+	font-size: var(--pf-font-size-attribution);
+	line-height: var(--pf-line-height-compact);
+	text-align: center;
+}
+.toggle {
+	flex: none;
+	min-inline-size: var(--pf-touch-target);
+	padding-inline: var(--pf-space-xs);
+	border-radius: var(--pf-radius-control);
+	color: var(--pf-color-action);
+	background: var(--pf-color-background);
+}
+.toggle[aria-pressed="true"] svg {
+	fill: currentcolor;
+}
+.cardToggle {
+	position: absolute;
+	inset-block-start: var(--pf-space-xs);
+	inset-inline-end: var(--pf-space-xs);
+	z-index: 1;
+}
+.toggleLabel {
+	display: none;
+}
+section.page {
+	margin-block-start: var(--pf-space-lg);
+}
+.empty,
+.saved {
+	display: grid;
+	gap: var(--pf-space-md);
+	margin-block-start: var(--pf-space-md);
+}
+.empty {
+	justify-items: start;
+}
+.savedToolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--pf-space-sm);
+}
+.empty p,
+.savedToolbar p,
+.savedBody p {
+	margin: 0;
+}
+.savedList {
+	display: grid;
+	gap: var(--pf-space-sm);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.savedRow,
+.missing {
+	padding: var(--pf-space-sm);
+	border-radius: var(--pf-radius-control);
+	background: var(--pf-color-surface);
+}
+.savedRow {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: start;
+	gap: var(--pf-space-sm);
+}
+.missing {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--pf-space-sm);
+}
+.savedImage {
+	position: relative;
+	grid-column: 1;
+	inline-size: min(100%, var(--pf-favorite-thumbnail-width));
+	aspect-ratio: var(--pf-product-photo-ratio);
+	overflow: hidden;
+	border-radius: var(--pf-radius-sm);
+}
+.savedBody {
+	display: grid;
+	grid-column: 1;
+	gap: var(--pf-space-xs);
+	min-inline-size: 0;
+}
+.savedBody h2 {
+	font-size: var(--pf-font-size-product-card-title);
+}
+.savedBody p,
+.savedToolbar p,
+.select {
+	font-size: var(--pf-font-size-small);
+}
+.select {
+	display: flex;
+	align-items: center;
+	gap: var(--pf-space-xs);
+	min-block-size: var(--pf-touch-target);
+	width: fit-content;
+}
+.select input {
+	accent-color: var(--pf-color-action);
+}
+.savedRow .toggle {
+	grid-column: 2;
+	grid-row: 1;
+}
+.comparison {
+	display: grid;
+	gap: var(--pf-space-sm);
+	min-inline-size: 0;
+}
+.scrollHint {
+	margin: 0;
+	font-size: var(--pf-font-size-small);
+}
+@media (--desktop) {
+	.scrollHint {
+		display: none;
+	}
+}
+.tableScroll {
+	max-inline-size: 100%;
+	overflow-x: auto;
+	border: var(--pf-border-width) solid var(--pf-color-border);
+	border-radius: var(--pf-radius-control);
+}
+.table {
+	inline-size: max(
+		100%,
+		calc(
+			var(--pf-comparison-label-width) +
+			var(--comparison-products) *
+			var(--pf-comparison-product-width)
+		)
+	);
+	border-collapse: separate;
+	border-spacing: 0;
+	table-layout: fixed;
+	font-size: var(--pf-font-size-small);
+	line-height: var(--pf-line-height-compact);
+}
+.table :is(th, td) {
+	padding: var(--pf-space-sm);
+	text-align: start;
+	vertical-align: top;
+	border-block-end: var(--pf-border-width) solid var(--pf-color-border);
+}
+.table th:first-child {
+	position: sticky;
+	inset-inline-start: 0;
+	inline-size: var(--pf-comparison-label-width);
+	background: var(--pf-color-surface);
+}
+@media (--phone) {
+	.toggleLabel {
+		display: inline;
+	}
+	.toggle:has(.toggleLabel) {
+		padding-inline: var(--pf-space-sm);
+	}
+	.savedRow:has(.savedImage) {
+		grid-template-columns: var(--pf-favorite-thumbnail-width) minmax(0, 1fr) auto;
+	}
+	.savedRow:has(.savedImage) .savedBody {
+		grid-column: 2;
+	}
+	.savedRow:has(.savedImage) .toggle {
+		grid-column: 3;
+	}
+}

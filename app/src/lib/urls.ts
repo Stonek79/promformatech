@@ -20,6 +20,7 @@ const RESERVED_SLUGS = new Set([
 	"media",
 	"preview",
 	"search",
+	ROUTES.favorites.slice(1),
 	"ui-kit",
 	PAGE_SLUGS.privacy,
 ]);

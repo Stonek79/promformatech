@@ -14,6 +14,19 @@ export const MEDIA_FIELDS = {
 	mapPreview: "mapPreview",
 	cover: "cover",
 } as const;
+const PHOTO_ZOOM_PERCENT = {
+	fit: 100,
+	near: 125,
+	detail: 150,
+	double: 200,
+	closer: 250,
+	triple: 300,
+} as const;
+export const PHOTO_ZOOM = {
+	steps: Object.values(PHOTO_ZOOM_PERCENT),
+	durationMs: 180,
+	controlIdleMs: 2400,
+} as const;
 export const MEDIA_REFERENCE_FIELDS = {
 	relationTo: "relationTo",
 	value: "value",

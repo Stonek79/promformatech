@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { COLLECTIONS } from "@/config/content";
 import { IMAGE_SIZES } from "@/config/image";
+import { FavoriteToggle } from "@/features/favorites/FavoriteToggle";
 import { MediaImage } from "@/features/media/MediaView";
 import { isReadyImage, mediaView } from "@/features/media/view-model";
 import type { Locale } from "@/i18n/config";
@@ -71,7 +72,7 @@ export function MaterialCards({
 						</article>
 					);
 				}
-				return (
+				const link = (
 					<Link key={key} data-return-card href={href} className={styles.card}>
 						{image}
 						<div className={styles.cardBody}>
@@ -79,6 +80,19 @@ export function MaterialCards({
 							{summary}
 						</div>
 					</Link>
+				);
+				if (material.collection !== COLLECTIONS.products) {
+					return link;
+				}
+				return (
+					<article key={key} className={styles.favoriteCard}>
+						{link}
+						<FavoriteToggle
+							id={material.id}
+							title={material.title.value ?? material.slug}
+							position="card"
+						/>
+					</article>
 				);
 			})}
 		</div>

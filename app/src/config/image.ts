@@ -4,6 +4,7 @@ const productCardWidth = tokens["product-card-max-width"];
 const productPhotoLimit = `${tokens["product-photo-width"]}, ${tokens["product-photo-viewport-width"]}`;
 
 export const IMAGE_SIZES = {
+	favoriteThumbnail: tokens["favorite-thumbnail-width"],
 	full: "100vw",
 	columns: `(max-width: ${breakpoints.tablet}) 100vw, 50vw`,
 	card: `(max-width: ${breakpoints.phone}) 100vw, (max-width: ${breakpoints.tablet}) 50vw, 33vw`,

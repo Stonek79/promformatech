@@ -11,13 +11,13 @@ import { Button } from "@/components/ui/Button/Button";
 import { Dialog } from "@/components/ui/Dialog/Dialog";
 import { Icon } from "@/components/ui/Icon/Icon";
 import { IMAGE_SIZES } from "@/config/image";
+import { PHOTO_ZOOM } from "@/config/media";
 import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
 import { useMessages } from "@/i18n/MessagesProvider";
 import { MediaImage } from "./MediaView";
 import styles from "./media.module.css";
+import { usePhotoZoom } from "./usePhotoZoom";
 import { isReadyImage, type MediaView } from "./view-model";
-
-const ZOOM_CONTROL_IDLE = 2400;
 
 export function PhotoDialog({
 	asset,
@@ -31,10 +31,9 @@ export function PhotoDialog({
 	readonly captionLanguage?: Locale;
 }) {
 	const { media } = useMessages();
-	const [zoomed, setZoomed] = useState(false);
+	const zoom = usePhotoZoom();
 	const [controlsVisible, setControlsVisible] = useState(false);
 	const idle = useRef<number>(undefined);
-	const zoomLabel = zoomed ? media.zoomOut : media.zoomIn;
 	const photoSize = isReadyImage(asset)
 		? ({ "--photo-ratio": asset.width / asset.height } as CSSProperties)
 		: undefined;
@@ -46,7 +45,7 @@ export function PhotoDialog({
 		setControlsVisible(true);
 		idle.current = window.setTimeout(
 			() => setControlsVisible(false),
-			ZOOM_CONTROL_IDLE,
+			PHOTO_ZOOM.controlIdleMs,
 		);
 	}
 
@@ -65,7 +64,7 @@ export function PhotoDialog({
 				}
 				window.clearTimeout(idle.current);
 				setControlsVisible(false);
-				setZoomed(false);
+				zoom.reset();
 			}}
 		>
 			<div
@@ -74,25 +73,52 @@ export function PhotoDialog({
 				onPointerDown={revealZoom}
 			>
 				<section
+					ref={zoom.viewport}
 					aria-label={asset.title}
-					tabIndex={zoomed ? 0 : undefined}
+					tabIndex={zoom.zoomed ? 0 : undefined}
 					className={styles.photoViewport}
-					data-zoomed={zoomed}
+					data-zoomed={zoom.zoomed}
+					data-dragging={zoom.dragging}
+					onPointerDown={zoom.startDrag}
+					onPointerMove={zoom.pan}
+					onLostPointerCapture={zoom.stopDrag}
+					onPointerCancel={zoom.stopDrag}
+					onDragStart={(event) => event.preventDefault()}
 				>
-					<MediaImage asset={asset} sizes={IMAGE_SIZES.full} />
+					<div className={styles.photoCanvas}>
+						<MediaImage asset={asset} sizes={IMAGE_SIZES.full} />
+					</div>
 				</section>
-				<Button
-					variant="secondary"
-					icon
-					className={styles.zoomButton}
-					data-visible={controlsVisible}
-					aria-label={zoomLabel}
-					title={zoomLabel}
-					onFocus={revealZoom}
-					onClick={() => setZoomed(!zoomed)}
-				>
-					<Icon name={zoomed ? "zoomOut" : "zoomIn"} />
-				</Button>
+				<div className={styles.zoomControls} data-visible={controlsVisible}>
+					<Button
+						variant="secondary"
+						icon
+						aria-label={media.zoomOut}
+						title={media.zoomOut}
+						disabled={!zoom.zoomed}
+						onClick={zoom.decrease}
+					>
+						<Icon name="zoomOut" />
+					</Button>
+					<Button
+						variant="secondary"
+						aria-label={`${media.zoomReset} (${zoom.level}%)`}
+						title={media.zoomReset}
+						onClick={zoom.fit}
+					>
+						{zoom.level}%
+					</Button>
+					<Button
+						variant="secondary"
+						icon
+						aria-label={media.zoomIn}
+						title={media.zoomIn}
+						disabled={zoom.maximum}
+						onClick={zoom.increase}
+					>
+						<Icon name="zoomIn" />
+					</Button>
+				</div>
 			</div>
 			{caption && (
 				<p className={styles.photoCaption} lang={captionLanguage}>

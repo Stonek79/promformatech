@@ -21,6 +21,7 @@ export const APPEARANCE = {
 	sizeAttribute: "data-text-size",
 	cookieMaxAge: 31_536_000,
 	darkMedia: "(prefers-color-scheme: dark)",
+	reducedMotionMedia: "(prefers-reduced-motion: reduce)",
 } as const;
 
 const THEME_OPTIONS = [THEMES.light, THEMES.dark, THEMES.system] as const;

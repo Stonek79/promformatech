@@ -73,38 +73,64 @@
 	position: relative;
 }
 .photoViewport {
-	display: grid;
-	grid-template-columns: minmax(0, 1fr);
+	container-type: inline-size;
 	max-block-size: var(--pf-photo-dialog-image-height);
 	overflow: auto;
 	overscroll-behavior: contain;
+	overflow-anchor: none;
 }
-.photoViewport img {
-	inline-size: auto;
+.photoCanvas {
+	--photo-fit-width: min(
+		100cqi,
+		calc(var(--photo-ratio, 1) * var(--pf-photo-dialog-image-height))
+	);
+	--photo-width: calc(var(--photo-fit-width) * var(--photo-scale, 1));
+	display: flex;
+	justify-content: center;
+	inline-size: max(100%, var(--photo-width));
+}
+.photoCanvas img {
+	flex: none;
+	inline-size: var(--photo-width);
 	block-size: auto;
-	max-block-size: var(--pf-photo-dialog-image-height);
-	margin-inline: auto;
-	object-fit: contain;
-}
-.photoViewport[data-zoomed="true"] img {
 	max-inline-size: none;
-	max-block-size: none;
-	margin-inline: 0;
-	zoom: var(--pf-photo-zoom-factor);
+	object-fit: contain;
+	user-select: none;
 }
-.photoFrame .zoomButton {
+.photoViewport[data-zoomed="true"] {
+	cursor: grab;
+}
+.photoViewport[data-dragging="true"] {
+	cursor: grabbing;
+}
+.zoomControls {
 	position: absolute;
 	inset-block-start: var(--pf-space-xs);
 	inset-inline-end: var(--pf-space-xs);
-	border-radius: var(--pf-radius-circle);
+	display: flex;
+	overflow: hidden;
+	border-radius: var(--pf-radius-control);
 	opacity: 0;
 	pointer-events: none;
 	transition: opacity var(--pf-motion-duration) var(--pf-motion-easing);
 }
-.zoomButton[data-visible="true"],
-.zoomButton:focus-visible {
+.zoomControls button {
+	min-block-size: var(--pf-touch-target);
+	padding-inline: var(--pf-space-xs);
+}
+.zoomControls button:focus-visible {
+	outline-offset: calc(-1 * var(--pf-border-accent));
+}
+.zoomControls[data-visible="true"],
+.zoomControls:focus-within {
 	opacity: 1;
 	pointer-events: auto;
+}
+@media (hover: none) {
+	.zoomControls {
+		opacity: 1;
+		pointer-events: auto;
+	}
 }
 .photoCaption {
 	margin-block: var(--pf-space-xs) 0;

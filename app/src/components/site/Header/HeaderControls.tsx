@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button/Button";
 import { Dialog } from "@/components/ui/Dialog/Dialog";
 import { Icon } from "@/components/ui/Icon/Icon";
 import { SiteAppearance } from "@/features/appearance/SiteAppearance";
+import { FavoriteLink } from "@/features/favorites/FavoriteLink";
 import type { Locale } from "@/i18n/config";
 import { useMessages } from "@/i18n/MessagesProvider";
 import styles from "./Header.module.css";
@@ -43,6 +44,7 @@ export function HeaderControls({
 					emptyMessage={emptySearch}
 					triggerClassName={styles.headerButton}
 				/>
+				<FavoriteLink />
 				<div className={styles.mobileMenu}>
 					<Dialog
 						title={messages.menu}
